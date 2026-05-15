@@ -1,0 +1,75 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Mappa quest</h1>
+      <p class="page-subtitle">Panoramica geografica di tutte le quest sul territorio trentino</p>
+    </div>
+  </div>
+
+  <mat-card appearance="outlined" class="filters-card">
+    <mat-card-content>
+      <div class="filters">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Tipo</mat-label>
+          <mat-select
+            [ngModel]="typeFilter()"
+            (ngModelChange)="typeFilter.set($event); onFilterChange()"
+          >
+            @for (option of typeOptions; track option.value) {
+              <mat-option [value]="option.value">{{ option.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Status</mat-label>
+          <mat-select
+            [ngModel]="statusFilter()"
+            (ngModelChange)="statusFilter.set($event); onFilterChange()"
+          >
+            @for (option of statusOptions; track option.value) {
+              <mat-option [value]="option.value">{{ option.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <div class="legend">
+          <span class="legend-item">
+            <span class="legend-marker marker-primary marker-status-active">★</span>
+            Principale attiva
+          </span>
+          <span class="legend-item">
+            <span class="legend-marker marker-secondary marker-status-active">●</span>
+            Secondaria attiva
+          </span>
+          <span class="legend-item">
+            <span class="legend-marker marker-status-inactive">●</span>
+            Inattiva
+          </span>
+          <span class="legend-item">
+            <span class="legend-marker marker-status-archived">●</span>
+            Archiviata
+          </span>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card appearance="outlined" class="map-card">
+    @if (isLoading()) {
+      <div class="loading-overlay">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+    }
+
+    <app-quest-map-viewer
+      [quests]="quests()"
+      (questSelected)="onQuestSelected($event)"
+    ></app-quest-map-viewer>
+
+    <div class="map-summary">
+      <mat-icon>flag</mat-icon>
+      <span>{{ quests().length }} quest visualizzate</span>
+    </div>
+  </mat-card>
+</div>

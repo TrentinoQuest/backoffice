@@ -41,6 +41,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/admin/quests/admin-quest-form.page').then((m) => m.AdminQuestFormPage),
       },
+      {
+        path: 'quests-map',
+        loadComponent: () =>
+          import('./features/admin/quests/admin-quests-map.page').then((m) => m.AdminQuestsMapPage),
+      },
     ],
   },
   {

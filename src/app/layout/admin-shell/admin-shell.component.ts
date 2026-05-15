@@ -66,6 +66,7 @@ export class AdminShellComponent {
   readonly navItems: NavItem[] = [
     { label: 'Dashboard', icon: 'dashboard', route: '/admin' },
     { label: 'Quest', icon: 'flag', route: '/admin/quests' },
+    { label: 'Mappa quest', icon: 'map', route: '/admin/quests-map' },
     { label: 'Collezionabili', icon: 'collections_bookmark', route: '/admin/collectibles' },
   ];
 

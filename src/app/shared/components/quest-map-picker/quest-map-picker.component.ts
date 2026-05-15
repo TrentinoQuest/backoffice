@@ -12,21 +12,15 @@ import {
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import * as L from 'leaflet';
+import {
+  applyLeafletIconFix,
+  createOsmTileLayer,
+  TRENTINO_CENTER,
+  TRENTINO_ZOOM,
+  QUEST_ZOOM,
+} from '../../leaflet/leaflet-config';
 
-/**
- * Risolve un bug noto di Leaflet con bundler come webpack/vite: i path
- * relativi delle icone marker di default non vengono risolti
- * correttamente. Settiamo gli URL espliciti agli asset CDN ufficiali.
- *
- * Soluzione documentata su https://github.com/Leaflet/Leaflet/issues/4968
- */
-delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: () => string })._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-});
-
+applyLeafletIconFix();
 /**
  * Valore gestito dal form control: punto geografico + raggio.
  */
@@ -35,14 +29,6 @@ export interface MapPickerValue {
   lng: number;
   radius: number;
 }
-
-/**
- * Coordinate del centro del Trentino, usate come default quando la
- * mappa viene inizializzata senza un valore preesistente.
- */
-const TRENTINO_CENTER: L.LatLngTuple = [46.0667, 11.1167];
-const DEFAULT_ZOOM = 9;
-const PICKED_ZOOM = 13;
 
 /**
  * Componente mappa picker per selezionare posizione e raggio di una
@@ -156,14 +142,10 @@ export class QuestMapPickerComponent
     const initialCenter: L.LatLngTuple = this.value
       ? [this.value.lat, this.value.lng]
       : TRENTINO_CENTER;
-    const initialZoom = this.value ? PICKED_ZOOM : DEFAULT_ZOOM;
+    const initialZoom = this.value ? QUEST_ZOOM : TRENTINO_ZOOM;
 
     this.map = L.map(this.mapContainer.nativeElement).setView(initialCenter, initialZoom);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      maxZoom: 19,
-    }).addTo(this.map);
+    createOsmTileLayer().addTo(this.map);
 
     this.map.on('click', (event: L.LeafletMouseEvent) => {
       this.setMarker(event.latlng.lat, event.latlng.lng);
@@ -231,7 +213,7 @@ export class QuestMapPickerComponent
     if (!this.map || !this.marker) {
       return;
     }
-    this.map.setView(this.marker.getLatLng(), 18, { animate: true });
+    this.map.setView(this.marker.getLatLng(), QUEST_ZOOM, { animate: true });
   }
 
   // ===== ControlValueAccessor =====
