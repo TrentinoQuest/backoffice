@@ -8,7 +8,7 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 // Necessario per Angular Material 20.x. La nuova API animate.enter/leave
 // (Angular 20.2+) non e' ancora supportata dai componenti Material.
 // Quando Material rilascera' la migrazione, sostituire con la nuova API.
-// eslint-disable-next-line @typescript-eslint/no-deprecated
+
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
@@ -20,7 +20,7 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor, refreshInterceptor])),
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+
     provideAnimationsAsync(),
   ],
 };

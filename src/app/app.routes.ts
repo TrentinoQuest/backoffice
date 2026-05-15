@@ -31,8 +31,16 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/admin/quests/admin-quests.page').then((m) => m.AdminQuestsPage),
       },
-      // { path: 'quests/new', loadComponent: ... },   // Mini-step H
-      // { path: 'quests/:id/edit', loadComponent: ... },  // Mini-step H
+      {
+        path: 'quests/new',
+        loadComponent: () =>
+          import('./features/admin/quests/admin-quest-form.page').then((m) => m.AdminQuestFormPage),
+      },
+      {
+        path: 'quests/:id/edit',
+        loadComponent: () =>
+          import('./features/admin/quests/admin-quest-form.page').then((m) => m.AdminQuestFormPage),
+      },
     ],
   },
   {
