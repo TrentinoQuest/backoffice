@@ -8,10 +8,6 @@ import { authGuard, guestGuard, roleGuard } from './core/guards/auth.guard';
  * Tutte le pagine sono caricate in lazy via loadComponent per ridurre
  * il bundle iniziale. Le rotte sotto /admin sono protette da authGuard
  * e roleGuard(ADMIN), la rotta /login da guestGuard.
- *
- * Il routing di /admin usa il pattern shell + child routes: il
- * componente AdminShellComponent fornisce sidebar e toolbar, mentre
- * le pagine specifiche vengono caricate nel suo router-outlet.
  */
 export const routes: Routes = [
   {
@@ -30,9 +26,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/admin/dashboard/dashboard.page').then((m) => m.AdminDashboardPage),
       },
-      // Future child routes:
-      // { path: 'quests', loadComponent: ... },
-      // { path: 'collectibles', loadComponent: ... },
+      {
+        path: 'quests',
+        loadComponent: () =>
+          import('./features/admin/quests/admin-quests.page').then((m) => m.AdminQuestsPage),
+      },
+      // { path: 'quests/new', loadComponent: ... },   // Mini-step H
+      // { path: 'quests/:id/edit', loadComponent: ... },  // Mini-step H
     ],
   },
   {

@@ -1,0 +1,147 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Quest</h1>
+      <p class="page-subtitle">Gestisci le quest principali e secondarie del territorio</p>
+    </div>
+    <button mat-flat-button color="primary" (click)="onCreateClick()">
+      <mat-icon>add</mat-icon>
+      <span>Nuova quest</span>
+    </button>
+  </div>
+
+  <mat-card appearance="outlined" class="filters-card">
+    <mat-card-content>
+      <div class="filters">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Tipo</mat-label>
+          <mat-select
+            [ngModel]="typeFilter()"
+            (ngModelChange)="typeFilter.set($event); onFilterChange()"
+          >
+            @for (option of typeOptions; track option.value) {
+              <mat-option [value]="option.value">{{ option.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Status</mat-label>
+          <mat-select
+            [ngModel]="statusFilter()"
+            (ngModelChange)="statusFilter.set($event); onFilterChange()"
+          >
+            @for (option of statusOptions; track option.value) {
+              <mat-option [value]="option.value">{{ option.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card appearance="outlined" class="table-card">
+    @if (isLoading()) {
+      <div class="loading">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+    }
+
+    <table mat-table [dataSource]="quests()" class="quests-table">
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Nome</th>
+        <td mat-cell *matCellDef="let quest">
+          <div class="cell-name">{{ quest.name }}</div>
+          <div class="cell-description">{{ quest.description }}</div>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="type">
+        <th mat-header-cell *matHeaderCellDef>Tipo</th>
+        <td mat-cell *matCellDef="let quest">
+          <span [class]="typeClass()(quest.type)">{{ quest.type | titlecase }}</span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let quest">
+          <span [class]="statusClass()(quest.status)">{{ quest.status | titlecase }}</span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="basePoints">
+        <th mat-header-cell *matHeaderCellDef>Punti</th>
+        <td mat-cell *matCellDef="let quest">{{ quest.basePoints }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="createdAt">
+        <th mat-header-cell *matHeaderCellDef>Creata il</th>
+        <td mat-cell *matCellDef="let quest">{{ quest.createdAt | date: 'dd/MM/yyyy' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef class="actions-header">Azioni</th>
+        <td mat-cell *matCellDef="let quest" class="actions-cell">
+          <button
+            mat-icon-button
+            [matMenuTriggerFor]="menu"
+            matTooltip="Azioni"
+            aria-label="Azioni"
+          >
+            <mat-icon>more_vert</mat-icon>
+          </button>
+          <mat-menu #menu="matMenu">
+            <button mat-menu-item (click)="onEditClick(quest)">
+              <mat-icon>edit</mat-icon>
+              <span>Modifica</span>
+            </button>
+
+            @if (quest.status !== QuestStatus.ACTIVE && quest.status !== QuestStatus.ARCHIVED) {
+              <button mat-menu-item (click)="onActivateClick(quest)">
+                <mat-icon>play_arrow</mat-icon>
+                <span>Attiva</span>
+              </button>
+            }
+
+            @if (quest.status === QuestStatus.ACTIVE) {
+              <button mat-menu-item (click)="onDeactivateClick(quest)">
+                <mat-icon>pause</mat-icon>
+                <span>Disattiva</span>
+              </button>
+            }
+
+            @if (quest.status !== QuestStatus.ARCHIVED) {
+              <button mat-menu-item (click)="onArchiveClick(quest)">
+                <mat-icon>archive</mat-icon>
+                <span>Archivia</span>
+              </button>
+            }
+          </mat-menu>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+      <tr class="no-data" *matNoDataRow>
+        <td [attr.colspan]="displayedColumns.length">
+          @if (!isLoading()) {
+            <div class="empty">
+              <mat-icon>flag</mat-icon>
+              <p>Nessuna quest trovata con i filtri correnti.</p>
+            </div>
+          }
+        </td>
+      </tr>
+    </table>
+
+    <mat-paginator
+      [length]="totalCount()"
+      [pageSize]="20"
+      [pageSizeOptions]="[20, 50, 100]"
+      (page)="onPageChange($event)"
+      showFirstLastButtons
+    ></mat-paginator>
+  </mat-card>
+</div>

@@ -8,8 +8,7 @@ import { AuthService } from '../../../core/services/auth.service';
  *
  * Caricata come child route di /admin (path vuoto) tramite lo shell.
  * Per ora mostra solo un saluto e alcune statistiche placeholder; verra'
- * arricchita con dati reali (numero di quest attive, completamenti
- * recenti, ecc.) quando il modulo analytics sara' disponibile.
+ * arricchita con dati reali quando il modulo analytics sara' disponibile.
  */
 @Component({
   selector: 'app-admin-dashboard',
