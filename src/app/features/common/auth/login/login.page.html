@@ -1,0 +1,73 @@
+<div class="login-container">
+  <mat-card class="login-card" appearance="outlined">
+    <mat-card-header>
+      <mat-card-title>Trentino Quest</mat-card-title>
+      <mat-card-subtitle>Pannello amministrativo</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <input
+            matInput
+            type="email"
+            formControlName="email"
+            autocomplete="username"
+            placeholder="admin@trentinoquest.local"
+          />
+          @if (form.controls.email.touched && form.controls.email.errors?.['required']) {
+            <mat-error>Email obbligatoria</mat-error>
+          }
+          @if (form.controls.email.touched && form.controls.email.errors?.['email']) {
+            <mat-error>Formato email non valido</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Password</mat-label>
+          <input
+            matInput
+            [type]="passwordVisible() ? 'text' : 'password'"
+            formControlName="password"
+            autocomplete="current-password"
+          />
+          <button
+            type="button"
+            mat-icon-button
+            matSuffix
+            (click)="togglePasswordVisibility()"
+            [attr.aria-label]="passwordVisible() ? 'Nascondi password' : 'Mostra password'"
+          >
+            <mat-icon>{{ passwordVisible() ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          @if (form.controls.password.touched && form.controls.password.errors?.['required']) {
+            <mat-error>Password obbligatoria</mat-error>
+          }
+          @if (form.controls.password.touched && form.controls.password.errors?.['minlength']) {
+            <mat-error>Almeno 8 caratteri</mat-error>
+          }
+        </mat-form-field>
+
+        @if (errorMessage(); as msg) {
+          <div class="error-banner" role="alert">{{ msg }}</div>
+        }
+
+        <div class="actions">
+          <button
+            type="submit"
+            mat-flat-button
+            color="primary"
+            [disabled]="isSubmitting() || form.invalid"
+          >
+            @if (isSubmitting()) {
+              <mat-spinner diameter="20"></mat-spinner>
+            } @else {
+              <span>Accedi</span>
+            }
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

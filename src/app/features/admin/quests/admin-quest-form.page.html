@@ -1,0 +1,157 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <a mat-icon-button routerLink="/admin/quests" matTooltip="Torna alla lista">
+        <mat-icon>arrow_back</mat-icon>
+      </a>
+      <h1 class="page-title">
+        {{ isEditMode() ? 'Modifica quest' : 'Nuova quest' }}
+      </h1>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate class="form">
+      <mat-card appearance="outlined" class="form-card">
+        <mat-card-header>
+          <mat-card-title>Dati generali</mat-card-title>
+        </mat-card-header>
+
+        <mat-card-content>
+          <!-- Tipo: solo in creazione e' modificabile -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Tipo di quest</mat-label>
+            <mat-select
+              [value]="questType()"
+              (selectionChange)="onTypeChange($event.value)"
+              [disabled]="isEditMode()"
+            >
+              <mat-option [value]="QuestType.SECONDARY">
+                Secondaria (check-in geolocalizzato)
+              </mat-option>
+              <mat-option [value]="QuestType.PRIMARY"> Principale (QR code nascosto) </mat-option>
+            </mat-select>
+            @if (isEditMode()) {
+              <mat-hint>Il tipo non è modificabile dopo la creazione.</mat-hint>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Nome</mat-label>
+            <input matInput formControlName="name" placeholder="Es. Doss Trento" />
+            @if (form.controls['name'].touched && form.controls['name'].errors?.['required']) {
+              <mat-error>Nome obbligatorio</mat-error>
+            }
+            @if (form.controls['name'].touched && form.controls['name'].errors?.['minlength']) {
+              <mat-error>Minimo 3 caratteri</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Descrizione</mat-label>
+            <textarea
+              matInput
+              formControlName="description"
+              rows="3"
+              placeholder="Breve descrizione che il giocatore vedrà sulla mappa"
+            ></textarea>
+            @if (
+              form.controls['description'].touched &&
+              form.controls['description'].errors?.['required']
+            ) {
+              <mat-error>Descrizione obbligatoria</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="medium-width">
+            <mat-label>Punti base</mat-label>
+            <input matInput type="number" formControlName="basePoints" min="0" />
+            <mat-hint>Punti assegnati al completamento</mat-hint>
+            @if (
+              form.controls['basePoints'].touched && form.controls['basePoints'].errors?.['min']
+            ) {
+              <mat-error>Deve essere &ge; 0</mat-error>
+            }
+          </mat-form-field>
+
+          @if (questType() === QuestType.PRIMARY) {
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Collezionabile associato</mat-label>
+              <mat-select formControlName="collectibleId">
+                <mat-option [value]="null">Nessuno</mat-option>
+                @for (c of collectibles(); track c.id) {
+                  <mat-option [value]="c.id"> {{ c.name }} ({{ c.rarity }}) </mat-option>
+                }
+              </mat-select>
+              <mat-hint> Sbloccato quando un giocatore completa la quest. </mat-hint>
+            </mat-form-field>
+          }
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card appearance="outlined" class="form-card">
+        <mat-card-header>
+          <mat-card-title>Posizione geografica</mat-card-title>
+          <mat-card-subtitle>
+            @if (questType() === QuestType.PRIMARY) {
+              Definisci l'area di ricerca approssimativa: il giocatore vedrà il cerchio sulla mappa,
+              ma il QR code esatto sarà nascosto al suo interno.
+            } @else {
+              Definisci il punto e il raggio entro cui il giocatore può fare check-in.
+            }
+          </mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+          <app-quest-map-picker
+            formControlName="locationValue"
+            [radius]="form.controls['radiusMeters'].value"
+          ></app-quest-map-picker>
+          @if (
+            form.controls['locationValue'].touched &&
+            form.controls['locationValue'].errors?.['required']
+          ) {
+            <p class="error-text">Posiziona il punto sulla mappa cliccando.</p>
+          }
+
+          <div class="radius-control">
+            <div class="radius-label">
+              {{
+                questType() === QuestType.PRIMARY ? 'Raggio area di ricerca' : 'Raggio di check-in'
+              }}:
+              <strong>{{ form.controls['radiusMeters'].value }} m</strong>
+            </div>
+            <mat-slider
+              [min]="questType() === QuestType.PRIMARY ? 10 : 5"
+              [max]="questType() === QuestType.PRIMARY ? 60 : 20"
+              [step]="1"
+              discrete
+            >
+              <input matSliderThumb formControlName="radiusMeters" />
+            </mat-slider>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <div class="form-actions">
+        <a mat-stroked-button routerLink="/admin/quests">Annulla</a>
+        <button
+          type="submit"
+          mat-flat-button
+          color="primary"
+          [disabled]="isSubmitting() || form.invalid"
+        >
+          @if (isSubmitting()) {
+            <mat-spinner diameter="20"></mat-spinner>
+          } @else {
+            <span>{{ isEditMode() ? 'Salva modifiche' : 'Crea quest' }}</span>
+          }
+        </button>
+      </div>
+    </form>
+  }
+</div>
