@@ -46,6 +46,34 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/admin/quests/admin-quests-map.page').then((m) => m.AdminQuestsMapPage),
       },
+      {
+        path: 'collectibles',
+        loadComponent: () =>
+          import('./features/admin/collectibles/admin-collectibles.page').then(
+            (m) => m.AdminCollectiblesPage,
+          ),
+      },
+      {
+        path: 'collectibles/new',
+        loadComponent: () =>
+          import('./features/admin/collectibles/admin-collectible-form.page').then(
+            (m) => m.AdminCollectibleFormPage,
+          ),
+      },
+      {
+        path: 'collectibles/:id/edit',
+        loadComponent: () =>
+          import('./features/admin/collectibles/admin-collectible-form.page').then(
+            (m) => m.AdminCollectibleFormPage,
+          ),
+      },
+      {
+        path: 'businesses',
+        loadComponent: () =>
+          import('./features/admin/businesses/admin-businesses.page').then(
+            (m) => m.AdminBusinessesPage,
+          ),
+      },
     ],
   },
   {

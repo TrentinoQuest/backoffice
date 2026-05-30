@@ -68,6 +68,7 @@ export class AdminShellComponent {
     { label: 'Quest', icon: 'flag', route: '/admin/quests' },
     { label: 'Mappa quest', icon: 'map', route: '/admin/quests-map' },
     { label: 'Collezionabili', icon: 'collections_bookmark', route: '/admin/collectibles' },
+    { label: 'Affiliazioni', icon: 'store', route: '/admin/businesses' },
   ];
 
   /**

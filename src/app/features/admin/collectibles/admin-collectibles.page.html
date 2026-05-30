@@ -1,0 +1,133 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Collezionabili</h1>
+      <p class="page-subtitle">Gestisci i collezionabili sbloccabili dalle quest principali</p>
+    </div>
+    <button mat-flat-button color="primary" (click)="onCreateClick()">
+      <mat-icon>add</mat-icon>
+      <span>Nuovo collezionabile</span>
+    </button>
+  </div>
+
+  <mat-card appearance="outlined" class="filters-card">
+    <mat-card-content>
+      <div class="filters">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Rarità</mat-label>
+          <mat-select
+            [ngModel]="rarityFilter()"
+            (ngModelChange)="rarityFilter.set($event); onFilterChange()"
+          >
+            @for (option of rarityOptions; track option.value) {
+              <mat-option [value]="option.value">{{ option.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Status</mat-label>
+          <mat-select
+            [ngModel]="statusFilter()"
+            (ngModelChange)="statusFilter.set($event); onFilterChange()"
+          >
+            @for (option of statusOptions; track option.value) {
+              <mat-option [value]="option.value">{{ option.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card appearance="outlined" class="table-card">
+    @if (isLoading()) {
+      <div class="loading">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+    }
+
+    <table mat-table [dataSource]="collectibles()" class="collectibles-table">
+      <ng-container matColumnDef="image">
+        <th mat-header-cell *matHeaderCellDef>Immagine</th>
+        <td mat-cell *matCellDef="let collectible">
+          <img
+            [src]="collectible.imageUrl"
+            [alt]="collectible.name"
+            class="collectible-thumb"
+            referrerpolicy="no-referrer"
+          />
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Nome</th>
+        <td mat-cell *matCellDef="let collectible">
+          <div class="cell-name">{{ collectible.name }}</div>
+          <div class="cell-description">{{ collectible.description }}</div>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="rarity">
+        <th mat-header-cell *matHeaderCellDef>Rarita</th>
+        <td mat-cell *matCellDef="let collectible">
+          <span [class]="rarityClass()(collectible.rarity)">{{
+            collectible.rarity | titlecase
+          }}</span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="createdAt">
+        <th mat-header-cell *matHeaderCellDef>Creato il</th>
+        <td mat-cell *matCellDef="let collectible">
+          {{ collectible.createdAt | date: 'dd/MM/yyyy' }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef class="actions-header">Azioni</th>
+        <td mat-cell *matCellDef="let collectible" class="actions-cell">
+          <button
+            mat-icon-button
+            [matMenuTriggerFor]="menu"
+            matTooltip="Azioni"
+            aria-label="Azioni"
+          >
+            <mat-icon>more_vert</mat-icon>
+          </button>
+          <mat-menu #menu="matMenu">
+            <button mat-menu-item (click)="onEditClick(collectible)">
+              <mat-icon>edit</mat-icon>
+              <span>Modifica</span>
+            </button>
+            <button mat-menu-item (click)="onArchiveClick(collectible)">
+              <mat-icon>archive</mat-icon>
+              <span>Archivia</span>
+            </button>
+          </mat-menu>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+      <tr class="no-data" *matNoDataRow>
+        <td [attr.colspan]="displayedColumns.length">
+          @if (!isLoading()) {
+            <div class="empty">
+              <mat-icon>collections_bookmark</mat-icon>
+              <p>Nessun collezionabile presente. Creane uno per iniziare.</p>
+            </div>
+          }
+        </td>
+      </tr>
+    </table>
+    <mat-paginator
+      [length]="totalCount()"
+      [pageSize]="20"
+      [pageSizeOptions]="[20, 50, 100]"
+      (page)="onPageChange()"
+      showFirstLastButtons
+    ></mat-paginator>
+  </mat-card>
+</div>
