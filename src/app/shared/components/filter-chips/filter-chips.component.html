@@ -1,0 +1,14 @@
+<div class="filter-chips-bar">
+  @for (group of groups(); track $index) { @if ($index > 0) {
+  <div class="chips-sep" aria-hidden="true"></div>
+  } @for (chip of group.chips; track chip.label) {
+  <button
+    type="button"
+    class="chip"
+    [class.chip--active]="isActive(chip.value)"
+    (click)="select(chip.value)"
+  >
+    {{ chip.label }}
+  </button>
+  } }
+</div>
