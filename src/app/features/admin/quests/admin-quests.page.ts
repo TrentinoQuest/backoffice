@@ -130,11 +130,9 @@ export class AdminQuestsPage implements OnInit {
    */
   questCoords(quest: AnyQuest): string {
     const geo = quest.type === QuestType.PRIMARY ? quest.searchArea : quest.position;
-    const coords = geo?.coordinates;
-    if (!coords || coords.length < 2) {
+    if (!geo) {
       return '—';
     }
-    const [lng, lat] = coords;
-    return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+    return `${geo.lat.toFixed(4)}, ${geo.lng.toFixed(4)}`;
   }
 }

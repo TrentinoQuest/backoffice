@@ -143,7 +143,8 @@ export class QuestMapViewerComponent implements AfterViewInit, OnChanges, OnDest
     this.markersLayer.clearLayers();
 
     for (const quest of this.quests) {
-      if (!position?.coordinates || position.coordinates.length < 2) continue;
+      const geo = quest.type === QuestType.PRIMARY ? quest.searchArea : quest.position;
+      if (!geo) continue;
 
       const isSelected = quest.id === this.selectedQuestId;
       const isInactive = quest.status !== QuestStatus.ACTIVE;
@@ -155,7 +156,7 @@ export class QuestMapViewerComponent implements AfterViewInit, OnChanges, OnDest
 
       const icon = createCustomMarker(variant);
 
-      const marker = L.marker([position.coordinates[1], position.coordinates[0]], { icon });
+      const marker = L.marker([geo.lat, geo.lng], { icon });
 
       if (this.interactive) {
         const popupHtml = this.buildPopupHtml(quest, isSelected);
