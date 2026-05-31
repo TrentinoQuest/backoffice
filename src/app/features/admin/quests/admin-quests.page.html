@@ -128,7 +128,7 @@
               <tr (click)="onEditClick(quest)">
                 <td class="tq-td-first">
                   <div class="quest-name">{{ quest.name }}</div>
-                  <div class="quest-loc">{{ quest.location?.address ?? '—' }}</div>
+                  <div class="quest-loc">{{ questCoords(quest) }}</div>
                 </td>
                 <td>
                   <span [class]="typeBadgeClass(quest.type)">{{ typeLabel(quest.type) }}</span>
