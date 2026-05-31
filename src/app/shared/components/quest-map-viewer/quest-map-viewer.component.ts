@@ -143,7 +143,7 @@ export class QuestMapViewerComponent implements AfterViewInit, OnChanges, OnDest
     this.markersLayer.clearLayers();
 
     for (const quest of this.quests) {
-      if (!quest.location?.lat || !quest.location?.lng) continue;
+      if (!position?.coordinates || position.coordinates.length < 2) continue;
 
       const isSelected = quest.id === this.selectedQuestId;
       const isInactive = quest.status !== QuestStatus.ACTIVE;
@@ -155,7 +155,7 @@ export class QuestMapViewerComponent implements AfterViewInit, OnChanges, OnDest
 
       const icon = createCustomMarker(variant);
 
-      const marker = L.marker([quest.location.lat, quest.location.lng], { icon });
+      const marker = L.marker([position.coordinates[1], position.coordinates[0]], { icon });
 
       if (this.interactive) {
         const popupHtml = this.buildPopupHtml(quest, isSelected);
@@ -208,11 +208,11 @@ export class QuestMapViewerComponent implements AfterViewInit, OnChanges, OnDest
           ${escapeHtml(quest.name ?? '')}
         </div>
         <div style="font-size:11.5px;color:#6b6452;margin-bottom:8px">
-          ${escapeHtml(quest.location?.address ?? '')}
+          ${escapeHtml('')}
         </div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
           <span style="font-size:12px;font-weight:600;color:#a06010;display:flex;align-items:center;gap:3px">
-            ★ ${quest.points ?? 0} pt
+            ★ ${quest.basePoints ?? 0} pt
           </span>
           <span style="padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500;
                        background:#edf5f0;color:${escapeHtml(statusColor)}">

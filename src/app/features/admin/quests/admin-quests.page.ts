@@ -122,4 +122,19 @@ export class AdminQuestsPage implements OnInit {
   statusBadgeClass(status: string): string {
     return status === QuestStatus.ACTIVE ? 'tq-badge tq-badge--green' : 'tq-badge tq-badge--gray';
   }
+
+  /**
+   * Etichetta posizione: le quest non hanno un indirizzo, mostriamo le
+   * coordinate del punto (searchArea per le principali, position per le
+   * secondarie). GeoPoint è GeoJSON: coordinates = [lng, lat].
+   */
+  questCoords(quest: AnyQuest): string {
+    const geo = quest.type === QuestType.PRIMARY ? quest.searchArea : quest.position;
+    const coords = geo?.coordinates;
+    if (!coords || coords.length < 2) {
+      return '—';
+    }
+    const [lng, lat] = coords;
+    return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+  }
 }
