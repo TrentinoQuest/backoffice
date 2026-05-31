@@ -1,9 +1,10 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth.service';
 import { BreadcrumbService } from '../../core/services/breadcrumb.service';
+import { CommandPaletteComponent } from '../../shared/components/command-palette/command-palette.component';
 
 interface NavItem {
   label: string;
@@ -17,7 +18,7 @@ interface NavItem {
 @Component({
   selector: 'app-admin-shell',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, CommandPaletteComponent],
   templateUrl: './admin-shell.component.html',
   styleUrl: './admin-shell.component.scss',
 })
@@ -25,6 +26,13 @@ export class AdminShellComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   readonly breadcrumb = inject(BreadcrumbService);
+
+  /** Riferimento alla command palette per apertura programmatica (⌘K / click sulla search). */
+  @ViewChild(CommandPaletteComponent) palette?: CommandPaletteComponent;
+
+  openPalette(): void {
+    this.palette?.open();
+  }
 
   readonly user = this.auth.currentUser;
 

@@ -1,4 +1,6 @@
 <div class="shell">
+  <app-command-palette />
+
   <!-- ── Sidebar wrapper (overflow:visible per il bottone collapse) ── -->
   <div class="sidebar-wrap" [class.sidebar-wrap--collapsed]="sidebarCollapsed()">
     <aside class="sidebar">
@@ -125,7 +127,7 @@
           }
         </nav>
         <div class="toolbar-spacer"></div>
-        <div class="global-search" role="search" aria-label="Ricerca globale">
+        <div class="global-search" role="search" aria-label="Ricerca globale" (click)="openPalette()">
           <svg
             width="13"
             height="13"

@@ -1,0 +1,139 @@
+@if (isOpen()) {
+  <div
+    class="pal-backdrop"
+    (click)="close()"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Ricerca globale"
+  >
+    <div class="pal-box" (click)="$event.stopPropagation()">
+      <!-- Input -->
+      <div class="pal-search-row">
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          class="pal-search-icon"
+          aria-hidden="true"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input
+          #searchInput
+          class="pal-input"
+          type="text"
+          placeholder="Cerca quest, collezionabili, azioni…"
+          [value]="query()"
+          (input)="query.set($any($event.target).value); focusIndex.set(0)"
+          aria-label="Cerca"
+          autocomplete="off"
+        />
+        <kbd class="pal-esc" aria-label="Premi Escape per chiudere">esc</kbd>
+      </div>
+
+      <!-- Results -->
+      <div class="pal-results" role="listbox">
+        @for (item of results(); track item.id; let i = $index) {
+          <div
+            class="pal-item"
+            [class.pal-item--focused]="i === focusIndex()"
+            role="option"
+            [attr.aria-selected]="i === focusIndex()"
+            (click)="selectItem(item)"
+            (mouseenter)="focusIndex.set(i)"
+          >
+            <div class="pal-item-icon" aria-hidden="true">
+              @switch (item.category) {
+                @case ('quest') {
+                  <svg
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.75"
+                    stroke-linecap="round"
+                  >
+                    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+                    <line x1="4" y1="22" x2="4" y2="15" />
+                  </svg>
+                }
+                @case ('collectible') {
+                  <svg
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.75"
+                    stroke-linecap="round"
+                  >
+                    <polygon
+                      points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+                    />
+                  </svg>
+                }
+                @case ('action') {
+                  <svg
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                  >
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                }
+                @default {
+                  <svg
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.75"
+                    stroke-linecap="round"
+                  >
+                    <rect x="3" y="3" width="7" height="7" rx="1" />
+                    <rect x="14" y="3" width="7" height="7" rx="1" />
+                    <rect x="3" y="14" width="7" height="7" rx="1" />
+                    <rect x="14" y="14" width="7" height="7" rx="1" />
+                  </svg>
+                }
+              }
+            </div>
+            <div class="pal-item-body">
+              <div class="pal-item-label">{{ item.label }}</div>
+              @if (item.sublabel) {
+                <div class="pal-item-sub">{{ item.sublabel }}</div>
+              }
+            </div>
+            <span class="pal-item-badge pal-badge--{{ item.category }}">
+              {{ categoryLabel(item.category) }}
+            </span>
+          </div>
+        }
+        @if (results().length === 0) {
+          <div class="pal-empty">Nessun risultato per "{{ query() }}"</div>
+        }
+      </div>
+
+      <!-- Footer -->
+      <div class="pal-footer">
+        <div class="pal-hint"><kbd>↑↓</kbd> naviga</div>
+        <div class="pal-hint"><kbd>↵</kbd> apri</div>
+        <div class="pal-hint"><kbd>esc</kbd> chiudi</div>
+        <div class="pal-footer-spacer"></div>
+        <span class="pal-footer-brand">TQ Admin</span>
+      </div>
+    </div>
+  </div>
+}
