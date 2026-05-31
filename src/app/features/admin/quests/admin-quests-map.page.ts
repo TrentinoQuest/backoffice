@@ -1,132 +1,109 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
-import { HttpErrorResponse } from '@angular/common/http';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import type { AnyQuest } from '@trentino-quest/shared-types';
-import { QuestStatus, QuestType } from '@trentino-quest/shared-types';
+import { AnyQuest, QuestStatus, QuestType } from '@trentino-quest/shared-types';
 import { QuestsAdminService } from '../../../core/services/quests-admin.service';
+import { CollectiblesAdminService } from '../../../core/services/collectibles-admin.service';
+import { BreadcrumbService } from '../../../core/services/breadcrumb.service';
 import { QuestMapViewerComponent } from '../../../shared/components/quest-map-viewer/quest-map-viewer.component';
 
-/**
- * Pagina di panoramica geografica delle quest.
- *
- * Mostra una mappa del Trentino con un marker per ogni quest del
- * sistema, filtrabile per tipo e status. L'admin puo' cliccare un
- * marker per navigare al form di modifica della relativa quest.
- *
- * Coperto dal requisito RF36 del Deliverable D1: visualizzazione
- * della mappa d'insieme con posizione e stato di ogni quest.
- */
 @Component({
   selector: 'app-admin-quests-map',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatSelectModule,
-    MatIconModule,
-    MatProgressSpinnerModule,
-    MatSnackBarModule,
-    QuestMapViewerComponent,
-  ],
+  imports: [CommonModule, MatSnackBarModule, QuestMapViewerComponent],
   templateUrl: './admin-quests-map.page.html',
   styleUrl: './admin-quests-map.page.scss',
 })
 export class AdminQuestsMapPage implements OnInit {
   private readonly questsService = inject(QuestsAdminService);
-  private readonly router = inject(Router);
+  private readonly collectiblesService = inject(CollectiblesAdminService);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly router = inject(Router);
+  private readonly breadcrumb = inject(BreadcrumbService);
 
-  readonly typeOptions: { value: QuestType | null; label: string }[] = [
-    { value: null, label: 'Tutti i tipi' },
-    { value: QuestType.PRIMARY, label: 'Principali' },
-    { value: QuestType.SECONDARY, label: 'Secondarie' },
-  ];
-
-  readonly statusOptions: { value: QuestStatus | null; label: string }[] = [
-    { value: null, label: 'Tutti gli stati' },
-    { value: QuestStatus.ACTIVE, label: 'Attive' },
-    { value: QuestStatus.INACTIVE, label: 'Inattive' },
-    { value: QuestStatus.ARCHIVED, label: 'Archiviate' },
-  ];
-
-  readonly typeFilter = signal<QuestType | null>(null);
-  readonly statusFilter = signal<QuestStatus | null>(null);
+  readonly QuestType = QuestType;
+  readonly QuestStatus = QuestStatus;
 
   readonly quests = signal<AnyQuest[]>([]);
-  readonly isLoading = signal(false);
+  readonly selectedQuestId = signal<string | null>(null);
+  readonly typeFilter = signal<QuestType | null>(null);
+  readonly showActiveOnly = signal(false);
+  readonly searchQuery = signal('');
+  readonly collectiblesById = signal<Record<string, string>>({});
+  readonly collectibleImages = signal<Record<string, string>>({});
+
+  readonly filteredQuests = computed(() => {
+    const q = this.searchQuery().toLowerCase();
+    return this.quests().filter((quest) => {
+      if (this.typeFilter() && quest.type !== this.typeFilter()) return false;
+      if (this.showActiveOnly() && quest.status !== QuestStatus.ACTIVE) return false;
+      if (q && !(quest.name ?? '').toLowerCase().includes(q)) return false;
+      return true;
+    });
+  });
+
+  readonly totalCount = computed(() => this.quests().length);
+  readonly activeCount = computed(
+    () => this.quests().filter((q) => q.status === QuestStatus.ACTIVE).length,
+  );
 
   ngOnInit(): void {
-    void this.loadQuests();
+    // hideShellToolbar: mappa a piena altezza, nessuna toolbar shell
+    this.breadcrumb.set('Mappa quest', true);
+    void this.loadData();
   }
 
-  /**
-   * Carica tutte le quest dal backend in base ai filtri correnti.
-   *
-   * Pagina implicitamente le richieste al backend in batch da 100
-   * (limite massimo accettato dall'API). Per dataset di centinaia
-   * di quest fa qualche chiamata sequenziale; per dataset piu'
-   * grandi (migliaia) sara' necessario implementare clustering
-   * dei marker o caricamento per bounding box.
-   */
-  async loadQuests(): Promise<void> {
-    this.isLoading.set(true);
+  private async loadData(): Promise<void> {
     try {
-      const all: AnyQuest[] = [];
-      const pageSize = 100;
-      let offset = 0;
-      let total = 0;
-
-      do {
-        const response = await this.questsService.list({
-          type: this.typeFilter() ?? undefined,
-          status: this.statusFilter() ?? undefined,
-          limit: pageSize,
-          offset,
-        });
-        all.push(...response.data);
-        total = response.total;
-        offset += pageSize;
-      } while (offset < total);
-
-      this.quests.set(all);
-    } catch (err) {
-      this.showError('Errore nel caricamento delle quest', err);
-    } finally {
-      this.isLoading.set(false);
+      const [questsRes, collectibles] = await Promise.all([
+        this.questsService.list({ limit: 500, offset: 0 }),
+        this.collectiblesService.list(),
+      ]);
+      this.quests.set(questsRes.data);
+      const byId: Record<string, string> = {};
+      const imgById: Record<string, string> = {};
+      for (const c of collectibles) {
+        byId[c.id] = c.name;
+        imgById[c.id] = c.imageUrl ?? '';
+      }
+      this.collectiblesById.set(byId);
+      this.collectibleImages.set(imgById);
+    } catch {
+      this.snackBar.open('Errore caricamento dati', 'OK', { duration: 3000 });
     }
   }
 
-  /**
-   * Reagisce al cambio di filtro: ricarica le quest dal backend con
-   * i nuovi parametri.
-   */
-  onFilterChange(): void {
-    void this.loadQuests();
+  onMapQuestSelected(id: string): void {
+    void this.router.navigate(['/admin/quests', id, 'edit']);
   }
 
-  /**
-   * Handler dell'evento questSelected del map viewer: naviga al form
-   * di modifica della quest cliccata.
-   */
-  onQuestSelected(questId: string): void {
-    void this.router.navigateByUrl(`/admin/quests/${questId}/edit`);
+  onListItemClick(quest: AnyQuest): void {
+    this.selectedQuestId.set(quest.id);
   }
 
-  private showError(prefix: string, err: unknown): void {
-    let detail = 'Errore sconosciuto';
-    if (err instanceof HttpErrorResponse) {
-      detail = (err.error as { message?: string })?.message ?? `HTTP ${err.status}`;
+  goToList(): void {
+    void this.router.navigateByUrl('/admin/quests');
+  }
+
+  toggleActiveOnly(): void {
+    this.showActiveOnly.update((v) => !v);
+  }
+
+  typeLabel(type: string): string {
+    return type === QuestType.PRIMARY ? '★' : '●';
+  }
+
+  questPoints(quest: AnyQuest): number {
+    return quest.basePoints ?? 0;
+  }
+
+  /** Sottotitolo lista: coordinate del punto della quest (lat, lng). */
+  questSub(quest: AnyQuest): string {
+    const geo = quest.type === QuestType.PRIMARY ? quest.searchArea : quest.position;
+    if (!geo) {
+      return '—';
     }
-    this.snackBar.open(`${prefix}: ${detail}`, 'Chiudi', { duration: 5000 });
+    return `${geo.lat.toFixed(4)}, ${geo.lng.toFixed(4)}`;
   }
 }
