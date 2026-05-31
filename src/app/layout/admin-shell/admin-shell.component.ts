@@ -1,79 +1,91 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatListModule } from '@angular/material/list';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatToolbarModule } from '@angular/material/toolbar';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth.service';
+import { BreadcrumbService } from '../../core/services/breadcrumb.service';
 
-/**
- * Voce di navigazione nella sidebar del backoffice.
- */
 interface NavItem {
   label: string;
-  icon: string;
   route: string;
+  exactMatch: boolean;
+  /** d attribute per SVG path/polyline (viewBox 0 0 24 24, stroke-based, Feather icons) */
+  svgPath: string;
+  svgExtra?: string; // secondo path/line SVG opzionale
 }
 
-/**
- * Shell layout del pannello amministrativo.
- *
- * Fornisce la struttura comune di tutte le pagine sotto /admin:
- * - Toolbar superiore con titolo del prodotto e menu utente
- * - Sidebar laterale con i link alle sezioni principali
- * - Area centrale con router-outlet per le pagine specifiche
- *
- * Le pagine sono registrate come child route di /admin in app.routes.ts.
- */
 @Component({
   selector: 'app-admin-shell',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterOutlet,
-    RouterLink,
-    RouterLinkActive,
-    MatSidenavModule,
-    MatToolbarModule,
-    MatListModule,
-    MatIconModule,
-    MatButtonModule,
-    MatMenuModule,
-  ],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './admin-shell.component.html',
   styleUrl: './admin-shell.component.scss',
 })
-export class AdminShellComponent {
+export class AdminShellComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  readonly breadcrumb = inject(BreadcrumbService);
 
-  /**
-   * Utente correntemente loggato, esposto come signal per il binding
-   * con il template (mostra l'email nel menu utente).
-   */
   readonly user = this.auth.currentUser;
 
-  /**
-   * Voci di navigazione mostrate nella sidebar.
-   *
-   * Definite come array statico: l'ordine e' significativo (riflette
-   * l'importanza relativa delle sezioni). Le icone seguono il set
-   * Material Symbols, gia' caricato globalmente da Angular Material.
-   */
+  readonly sidebarCollapsed = signal(
+    localStorage.getItem('tq-sidebar-collapsed') === 'true',
+  );
+
+  readonly showToolbar = computed(() => !this.breadcrumb.config().hideShellToolbar);
+
   readonly navItems: NavItem[] = [
-    { label: 'Dashboard', icon: 'dashboard', route: '/admin' },
-    { label: 'Quest', icon: 'flag', route: '/admin/quests' },
-    { label: 'Mappa quest', icon: 'map', route: '/admin/quests-map' },
-    { label: 'Collezionabili', icon: 'collections_bookmark', route: '/admin/collectibles' },
-    { label: 'Affiliazioni', icon: 'store', route: '/admin/businesses' },
+    {
+      label: 'Dashboard',
+      route: '/admin',
+      exactMatch: true,
+      svgPath: 'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z',
+    },
+    {
+      label: 'Quest',
+      route: '/admin/quests',
+      exactMatch: false,
+      svgPath: 'M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z',
+      svgExtra: 'M4 22V15',
+    },
+    {
+      label: 'Collezionabili',
+      route: '/admin/collectibles',
+      exactMatch: false,
+      svgPath: 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z',
+    },
+    {
+      label: 'Affiliazioni',
+      route: '/admin/businesses',
+      exactMatch: false,
+      svgPath: 'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z',
+      svgExtra: 'M9 22V12h6v10',
+    },
+    {
+      label: 'Impostazioni',
+      route: '/admin/settings',
+      exactMatch: false,
+      svgPath: 'M12 15a3 3 0 100-6 3 3 0 000 6zM19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z',
+    },
   ];
 
-  /**
-   * Esegue il logout e redirige alla pagina di login.
-   */
+  ngOnInit(): void {
+    // Auto-collapse sidebar when navigating to map page
+    this.router.events
+      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
+      .subscribe((e) => {
+        if (e.urlAfterRedirects.includes('/quests-map')) {
+          this.sidebarCollapsed.set(true);
+          localStorage.setItem('tq-sidebar-collapsed', 'true');
+        }
+      });
+  }
+
+  toggleSidebar(): void {
+    this.sidebarCollapsed.update((v) => !v);
+    localStorage.setItem('tq-sidebar-collapsed', String(this.sidebarCollapsed()));
+  }
+
   async logout(): Promise<void> {
     await this.auth.logout();
     await this.router.navigateByUrl('/login');
