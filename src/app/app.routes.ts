@@ -74,6 +74,11 @@ export const routes: Routes = [
             (m) => m.AdminBusinessesPage,
           ),
       },
+      {
+        path: 'settings',
+        loadComponent: () =>
+          import('./features/admin/settings/settings.page').then((m) => m.SettingsPage),
+      },
     ],
   },
   {
