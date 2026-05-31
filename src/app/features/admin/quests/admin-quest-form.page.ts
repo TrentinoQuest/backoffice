@@ -1,67 +1,44 @@
 import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { HttpErrorResponse } from '@angular/common/http';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
+import { ActivatedRoute, Router } from '@angular/router';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
-import { MatSliderModule } from '@angular/material/slider';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import type {
+import {
   AnyQuest,
   Collectible,
-  CreateQuestRequest,
+  CreatePrimaryQuestRequest,
+  CreateSecondaryQuestRequest,
   PrimaryQuest,
   SecondaryQuest,
   UpdateQuestRequest,
 } from '@trentino-quest/shared-types';
-import { QuestType } from '@trentino-quest/shared-types';
+import { CollectibleRarity, QuestStatus, QuestType } from '@trentino-quest/shared-types';
 import { QuestsAdminService } from '../../../core/services/quests-admin.service';
-import { CollectiblesService } from '../../../core/services/collectibles.service';
+import { CollectiblesAdminService } from '../../../core/services/collectibles-admin.service';
+import { BreadcrumbService } from '../../../core/services/breadcrumb.service';
 import {
   MapPickerValue,
   QuestMapPickerComponent,
 } from '../../../shared/components/quest-map-picker/quest-map-picker.component';
+import { TqSliderComponent } from '../../../shared/components/tq-slider/tq-slider.component';
 
-/**
- * Pagina di creazione e modifica di una quest dal pannello admin.
- *
- * Lo stesso componente gestisce entrambi i flussi distinguendoli dalla
- * presenza del parametro :id in route:
- * - /admin/quests/new        -> modalita' creazione
- * - /admin/quests/:id/edit   -> modalita' modifica
- *
- * Per le quest principali viene mostrato un dropdown opzionale dei
- * collezionabili associabili; per le secondarie il campo e' nascosto.
- * Il tipo (primary/secondary) non e' modificabile dopo la creazione:
- * cambiare tipo richiederebbe la cancellazione e ricreazione.
- *
- * Il map picker e' integrato come ControlValueAccessor: la sua selezione
- * popola lat/lng nel form, mentre lo slider del raggio aggiorna il
- * cerchio disegnato sulla mappa in tempo reale.
- */
 @Component({
   selector: 'app-admin-quest-form',
   standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    RouterLink,
-    MatCardModule,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    MatSliderModule,
-    MatButtonModule,
-    MatIconModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
     QuestMapPickerComponent,
+    TqSliderComponent,
   ],
   templateUrl: './admin-quest-form.page.html',
   styleUrl: './admin-quest-form.page.scss',
@@ -71,137 +48,103 @@ export class AdminQuestFormPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly questsService = inject(QuestsAdminService);
-  private readonly collectiblesService = inject(CollectiblesService);
+  private readonly collectiblesService = inject(CollectiblesAdminService);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly breadcrumb = inject(BreadcrumbService);
 
   readonly QuestType = QuestType;
+  readonly QuestStatus = QuestStatus;
+  readonly CollectibleRarity = CollectibleRarity;
 
-  /**
-   * Id della quest in modifica, null in modalita' creazione.
-   */
   readonly questId = signal<string | null>(null);
-
-  /**
-   * Tipo corrente della quest. In modalita' creazione e' modificabile,
-   * in modalita' modifica viene letto dalla quest esistente e
-   * congelato.
-   */
-  readonly questType = signal<QuestType>(QuestType.SECONDARY);
-
-  /**
-   * Lista dei collezionabili disponibili per il dropdown nelle quest
-   * principali. Caricata dal backend all'init del componente.
-   */
-  readonly collectibles = signal<Collectible[]>([]);
-
-  /**
-   * Flag globali di loading e submission per disabilitare l'UI durante
-   * le chiamate al backend.
-   */
+  readonly isEdit = computed(() => this.questId() !== null);
   readonly isLoading = signal(false);
   readonly isSubmitting = signal(false);
+  readonly collectibles = signal<Collectible[]>([]);
 
-  /**
-   * Computed che indica se siamo in modalita' modifica.
-   */
-  readonly isEditMode = computed(() => this.questId() !== null);
+  readonly showInlineCollectibleForm = signal(false);
+  readonly isCreatingCollectible = signal(false);
 
-  /**
-   * Form reactive con tutti i campi possibili. La validazione
-   * condizionale (campi presenti solo per primary o solo per secondary)
-   * viene gestita disabilitando i campi non applicabili in base al tipo.
-   */
-  readonly form: FormGroup = this.fb.nonNullable.group({
-    name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
-    description: ['', [Validators.required, Validators.maxLength(1000)]],
-    basePoints: [50, [Validators.required, Validators.min(0)]],
-    // Comune (popolato dal map picker tramite locationValue)
-    locationValue: this.fb.control<MapPickerValue | null>(null, Validators.required),
-    radiusMeters: [10, [Validators.required, Validators.min(5)]],
-    // Solo primary
-    collectibleId: this.fb.control<string | null>(null),
+  readonly form = this.fb.nonNullable.group({
+    type: [QuestType.PRIMARY, Validators.required],
+    name: ['', [Validators.required, Validators.minLength(3)]],
+    description: ['', Validators.required],
+    points: [100, [Validators.required, Validators.min(10), Validators.max(500)]],
+    status: [QuestStatus.ACTIVE, Validators.required],
+    collectibleId: [null as string | null],
+    locationValue: [null as MapPickerValue | null, Validators.required],
+    radiusMeters: [25, Validators.required],
+  });
+
+  readonly inlineCollectibleForm = this.fb.nonNullable.group({
+    name: ['', [Validators.required, Validators.minLength(3)]],
+    description: ['', Validators.required],
+    imageUrl: ['', Validators.required],
+    rarity: [CollectibleRarity.COMMON, Validators.required],
+  });
+
+  readonly rarityOptions = [
+    { value: CollectibleRarity.COMMON, label: 'Comune' },
+    { value: CollectibleRarity.UNCOMMON, label: 'Non comune' },
+    { value: CollectibleRarity.RARE, label: 'Raro' },
+    { value: CollectibleRarity.LEGENDARY, label: 'Leggendario' },
+  ];
+
+  readonly questType = computed(() => this.form.controls.type.value);
+
+  readonly mapSearchQuery = signal('');
+
+  readonly selectedCollectibleImage = computed(() => {
+    const id = this.form.controls.collectibleId.value;
+    if (!id) return '';
+    const c = this.collectibles().find((x) => x.id === id);
+    return c?.imageUrl ?? '';
   });
 
   ngOnInit(): void {
-    const idParam = this.route.snapshot.paramMap.get('id');
-    this.questId.set(idParam);
-
-    // Carico i collezionabili in parallelo all'eventuale caricamento quest
+    const id = this.route.snapshot.paramMap.get('id');
+    this.questId.set(id);
+    this.breadcrumb.set(id ? 'Modifica quest' : 'Nuova quest', true);
     void this.loadCollectibles();
-
-    if (idParam) {
-      void this.loadQuest(idParam);
-    }
-
-    // Sincronizza il raggio dello slider con il map picker:
-    // quando l'utente muove lo slider, locationValue cambia il radius
-    // riflettendo il nuovo cerchio in mappa.
-    this.form.controls['radiusMeters'].valueChanges.subscribe((newRadius: number) => {
-      const current = this.form.controls['locationValue'].value as MapPickerValue | null;
-      if (current) {
-        this.form.controls['locationValue'].setValue(
-          { ...current, radius: newRadius },
-          { emitEvent: false },
-        );
-      }
-    });
+    if (id) void this.loadQuest(id);
   }
 
-  /**
-   * Cambia il tipo di quest (solo in modalita' creazione). Reset dei
-   * campi specifici dell'altro tipo per evitare di inviare valori
-   * incoerenti al backend.
-   */
-  onTypeChange(newType: QuestType): void {
-    this.questType.set(newType);
-    if (newType === QuestType.SECONDARY) {
-      this.form.controls['collectibleId'].setValue(null);
-    }
-  }
-
-  /**
-   * Carica i collezionabili per popolare il dropdown.
-   */
   private async loadCollectibles(): Promise<void> {
     try {
       const list = await this.collectiblesService.list();
       this.collectibles.set(list);
-    } catch (err) {
-      this.showError('Errore nel caricamento dei collezionabili', err);
+    } catch {
+      /* silently ignore */
     }
   }
 
-  /**
-   * Carica una quest esistente per popolare il form in modalita'
-   * modifica.
-   */
   private async loadQuest(id: string): Promise<void> {
     this.isLoading.set(true);
     try {
       const quest = await this.questsService.getById(id);
-      this.populateForm(quest);
-    } catch (err) {
-      this.showError('Errore nel caricamento della quest', err);
-      await this.router.navigateByUrl('/admin/quests');
+      this.patchForm(quest);
+    } catch {
+      this.snackBar.open('Errore nel caricamento della quest', 'OK', { duration: 3000 });
+      void this.router.navigateByUrl('/admin/quests');
     } finally {
       this.isLoading.set(false);
     }
   }
 
-  /**
-   * Popola il form con i dati di una quest esistente.
-   */
-  private populateForm(quest: AnyQuest): void {
-    this.questType.set(quest.type);
+  private patchForm(quest: AnyQuest): void {
+    this.form.patchValue({
+      type: quest.type,
+      name: quest.name ?? '',
+      description: quest.description ?? '',
+      points: quest.basePoints ?? 100,
+      status: quest.status,
+    });
 
     if (quest.type === QuestType.PRIMARY) {
       const primary = quest as PrimaryQuest;
       this.form.patchValue({
-        name: primary.name,
-        description: primary.description,
-        basePoints: primary.basePoints,
-        radiusMeters: primary.searchRadiusMeters,
         collectibleId: primary.collectibleId ?? null,
+        radiusMeters: primary.searchRadiusMeters,
         locationValue: {
           lat: primary.searchArea.lat,
           lng: primary.searchArea.lng,
@@ -211,9 +154,6 @@ export class AdminQuestFormPage implements OnInit {
     } else {
       const secondary = quest as SecondaryQuest;
       this.form.patchValue({
-        name: secondary.name,
-        description: secondary.description,
-        basePoints: secondary.basePoints,
         radiusMeters: secondary.checkInRadiusMeters,
         locationValue: {
           lat: secondary.position.lat,
@@ -224,104 +164,120 @@ export class AdminQuestFormPage implements OnInit {
     }
   }
 
-  /**
-   * Submit del form: crea una nuova quest o aggiorna quella esistente.
-   */
+  onToggleInlineCollectible(): void {
+    this.showInlineCollectibleForm.update((v) => !v);
+    if (!this.showInlineCollectibleForm()) {
+      this.inlineCollectibleForm.reset({
+        name: '',
+        description: '',
+        imageUrl: '',
+        rarity: CollectibleRarity.COMMON,
+      });
+    }
+  }
+
+  async onSaveInlineCollectible(): Promise<void> {
+    if (this.inlineCollectibleForm.invalid || this.isCreatingCollectible()) {
+      this.inlineCollectibleForm.markAllAsTouched();
+      return;
+    }
+    this.isCreatingCollectible.set(true);
+    try {
+      const created = await this.collectiblesService.create(
+        this.inlineCollectibleForm.getRawValue(),
+      );
+      this.collectibles.update((list) => [...list, created]);
+      this.form.controls.collectibleId.setValue(created.id);
+      this.showInlineCollectibleForm.set(false);
+      this.inlineCollectibleForm.reset({
+        name: '',
+        description: '',
+        imageUrl: '',
+        rarity: CollectibleRarity.COMMON,
+      });
+      this.snackBar.open(`"${created.name}" creato e selezionato`, 'OK', { duration: 3000 });
+    } catch {
+      this.snackBar.open('Errore nella creazione del collezionabile', 'OK', { duration: 3000 });
+    } finally {
+      this.isCreatingCollectible.set(false);
+    }
+  }
+
   async onSubmit(): Promise<void> {
     if (this.form.invalid || this.isSubmitting()) {
       this.form.markAllAsTouched();
       return;
     }
-
     this.isSubmitting.set(true);
     try {
-      if (this.isEditMode()) {
-        await this.update();
+      if (this.isEdit()) {
+        await this.submitUpdate();
+        this.snackBar.open('Quest aggiornata', 'OK', { duration: 3000 });
       } else {
-        await this.create();
+        await this.submitCreate();
+        this.snackBar.open('Quest creata', 'OK', { duration: 3000 });
       }
-    } catch (err) {
-      this.showError(this.isEditMode() ? 'Errore nella modifica' : 'Errore nella creazione', err);
+      void this.router.navigateByUrl('/admin/quests');
+    } catch {
+      this.snackBar.open('Errore nel salvataggio', 'OK', { duration: 3000 });
     } finally {
       this.isSubmitting.set(false);
     }
   }
 
-  /**
-   * Crea una nuova quest costruendo il payload corretto in base al tipo.
-   */
-  private async create(): Promise<void> {
-    const formValue = this.form.getRawValue();
-    const location = formValue.locationValue as MapPickerValue;
+  private async submitCreate(): Promise<void> {
+    const v = this.form.getRawValue();
+    const loc = v.locationValue!;
 
-    let payload: CreateQuestRequest;
-    if (this.questType() === QuestType.PRIMARY) {
-      payload = {
+    if (v.type === QuestType.PRIMARY) {
+      const payload: CreatePrimaryQuestRequest = {
         type: QuestType.PRIMARY,
-        name: formValue.name,
-        description: formValue.description,
-        basePoints: formValue.basePoints,
-        searchArea: { lat: location.lat, lng: location.lng },
-        searchRadiusMeters: formValue.radiusMeters,
-        collectibleId: formValue.collectibleId ?? null,
+        name: v.name,
+        description: v.description,
+        basePoints: v.points,
+        searchArea: { lat: loc.lat, lng: loc.lng },
+        searchRadiusMeters: v.radiusMeters,
+        collectibleId: v.collectibleId || undefined,
       };
+      await this.questsService.create(payload);
     } else {
-      payload = {
+      const payload: CreateSecondaryQuestRequest = {
         type: QuestType.SECONDARY,
-        name: formValue.name,
-        description: formValue.description,
-        basePoints: formValue.basePoints,
-        position: { lat: location.lat, lng: location.lng },
-        checkInRadiusMeters: formValue.radiusMeters,
+        name: v.name,
+        description: v.description,
+        basePoints: v.points,
+        position: { lat: loc.lat, lng: loc.lng },
+        checkInRadiusMeters: v.radiusMeters,
       };
+      await this.questsService.create(payload);
     }
-
-    await this.questsService.create(payload);
-    this.snackBar.open('Quest creata correttamente', 'OK', { duration: 3000 });
-    await this.router.navigateByUrl('/admin/quests');
   }
 
-  /**
-   * Aggiorna una quest esistente. Il payload include solo i campi
-   * applicabili al tipo della quest in modifica (no cambio di tipo).
-   */
-  private async update(): Promise<void> {
+  private async submitUpdate(): Promise<void> {
     const id = this.questId();
     if (!id) return;
+    const v = this.form.getRawValue();
+    const loc = v.locationValue!;
 
-    const formValue = this.form.getRawValue();
-    const location = formValue.locationValue as MapPickerValue;
+    const payload: UpdateQuestRequest = {
+      name: v.name,
+      description: v.description,
+      basePoints: v.points,
+    };
 
-    let payload: UpdateQuestRequest;
-    if (this.questType() === QuestType.PRIMARY) {
-      payload = {
-        name: formValue.name,
-        description: formValue.description,
-        basePoints: formValue.basePoints,
-        searchArea: { lat: location.lat, lng: location.lng },
-        searchRadiusMeters: formValue.radiusMeters,
-        collectibleId: formValue.collectibleId ?? null,
-      };
+    if (v.type === QuestType.PRIMARY) {
+      payload.searchArea = { lat: loc.lat, lng: loc.lng };
+      payload.searchRadiusMeters = v.radiusMeters;
+      payload.collectibleId = v.collectibleId || undefined;
     } else {
-      payload = {
-        name: formValue.name,
-        description: formValue.description,
-        basePoints: formValue.basePoints,
-        position: { lat: location.lat, lng: location.lng },
-        checkInRadiusMeters: formValue.radiusMeters,
-      };
+      payload.position = { lat: loc.lat, lng: loc.lng };
+      payload.checkInRadiusMeters = v.radiusMeters;
     }
 
     await this.questsService.update(id, payload);
-    this.snackBar.open('Quest aggiornata correttamente', 'OK', { duration: 3000 });
-    await this.router.navigateByUrl('/admin/quests');
   }
 
-  private showError(prefix: string, err: unknown): void {
-    let detail = 'Errore sconosciuto';
-    if (err instanceof HttpErrorResponse) {
-      detail = (err.error as { message?: string })?.message ?? `HTTP ${err.status}`;
-    }
-    this.snackBar.open(`${prefix}: ${detail}`, 'Chiudi', { duration: 5000 });
+  onCancel(): void {
+    void this.router.navigateByUrl('/admin/quests');
   }
 }

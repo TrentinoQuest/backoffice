@@ -1,157 +1,262 @@
-<div class="page">
-  <div class="page-header">
-    <div>
-      <a mat-icon-button routerLink="/admin/quests" matTooltip="Torna alla lista">
-        <mat-icon>arrow_back</mat-icon>
-      </a>
-      <h1 class="page-title">
-        {{ isEditMode() ? 'Modifica quest' : 'Nuova quest' }}
-      </h1>
+<div class="form-shell" [class.form-shell--loading]="isLoading()">
+  @if (isLoading()) {
+    <div class="loading-overlay">
+      <mat-spinner diameter="40" />
     </div>
+  }
+
+  <!-- Form toolbar (sostituisce il toolbar shell) -->
+  <div class="form-toolbar">
+    <nav class="form-bc" aria-label="Posizione corrente">
+      <span class="form-bc-root">Quest</span>
+      <span class="form-bc-sep" aria-hidden="true">›</span>
+      <span class="form-bc-cur">{{ isEdit() ? 'Modifica quest' : 'Nuova quest' }}</span>
+    </nav>
+    <div class="form-toolbar-spacer"></div>
+    <button type="button" class="tq-btn-ghost" (click)="onCancel()">Annulla</button>
+    <button type="button" class="tq-btn-primary" (click)="onSubmit()" [disabled]="isSubmitting()">
+      @if (isSubmitting()) {
+        <mat-spinner diameter="16" />
+      } @else {
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          aria-hidden="true"
+        >
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+        Salva
+      }
+    </button>
   </div>
 
-  @if (isLoading()) {
-    <div class="loading">
-      <mat-spinner diameter="40"></mat-spinner>
-    </div>
-  } @else {
-    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate class="form">
-      <mat-card appearance="outlined" class="form-card">
-        <mat-card-header>
-          <mat-card-title>Dati generali</mat-card-title>
-        </mat-card-header>
+  <!-- 2-column body -->
+  <div class="form-body" [formGroup]="form">
+    <!-- Left: fields -->
+    <div class="form-left">
+      <!-- Tipo -->
+      <section class="form-section">
+        <div class="fsec-label">Tipo di quest</div>
+        <div class="type-sel">
+          <button
+            type="button"
+            class="type-opt"
+            [class.type-opt--sel]="questType() === QuestType.PRIMARY"
+            (click)="form.controls.type.setValue(QuestType.PRIMARY)"
+          >
+            <span class="to-icon">★</span>
+            <span class="to-label">Principale</span>
+          </button>
+          <button
+            type="button"
+            class="type-opt"
+            [class.type-opt--sel]="questType() === QuestType.SECONDARY"
+            (click)="form.controls.type.setValue(QuestType.SECONDARY)"
+          >
+            <span class="to-icon">●</span>
+            <span class="to-label">Secondaria</span>
+          </button>
+        </div>
+      </section>
 
-        <mat-card-content>
-          <!-- Tipo: solo in creazione e' modificabile -->
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Tipo di quest</mat-label>
-            <mat-select
-              [value]="questType()"
-              (selectionChange)="onTypeChange($event.value)"
-              [disabled]="isEditMode()"
-            >
-              <mat-option [value]="QuestType.SECONDARY">
-                Secondaria (check-in geolocalizzato)
-              </mat-option>
-              <mat-option [value]="QuestType.PRIMARY"> Principale (QR code nascosto) </mat-option>
-            </mat-select>
-            @if (isEditMode()) {
-              <mat-hint>Il tipo non è modificabile dopo la creazione.</mat-hint>
-            }
+      <!-- Dati generali -->
+      <section class="form-section">
+        <div class="fsec-label">Dati generali</div>
+        <div class="flds">
+          <mat-form-field appearance="outline">
+            <mat-label>Titolo</mat-label>
+            <input matInput formControlName="name" placeholder="Es. Sentiero del Bucaneve" />
           </mat-form-field>
 
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Nome</mat-label>
-            <input matInput formControlName="name" placeholder="Es. Doss Trento" />
-            @if (form.controls['name'].touched && form.controls['name'].errors?.['required']) {
-              <mat-error>Nome obbligatorio</mat-error>
-            }
-            @if (form.controls['name'].touched && form.controls['name'].errors?.['minlength']) {
-              <mat-error>Minimo 3 caratteri</mat-error>
-            }
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="full-width">
+          <mat-form-field appearance="outline">
             <mat-label>Descrizione</mat-label>
-            <textarea
-              matInput
-              formControlName="description"
-              rows="3"
-              placeholder="Breve descrizione che il giocatore vedrà sulla mappa"
-            ></textarea>
-            @if (
-              form.controls['description'].touched &&
-              form.controls['description'].errors?.['required']
-            ) {
-              <mat-error>Descrizione obbligatoria</mat-error>
-            }
+            <textarea matInput formControlName="description" rows="3"></textarea>
           </mat-form-field>
 
-          <mat-form-field appearance="outline" class="medium-width">
-            <mat-label>Punti base</mat-label>
-            <input matInput type="number" formControlName="basePoints" min="0" />
-            <mat-hint>Punti assegnati al completamento</mat-hint>
-            @if (
-              form.controls['basePoints'].touched && form.controls['basePoints'].errors?.['min']
-            ) {
-              <mat-error>Deve essere &ge; 0</mat-error>
-            }
-          </mat-form-field>
-
-          @if (questType() === QuestType.PRIMARY) {
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Collezionabile associato</mat-label>
-              <mat-select formControlName="collectibleId">
-                <mat-option [value]="null">Nessuno</mat-option>
-                @for (c of collectibles(); track c.id) {
-                  <mat-option [value]="c.id"> {{ c.name }} ({{ c.rarity }}) </mat-option>
-                }
-              </mat-select>
-              <mat-hint> Sbloccato quando un giocatore completa la quest. </mat-hint>
-            </mat-form-field>
-          }
-        </mat-card-content>
-      </mat-card>
-
-      <mat-card appearance="outlined" class="form-card">
-        <mat-card-header>
-          <mat-card-title>Posizione geografica</mat-card-title>
-          <mat-card-subtitle>
-            @if (questType() === QuestType.PRIMARY) {
-              Definisci l'area di ricerca approssimativa: il giocatore vedrà il cerchio sulla mappa,
-              ma il QR code esatto sarà nascosto al suo interno.
-            } @else {
-              Definisci il punto e il raggio entro cui il giocatore può fare check-in.
-            }
-          </mat-card-subtitle>
-        </mat-card-header>
-
-        <mat-card-content>
-          <app-quest-map-picker
-            formControlName="locationValue"
-            [radius]="form.controls['radiusMeters'].value"
-          ></app-quest-map-picker>
-          @if (
-            form.controls['locationValue'].touched &&
-            form.controls['locationValue'].errors?.['required']
-          ) {
-            <p class="error-text">Posiziona il punto sulla mappa cliccando.</p>
-          }
-
-          <div class="radius-control">
-            <div class="radius-label">
-              {{
-                questType() === QuestType.PRIMARY ? 'Raggio area di ricerca' : 'Raggio di check-in'
-              }}:
-              <strong>{{ form.controls['radiusMeters'].value }} m</strong>
+          <div class="flds-2">
+            <div class="fld">
+              <label class="fld-label">Punti</label>
+              <app-tq-slider
+                formControlName="points"
+                [min]="10"
+                [max]="500"
+                [step]="10"
+                label="Punti quest"
+              />
             </div>
-            <mat-slider
-              [min]="questType() === QuestType.PRIMARY ? 10 : 5"
-              [max]="questType() === QuestType.PRIMARY ? 60 : 20"
-              [step]="1"
-              discrete
-            >
-              <input matSliderThumb formControlName="radiusMeters" />
-            </mat-slider>
+            <mat-form-field appearance="outline">
+              <mat-label>Stato</mat-label>
+              <mat-select formControlName="status">
+                <mat-option [value]="QuestStatus.ACTIVE">Attiva</mat-option>
+                <mat-option [value]="QuestStatus.INACTIVE">Inattiva</mat-option>
+              </mat-select>
+            </mat-form-field>
           </div>
-        </mat-card-content>
-      </mat-card>
 
-      <div class="form-actions">
-        <a mat-stroked-button routerLink="/admin/quests">Annulla</a>
-        <button
-          type="submit"
-          mat-flat-button
-          color="primary"
-          [disabled]="isSubmitting() || form.invalid"
-        >
-          @if (isSubmitting()) {
-            <mat-spinner diameter="20"></mat-spinner>
-          } @else {
-            <span>{{ isEditMode() ? 'Salva modifiche' : 'Crea quest' }}</span>
+          <!-- Collezionabile (solo per quest Principale) -->
+          @if (questType() === QuestType.PRIMARY) {
+            <div class="collectible-section">
+              <div class="fsec-label">Collezionabile</div>
+              <div class="coll-row">
+                <div class="coll-thumb">
+                  @if (selectedCollectibleImage()) {
+                    <img [src]="selectedCollectibleImage()" alt="Anteprima collezionabile" />
+                  } @else {
+                    <span class="coll-thumb-empty" aria-hidden="true">★</span>
+                  }
+                </div>
+                <mat-form-field appearance="outline" class="coll-select">
+                  <mat-label>Seleziona collezionabile</mat-label>
+                  <mat-select formControlName="collectibleId">
+                    <mat-option [value]="null">— Nessuno —</mat-option>
+                    @for (c of collectibles(); track c.id) {
+                      <mat-option [value]="c.id">{{ c.name }}</mat-option>
+                    }
+                  </mat-select>
+                  <mat-hint>Sbloccato al completamento della quest</mat-hint>
+                </mat-form-field>
+                <button
+                  type="button"
+                  class="tq-btn-ghost coll-create-btn"
+                  (click)="onToggleInlineCollectible()"
+                >
+                  @if (showInlineCollectibleForm()) {
+                    Annulla
+                  } @else {
+                    + Crea nuovo
+                  }
+                </button>
+              </div>
+
+              <!-- Inline creation form -->
+              @if (showInlineCollectibleForm()) {
+                <div class="inline-coll" [formGroup]="inlineCollectibleForm">
+                  <div class="icf-header">Nuovo collezionabile</div>
+
+                  <div class="icf-img-row">
+                    <div class="icf-preview">
+                      @if (inlineCollectibleForm.controls.imageUrl.value) {
+                        <img [src]="inlineCollectibleForm.controls.imageUrl.value" alt="Anteprima" />
+                      } @else {
+                        <span aria-hidden="true">🖼</span>
+                      }
+                    </div>
+                    <mat-form-field appearance="outline" style="flex: 1">
+                      <mat-label>URL immagine</mat-label>
+                      <input matInput formControlName="imageUrl" placeholder="https://…" />
+                    </mat-form-field>
+                  </div>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Nome</mat-label>
+                    <input matInput formControlName="name" />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Descrizione</mat-label>
+                    <textarea matInput formControlName="description" rows="2"></textarea>
+                  </mat-form-field>
+
+                  <div class="rarity-row">
+                    <span class="fld-label">Rarità</span>
+                    <div class="rarity-chips">
+                      @for (opt of rarityOptions; track opt.value) {
+                        <button
+                          type="button"
+                          class="rchip"
+                          [class.rchip--sel]="inlineCollectibleForm.controls.rarity.value === opt.value"
+                          (click)="inlineCollectibleForm.controls.rarity.setValue(opt.value)"
+                        >
+                          {{ opt.label }}
+                        </button>
+                      }
+                    </div>
+                  </div>
+
+                  <div class="icf-actions">
+                    <button type="button" class="tq-btn-ghost" (click)="onToggleInlineCollectible()">
+                      Annulla
+                    </button>
+                    <button
+                      type="button"
+                      class="tq-btn-primary"
+                      (click)="onSaveInlineCollectible()"
+                      [disabled]="isCreatingCollectible()"
+                    >
+                      @if (isCreatingCollectible()) {
+                        <mat-spinner diameter="16" />
+                      } @else {
+                        Crea e seleziona →
+                      }
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
           }
-        </button>
+        </div>
+      </section>
+    </div>
+
+    <!-- Right: live map -->
+    <div class="form-right">
+      <div class="map-header">
+        <div class="map-hdr-title">Posizione geografica</div>
+        <div class="map-hdr-hint">
+          @if (questType() === QuestType.PRIMARY) {
+            Il giocatore vede il cerchio sulla mappa; il QR è nascosto al suo interno
+          } @else {
+            Punto e raggio entro cui il giocatore può fare check-in
+          }
+        </div>
+        <div class="tq-search map-search">
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            type="text"
+            placeholder="Cerca un luogo… es. Via Roma, Trento"
+            [value]="mapSearchQuery()"
+            (input)="mapSearchQuery.set($any($event.target).value)"
+            aria-label="Cerca luogo sulla mappa"
+          />
+        </div>
       </div>
-    </form>
-  }
+
+      <app-quest-map-picker
+        formControlName="locationValue"
+        [radius]="form.controls.radiusMeters.value"
+        class="map-picker"
+      />
+
+      <div class="map-footer">
+        <span class="radius-lbl">
+          {{ questType() === QuestType.PRIMARY ? 'Raggio area di ricerca' : 'Raggio di check-in' }}:
+          <strong>{{ form.controls.radiusMeters.value }} m</strong>
+        </span>
+        <app-tq-slider
+          formControlName="radiusMeters"
+          [min]="questType() === QuestType.PRIMARY ? 10 : 5"
+          [max]="questType() === QuestType.PRIMARY ? 60 : 20"
+          [step]="1"
+          label="Raggio in metri"
+        />
+      </div>
+    </div>
+  </div>
 </div>
