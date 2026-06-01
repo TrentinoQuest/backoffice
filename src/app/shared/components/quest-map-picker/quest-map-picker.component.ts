@@ -22,16 +22,15 @@ import {
 
 applyLeafletIconFix();
 
-/** Marker custom Terrain B (verde) — coerente con QuestMapViewerComponent. */
+/**
+ * Marker custom Terrain B (verde): un dot centrato, ancorato al proprio
+ * centro così da coincidere esattamente col centro del cerchio del raggio.
+ */
 function createPickerMarker(): L.DivIcon {
   const html = `
-    <div style="transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center">
-      <div style="width:12px;height:12px;border-radius:50%;background:#1a5c38;border:2.5px solid #fff;
-                  box-shadow:0 2px 6px rgba(0,0,0,0.3)"></div>
-      <div style="width:2px;height:7px;background:#fff;opacity:0.7"></div>
-      <div style="width:9px;height:3px;border-radius:50%;background:rgba(0,0,0,0.2);margin-top:1px"></div>
-    </div>`;
-  return L.divIcon({ html, className: '', iconSize: [12, 22], iconAnchor: [6, 22] });
+    <div style="width:14px;height:14px;border-radius:50%;background:#1a5c38;border:2.5px solid #fff;
+                box-shadow:0 1px 5px rgba(0,0,0,0.35)"></div>`;
+  return L.divIcon({ html, className: '', iconSize: [14, 14], iconAnchor: [7, 7] });
 }
 
 /**
