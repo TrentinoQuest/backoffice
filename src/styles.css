@@ -340,3 +340,34 @@ kbd {
   color: var(--tq-surface) !important;
   font-family: var(--tq-font-body) !important;
 }
+
+/* ─── Route enter transition ─────────────────────────────────────────────── */
+/* Il router-outlet inserisce il componente come sibling: animiamo i figli
+   diretti di .content tranne il router-outlet stesso. Ad ogni navigazione il
+   componente viene rimontato, quindi l'animazione si ri-triggera. */
+.content > *:not(router-outlet) {
+  animation: tq-route-enter 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes tq-route-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ─── Density ────────────────────────────────────────────────────────────── */
+/* La densità agisce sul padding verticale delle celle delle tabelle custom.
+   Normale è il default già definito da .tq-table td. */
+:root[data-density='compact'] .tq-table td {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+:root[data-density='comfortable'] .tq-table td {
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
