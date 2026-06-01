@@ -1,112 +1,88 @@
-.page {
-  padding: 24px;
-  max-width: 1100px;
-  margin: 0 auto;
-}
-
-.page-header {
+.page-head {
   display: flex;
-  justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 24px;
+  justify-content: space-between;
   gap: 16px;
+  margin-bottom: 20px;
 }
 
-.page-title {
-  font-size: 1.75rem;
-  font-weight: 600;
-  margin: 0;
+.filter-row {
+  margin-bottom: 16px;
 }
 
-.page-subtitle {
-  color: rgba(0, 0, 0, 0.6);
-  margin: 4px 0 0;
+.state {
+  padding: 40px;
+  text-align: center;
+  color: var(--tq-text-muted);
 }
 
-.table-card {
-  position: relative;
-  overflow: hidden;
-}
-
-.loading {
+.cell-collectible {
   display: flex;
-  justify-content: center;
-  padding: 48px;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
 }
 
-.collectibles-table {
-  width: 100%;
-}
-
-.collectible-thumb {
-  width: 48px;
-  height: 48px;
+.thumb {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--tq-r-sm);
   object-fit: cover;
-  border-radius: 8px;
-  background: rgba(0, 0, 0, 0.04);
-  display: block;
+  border: 1px solid var(--tq-border);
+  flex-shrink: 0;
+  background: var(--tq-surface-alt);
 }
 
-.cell-name {
+.meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.name {
   font-weight: 500;
+  color: var(--tq-text);
 }
 
-.cell-description {
-  font-size: 0.85rem;
-  color: rgba(0, 0, 0, 0.6);
-  max-width: 420px;
+.desc {
+  font-size: 12px;
+  color: var(--tq-text-subtle);
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.actions {
+  text-align: right;
   white-space: nowrap;
 }
 
-.actions-header,
-.actions-cell {
-  width: 64px;
-  text-align: center;
-}
+.icon-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--tq-r-sm);
+  border: 1px solid var(--tq-border);
+  background: var(--tq-surface);
+  color: var(--tq-text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  transition:
+    border-color 130ms,
+    color 130ms,
+    background 130ms;
 
-.empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 48px;
-  color: rgba(0, 0, 0, 0.5);
-
-  mat-icon {
-    font-size: 48px;
-    width: 48px;
-    height: 48px;
+  &:hover {
+    border-color: var(--tq-border-strong);
+    color: var(--tq-text);
+    background: var(--tq-surface-alt);
   }
-}
 
-/* Badge rarita': riusano lo stile dei badge del resto del backoffice. */
-.badge {
-  display: inline-block;
-  padding: 2px 10px;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  text-transform: capitalize;
-}
+  &--danger:hover {
+    border-color: var(--tq-danger);
+    color: var(--tq-danger);
+  }
 
-.badge-common {
-  background: rgba(120, 120, 120, 0.15);
-  color: #555;
-}
-
-.badge-uncommon {
-  background: rgba(76, 175, 80, 0.15);
-  color: #2e7d32;
-}
-
-.badge-rare {
-  background: rgba(33, 150, 243, 0.15);
-  color: #1565c0;
-}
-
-.badge-legendary {
-  background: rgba(255, 152, 0, 0.18);
-  color: #e65100;
+  & + & {
+    margin-left: 6px;
+  }
 }

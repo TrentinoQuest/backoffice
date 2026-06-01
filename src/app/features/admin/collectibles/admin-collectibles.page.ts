@@ -1,106 +1,77 @@
-import { Component, computed, inject, signal, ViewChild, AfterViewInit } from '@angular/core';
-import { CommonModule, DatePipe, TitleCasePipe } from '@angular/common';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSelectModule } from '@angular/material/select';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Collectible, CollectibleRarity, CollectibleStatus } from '@trentino-quest/shared-types';
+import { Collectible, CollectibleRarity } from '@trentino-quest/shared-types';
 import { CollectiblesAdminService } from '../../../core/services/collectibles-admin.service';
+import { BreadcrumbService } from '../../../core/services/breadcrumb.service';
+import { PreferencesService } from '../../../core/services/preferences.service';
+import {
+  FilterChipsComponent,
+  FilterGroup,
+} from '../../../shared/components/filter-chips/filter-chips.component';
+import {
+  ConfirmDialogComponent,
+  ConfirmDialogData,
+} from '../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-admin-collectibles',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
-    DatePipe,
-    TitleCasePipe,
-    MatCardModule,
-    MatTableModule,
-    MatPaginatorModule,
-    MatFormFieldModule,
-    MatSelectModule,
-    MatButtonModule,
-    MatIconModule,
-    MatMenuModule,
-    MatProgressSpinnerModule,
+    FilterChipsComponent,
+    MatDialogModule,
     MatSnackBarModule,
     MatTooltipModule,
   ],
   templateUrl: './admin-collectibles.page.html',
   styleUrl: './admin-collectibles.page.scss',
 })
-export class AdminCollectiblesPage implements AfterViewInit {
-  private readonly collectiblesService = inject(CollectiblesAdminService);
+export class AdminCollectiblesPage implements OnInit {
+  private readonly service = inject(CollectiblesAdminService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly router = inject(Router);
+  private readonly breadcrumb = inject(BreadcrumbService);
+  private readonly prefs = inject(PreferencesService);
+  private readonly dialog = inject(MatDialog);
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  readonly CollectibleRarity = CollectibleRarity;
 
-  readonly displayedColumns = ['image', 'name', 'rarity', 'createdAt', 'actions'];
-
-  readonly rarityOptions: { value: CollectibleRarity | null; label: string }[] = [
-    { value: null, label: 'Tutte le rarità' },
-    { value: CollectibleRarity.COMMON, label: 'Comune' },
-    { value: CollectibleRarity.UNCOMMON, label: 'Non comune' },
-    { value: CollectibleRarity.RARE, label: 'Raro' },
-    { value: CollectibleRarity.LEGENDARY, label: 'Leggendario' },
-  ];
-
-  readonly statusOptions: { value: CollectibleStatus | null; label: string }[] = [
-    { value: null, label: 'Tutti gli stati' },
-    { value: CollectibleStatus.ACTIVE, label: 'Attivi' },
-    { value: CollectibleStatus.ARCHIVED, label: 'Archiviati' },
-  ];
-
-  readonly rarityFilter = signal<CollectibleRarity | null>(null);
-  readonly statusFilter = signal<CollectibleStatus | null>(null);
-  readonly pageIndex = signal(0);
-  readonly pageSize = signal(20);
-
-  private readonly allCollectibles = signal<Collectible[]>([]);
   readonly isLoading = signal(false);
+  readonly all = signal<Collectible[]>([]);
+  readonly rarityFilter = signal<CollectibleRarity | null>(null);
 
-  readonly filteredCollectibles = computed(() => {
-    const rarity = this.rarityFilter();
-    const status = this.statusFilter();
-    return this.allCollectibles().filter(
-      (c) => (!rarity || c.rarity === rarity) && (!status || c.status === status),
-    );
+  readonly rarityGroups: FilterGroup<CollectibleRarity | null>[] = [
+    {
+      chips: [
+        { label: 'Tutte', value: null },
+        { label: 'Comune', value: CollectibleRarity.COMMON },
+        { label: 'Non comune', value: CollectibleRarity.UNCOMMON },
+        { label: 'Raro', value: CollectibleRarity.RARE },
+        { label: 'Leggendario', value: CollectibleRarity.LEGENDARY },
+      ],
+    },
+  ];
+
+  readonly filtered = computed(() => {
+    const r = this.rarityFilter();
+    return this.all().filter((c) => !r || c.rarity === r);
   });
 
-  readonly totalCount = computed(() => this.filteredCollectibles().length);
-
-  readonly collectibles = computed(() => {
-    const start = this.pageIndex() * this.pageSize();
-    return this.filteredCollectibles().slice(start, start + this.pageSize());
-  });
-
-  rarityClass = computed(
-    () =>
-      (rarity: CollectibleRarity): string =>
-        `badge badge-${rarity}`,
-  );
-
-  ngAfterViewInit(): void {
-    void this.loadCollectibles();
+  ngOnInit(): void {
+    this.breadcrumb.set('Collezionabili');
+    void this.load();
   }
 
-  async loadCollectibles(): Promise<void> {
+  async load(): Promise<void> {
     this.isLoading.set(true);
     try {
-      const data = await this.collectiblesService.list();
-      this.allCollectibles.set(data);
+      this.all.set(await this.service.list());
     } catch (err) {
       this.showError('Errore nel caricamento dei collezionabili', err);
     } finally {
@@ -108,41 +79,60 @@ export class AdminCollectiblesPage implements AfterViewInit {
     }
   }
 
-  onFilterChange(): void {
-    this.pageIndex.set(0);
-    if (this.paginator) {
-      this.paginator.pageIndex = 0;
-    }
+  onRarityFilter(value: CollectibleRarity | null): void {
+    this.rarityFilter.set(value);
   }
 
-  onPageChange(): void {
-    this.pageIndex.set(this.paginator.pageIndex);
-    this.pageSize.set(this.paginator.pageSize);
-  }
-
-  onCreateClick(): void {
+  onCreate(): void {
     void this.router.navigateByUrl('/admin/collectibles/new');
   }
 
-  onEditClick(collectible: Collectible): void {
-    void this.router.navigateByUrl(`/admin/collectibles/${collectible.id}/edit`);
+  onEdit(c: Collectible): void {
+    void this.router.navigate(['/admin/collectibles', c.id, 'edit']);
   }
 
-  async onArchiveClick(collectible: Collectible): Promise<void> {
-    const confirmed = confirm(
-      `Archiviare il collezionabile "${collectible.name}"? Non sara' piu' assegnabile a nuove quest, ma resta negli album dei giocatori che lo possiedono.`,
-    );
-    if (!confirmed) {
-      return;
+  async onArchive(c: Collectible, event: MouseEvent): Promise<void> {
+    event.stopPropagation();
+    if (this.prefs.confirmBeforeArchive()) {
+      const data: ConfirmDialogData = {
+        title: 'Archiviare il collezionabile?',
+        message: `"${c.name}" non sarà più assegnabile a nuove quest, ma resta negli album dei giocatori che lo possiedono già.`,
+        confirmLabel: 'Archivia',
+        danger: true,
+      };
+      const ok = await firstValueFrom(
+        this.dialog.open(ConfirmDialogComponent, { data, width: '440px' }).afterClosed(),
+      );
+      if (!ok) return;
     }
     try {
-      await this.collectiblesService.archive(collectible.id);
-      this.snackBar.open(`Collezionabile "${collectible.name}" archiviato`, 'OK', {
-        duration: 3000,
-      });
-      await this.loadCollectibles();
+      await this.service.archive(c.id);
+      this.snackBar.open(`"${c.name}" archiviato`, 'OK', { duration: 3000 });
+      await this.load();
     } catch (err) {
       this.showError("Errore nell'archiviazione", err);
+    }
+  }
+
+  rarityLabel(r: CollectibleRarity): string {
+    const map: Record<CollectibleRarity, string> = {
+      [CollectibleRarity.COMMON]: 'Comune',
+      [CollectibleRarity.UNCOMMON]: 'Non comune',
+      [CollectibleRarity.RARE]: 'Raro',
+      [CollectibleRarity.LEGENDARY]: 'Leggendario',
+    };
+    return map[r];
+  }
+
+  rarityBadgeClass(r: CollectibleRarity): string {
+    switch (r) {
+      case CollectibleRarity.COMMON:
+        return 'tq-badge tq-badge--gray';
+      case CollectibleRarity.UNCOMMON:
+        return 'tq-badge tq-badge--green';
+      case CollectibleRarity.RARE:
+      case CollectibleRarity.LEGENDARY:
+        return 'tq-badge tq-badge--amber';
     }
   }
 
