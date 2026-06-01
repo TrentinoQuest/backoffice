@@ -1,9 +1,11 @@
-import { Component, computed, inject, signal, ViewChild } from '@angular/core';
+import { Component, OnInit, computed, inject, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { BreadcrumbService } from '../../core/services/breadcrumb.service';
+import { KeyboardShortcutsService } from '../../core/services/keyboard-shortcuts.service';
 import { CommandPaletteComponent } from '../../shared/components/command-palette/command-palette.component';
+import { ShortcutsHelpComponent } from '../../shared/components/shortcuts-help/shortcuts-help.component';
 
 interface NavItem {
   label: string;
@@ -17,14 +19,26 @@ interface NavItem {
 @Component({
   selector: 'app-admin-shell',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, CommandPaletteComponent],
+  imports: [
+    CommonModule,
+    RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
+    CommandPaletteComponent,
+    ShortcutsHelpComponent,
+  ],
   templateUrl: './admin-shell.component.html',
   styleUrl: './admin-shell.component.scss',
 })
-export class AdminShellComponent {
+export class AdminShellComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   readonly breadcrumb = inject(BreadcrumbService);
+  private readonly keyboardShortcuts = inject(KeyboardShortcutsService);
+
+  ngOnInit(): void {
+    this.keyboardShortcuts.start();
+  }
 
   /** Riferimento alla command palette per apertura programmatica (⌘K / click sulla search). */
   @ViewChild(CommandPaletteComponent) palette?: CommandPaletteComponent;
