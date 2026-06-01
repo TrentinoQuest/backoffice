@@ -16,24 +16,33 @@ import type { AnyQuest, PrimaryQuest } from '@trentino-quest/shared-types';
 import { QuestStatus, QuestType } from '@trentino-quest/shared-types';
 import { createOsmTileLayer, TRENTINO_CENTER, TRENTINO_ZOOM } from '../../leaflet/leaflet-config';
 
-/** Crea un marker Leaflet custom con lo stile Terrain B */
-function createCustomMarker(variant: 'primary' | 'secondary' | 'inactive'): L.DivIcon {
+/** Crea un marker Leaflet custom con lo stile Terrain B (pin a goccia). */
+function createCustomMarker(
+  variant: 'primary' | 'secondary' | 'inactive',
+  selected = false,
+): L.DivIcon {
   const colors: Record<typeof variant, string> = {
     primary: '#1a5c38',
     secondary: '#a06010',
     inactive: '#9a8f7e',
   };
   const color = colors[variant];
-  const opacity = variant === 'inactive' ? '0.55' : '1';
-  const shadow = variant === 'inactive' ? '0.12' : '0.25';
+  const opacity = variant === 'inactive' ? '0.6' : '1';
+  // Dot + stem (lo stile originale, più pulito), con dimensione maggiore
+  // e alone se selezionato.
+  const dot = selected ? 16 : 13;
+  const ring = selected
+    ? `box-shadow:0 0 0 6px rgba(26,92,56,0.18),0 2px 6px rgba(0,0,0,0.3);`
+    : `box-shadow:0 2px 6px rgba(0,0,0,0.28);`;
   const html = `
-    <div style="transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center">
-      <div style="width:10px;height:10px;border-radius:50%;background:${color};border:2.5px solid #fff;
-                  box-shadow:0 2px 6px rgba(0,0,0,${shadow});opacity:${opacity}"></div>
-      <div style="width:2px;height:6px;background:#fff;opacity:0.7"></div>
-      <div style="width:8px;height:3px;border-radius:50%;background:rgba(0,0,0,0.2);margin-top:1px;opacity:${opacity}"></div>
+    <div style="transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;opacity:${opacity}">
+      <div style="width:${dot}px;height:${dot}px;border-radius:50%;background:${color};
+                  border:3px solid #fff;${ring}"></div>
+      <div style="width:2px;height:8px;background:#fff;opacity:0.75"></div>
+      <div style="width:9px;height:3px;border-radius:50%;background:rgba(0,0,0,0.2);margin-top:1px"></div>
     </div>`;
-  return L.divIcon({ html, className: '', iconSize: [10, 19], iconAnchor: [5, 19] });
+  const h = dot + 12;
+  return L.divIcon({ html, className: '', iconSize: [dot, h], iconAnchor: [dot / 2, h] });
 }
 
 function escapeHtml(s: string): string {
@@ -88,6 +97,8 @@ export class QuestMapViewerComponent implements AfterViewInit, OnChanges, OnDest
   private map!: L.Map;
   private markersLayer!: L.LayerGroup;
   private clickListener?: (e: MouseEvent) => void;
+  /** Marker per id quest, per aprire il popup quando si centra sulla quest. */
+  private readonly markersById = new Map<string, L.Marker>();
 
   ngAfterViewInit(): void {
     this.initMap();
@@ -113,7 +124,7 @@ export class QuestMapViewerComponent implements AfterViewInit, OnChanges, OnDest
     }
   }
 
-  /** Centra e zooma la mappa sulla quest indicata, se ne conosciamo la posizione. */
+  /** Centra e zooma la mappa sulla quest indicata e apre il suo popup. */
   private focusOnQuest(questId: string): void {
     const quest = this.quests.find((q) => q.id === questId);
     if (!quest) return;
@@ -122,6 +133,11 @@ export class QuestMapViewerComponent implements AfterViewInit, OnChanges, OnDest
     this.map.flyTo([geo.lat, geo.lng], Math.max(this.map.getZoom(), this.FOCUS_ZOOM), {
       duration: 0.6,
     });
+    // Apri il popup a fine animazione, una sola volta.
+    const marker = this.markersById.get(questId);
+    if (marker && this.interactive) {
+      this.map.once('moveend', () => marker.openPopup());
+    }
   }
 
   ngOnDestroy(): void {
@@ -163,6 +179,7 @@ export class QuestMapViewerComponent implements AfterViewInit, OnChanges, OnDest
 
   private renderMarkers(): void {
     this.markersLayer.clearLayers();
+    this.markersById.clear();
 
     for (const quest of this.quests) {
       const geo = quest.type === QuestType.PRIMARY ? quest.searchArea : quest.position;
@@ -176,21 +193,25 @@ export class QuestMapViewerComponent implements AfterViewInit, OnChanges, OnDest
           ? 'primary'
           : 'secondary';
 
-      const icon = createCustomMarker(variant);
+      const icon = createCustomMarker(variant, isSelected);
 
-      const marker = L.marker([geo.lat, geo.lng], { icon });
+      const dotHeight = isSelected ? 16 + 12 : 13 + 12;
+      const marker = L.marker([geo.lat, geo.lng], { icon, zIndexOffset: isSelected ? 1000 : 0 });
 
       if (this.interactive) {
         const popupHtml = this.buildPopupHtml(quest, isSelected);
         marker.bindPopup(popupHtml, {
           className: 'tq-leaflet-popup',
           maxWidth: 240,
-          offset: [0, -15],
+          // Offset verso l'alto pari all'altezza del marker, così il popup
+          // sta sopra il pin e non lo copre.
+          offset: [0, -dotHeight],
         });
         // Cliccare il marker seleziona la quest (evidenzia nella lista e zooma).
         marker.on('click', () => this.questFocused.emit(quest.id));
       }
 
+      this.markersById.set(quest.id, marker);
       this.markersLayer.addLayer(marker);
     }
   }

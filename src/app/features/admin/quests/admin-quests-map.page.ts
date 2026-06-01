@@ -37,11 +37,22 @@ export class AdminQuestsMapPage implements OnInit {
   readonly placeNames = signal<Record<string, string>>({});
 
   readonly filteredQuests = computed(() => {
-    const q = this.searchQuery().toLowerCase();
+    const q = this.searchQuery().trim().toLowerCase();
+    const names = this.placeNames();
+    const collById = this.collectiblesById();
     return this.quests().filter((quest) => {
       if (this.typeFilter() && quest.type !== this.typeFilter()) return false;
       if (this.showActiveOnly() && quest.status !== QuestStatus.ACTIVE) return false;
-      if (q && !(quest.name ?? '').toLowerCase().includes(q)) return false;
+      if (q) {
+        const collName =
+          quest.type === QuestType.PRIMARY && quest.collectibleId
+            ? (collById[quest.collectibleId] ?? '')
+            : '';
+        const haystack = [quest.name ?? '', names[quest.id] ?? '', collName]
+          .join(' ')
+          .toLowerCase();
+        if (!haystack.includes(q)) return false;
+      }
       return true;
     });
   });
@@ -52,8 +63,9 @@ export class AdminQuestsMapPage implements OnInit {
   );
 
   ngOnInit(): void {
-    // hideShellToolbar: mappa a piena altezza, nessuna toolbar shell
-    this.breadcrumb.set('Mappa quest', true);
+    // Stessa breadcrumb della lista: la mappa è una vista alternativa
+    // della pagina Quest, non una pagina separata. Toolbar shell visibile.
+    this.breadcrumb.set('Quest');
     void this.loadData();
   }
 
@@ -105,6 +117,10 @@ export class AdminQuestsMapPage implements OnInit {
 
   goToList(): void {
     void this.router.navigateByUrl('/admin/quests');
+  }
+
+  onCreateClick(): void {
+    void this.router.navigate(['/admin/quests/new']);
   }
 
   toggleActiveOnly(): void {

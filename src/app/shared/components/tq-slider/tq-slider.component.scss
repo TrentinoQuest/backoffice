@@ -1,7 +1,13 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
 .tq-slider {
   display: flex;
   align-items: center;
   gap: 12px;
+  width: 100%;
 
   &--disabled {
     opacity: 0.5;

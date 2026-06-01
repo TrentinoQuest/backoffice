@@ -1,126 +1,175 @@
-<div class="map-shell">
-  <!-- Mappa full-height -->
-  <div class="map-area">
-    <app-quest-map-viewer
-      [quests]="filteredQuests()"
-      [selectedQuestId]="selectedQuestId()"
-      [collectiblesById]="collectiblesById()"
-      [collectibleImageById]="collectibleImages()"
-      [interactive]="true"
-      [compact]="false"
-      (questSelected)="onMapQuestSelected($event)"
-      (questFocused)="selectedQuestId.set($event)"
-    />
-  </div>
-
-  <!-- Panel destro -->
-  <aside class="map-panel" aria-label="Lista quest">
-    <div class="mp-header">
-      <div class="mp-top">
-        <button type="button" class="back-btn" (click)="goToList()" aria-label="Torna alla lista">
+<div class="map-page">
+  <!-- Header: identico alla lista, con toggle Lista/Mappa (Mappa attivo) -->
+  <div class="page-header">
+    <div>
+      <h1 class="tq-page-title">Quest</h1>
+      <p class="tq-page-subtitle">Gestisci le quest del territorio trentino</p>
+    </div>
+    <div class="header-right">
+      <div class="view-toggle">
+        <button type="button" class="vt" (click)="goToList()">
           <svg
-            width="13"
-            height="13"
+            width="12"
+            height="12"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            stroke-width="2.5"
+            stroke-width="2"
             stroke-linecap="round"
             aria-hidden="true"
           >
-            <polyline points="15 18 9 12 15 6" />
+            <line x1="8" y1="6" x2="21" y2="6" />
+            <line x1="8" y1="12" x2="21" y2="12" />
+            <line x1="8" y1="18" x2="21" y2="18" />
+            <line x1="3" y1="6" x2="3.01" y2="6" />
+            <line x1="3" y1="12" x2="3.01" y2="12" />
+            <line x1="3" y1="18" x2="3.01" y2="18" />
           </svg>
           Lista
         </button>
-        <div class="mp-title">Quest sul territorio</div>
+        <button type="button" class="vt vt--on">
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
+            <line x1="8" y1="2" x2="8" y2="18" />
+            <line x1="16" y1="6" x2="16" y2="22" />
+          </svg>
+          Mappa
+        </button>
       </div>
-      <div class="tq-search">
+      <button type="button" class="tq-btn-primary" (click)="onCreateClick()">
         <svg
-          width="12"
-          height="12"
+          width="13"
+          height="13"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          stroke-width="2"
+          stroke-width="2.5"
           stroke-linecap="round"
           aria-hidden="true"
         >
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
         </svg>
-        <input
-          type="text"
-          placeholder="Cerca per nome…"
-          [value]="searchQuery()"
-          (input)="searchQuery.set($any($event.target).value)"
-          aria-label="Cerca quest"
-        />
-      </div>
-      <div class="mp-chips">
-        <button
-          type="button"
-          class="mp-chip"
-          [class.mp-chip--on]="typeFilter() === null"
-          (click)="typeFilter.set(null)"
-        >
-          Tutte
-        </button>
-        <button
-          type="button"
-          class="mp-chip"
-          [class.mp-chip--on]="typeFilter() === QuestType.PRIMARY"
-          (click)="typeFilter.set(QuestType.PRIMARY)"
-        >
-          ★ Principali
-        </button>
-        <button
-          type="button"
-          class="mp-chip"
-          [class.mp-chip--on]="typeFilter() === QuestType.SECONDARY"
-          (click)="typeFilter.set(QuestType.SECONDARY)"
-        >
-          ● Second.
-        </button>
-        <button
-          type="button"
-          class="mp-chip"
-          [class.mp-chip--on]="showActiveOnly()"
-          (click)="toggleActiveOnly()"
-        >
-          Attive
-        </button>
-      </div>
+        Nuova quest
+      </button>
+    </div>
+  </div>
+
+  <!-- Mappa + pannello laterale -->
+  <div class="map-shell">
+    <div class="map-area">
+      <app-quest-map-viewer
+        [quests]="filteredQuests()"
+        [selectedQuestId]="selectedQuestId()"
+        [collectiblesById]="collectiblesById()"
+        [collectibleImageById]="collectibleImages()"
+        [interactive]="true"
+        [compact]="false"
+        (questSelected)="onMapQuestSelected($event)"
+        (questFocused)="selectedQuestId.set($event)"
+      />
     </div>
 
-    <div class="mp-list">
-      @for (quest of filteredQuests(); track quest.id) {
-        <div
-          class="mp-item"
-          [class.mp-item--sel]="quest.id === selectedQuestId()"
-          (click)="onListItemClick(quest)"
-          role="button"
-          tabindex="0"
-        >
-          <div
-            class="mp-dot"
-            [class.mp-dot--primary]="quest.type === QuestType.PRIMARY"
-            [class.mp-dot--secondary]="quest.type === QuestType.SECONDARY"
-            [class.mp-dot--inactive]="quest.status !== QuestStatus.ACTIVE"
-          ></div>
-          <div class="mp-info">
-            <div class="mp-name" [class.mp-name--inactive]="quest.status !== QuestStatus.ACTIVE">
-              {{ quest.name }}
-            </div>
-            <div class="mp-sub">{{ questSub(quest) }}</div>
-          </div>
-          <span class="mp-pts">{{ typeLabel(quest.type) }} {{ questPoints(quest) }}</span>
+    <!-- Panel destro -->
+    <aside class="map-panel" aria-label="Lista quest">
+      <div class="mp-header">
+        <div class="tq-search">
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            type="text"
+            placeholder="Cerca per nome, luogo, collezionabile…"
+            [value]="searchQuery()"
+            (input)="searchQuery.set($any($event.target).value)"
+            aria-label="Cerca quest"
+          />
         </div>
-      }
-    </div>
+        <div class="mp-chips">
+          <button
+            type="button"
+            class="mp-chip"
+            [class.mp-chip--on]="typeFilter() === null"
+            (click)="typeFilter.set(null)"
+          >
+            Tutte
+          </button>
+          <button
+            type="button"
+            class="mp-chip"
+            [class.mp-chip--on]="typeFilter() === QuestType.PRIMARY"
+            (click)="typeFilter.set(QuestType.PRIMARY)"
+          >
+            ★ Principali
+          </button>
+          <button
+            type="button"
+            class="mp-chip"
+            [class.mp-chip--on]="typeFilter() === QuestType.SECONDARY"
+            (click)="typeFilter.set(QuestType.SECONDARY)"
+          >
+            ● Second.
+          </button>
+          <button
+            type="button"
+            class="mp-chip"
+            [class.mp-chip--on]="showActiveOnly()"
+            (click)="toggleActiveOnly()"
+          >
+            Attive
+          </button>
+        </div>
+      </div>
 
-    <div class="mp-footer">
-      {{ totalCount() }} quest · {{ activeCount() }} attive · {{ totalCount() - activeCount() }}
-      inattive
-    </div>
-  </aside>
+      <div class="mp-list">
+        @for (quest of filteredQuests(); track quest.id) {
+          <div
+            class="mp-item"
+            [class.mp-item--sel]="quest.id === selectedQuestId()"
+            (click)="onListItemClick(quest)"
+            role="button"
+            tabindex="0"
+          >
+            <div
+              class="mp-dot"
+              [class.mp-dot--primary]="quest.type === QuestType.PRIMARY"
+              [class.mp-dot--secondary]="quest.type === QuestType.SECONDARY"
+              [class.mp-dot--inactive]="quest.status !== QuestStatus.ACTIVE"
+            ></div>
+            <div class="mp-info">
+              <div class="mp-name" [class.mp-name--inactive]="quest.status !== QuestStatus.ACTIVE">
+                {{ quest.name }}
+              </div>
+              <div class="mp-sub">{{ questSub(quest) }}</div>
+            </div>
+            <span class="mp-pts">{{ typeLabel(quest.type) }} {{ questPoints(quest) }}</span>
+          </div>
+        }
+      </div>
+
+      <div class="mp-footer">
+        {{ totalCount() }} quest · {{ activeCount() }} attive · {{ totalCount() - activeCount() }}
+        inattive
+      </div>
+    </aside>
+  </div>
 </div>
