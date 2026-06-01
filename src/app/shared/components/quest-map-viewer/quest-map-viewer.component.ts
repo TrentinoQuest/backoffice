@@ -77,7 +77,13 @@ export class QuestMapViewerComponent implements AfterViewInit, OnChanges, OnDest
   /** Se true, riduce altezza e zoom (usato nella dashboard preview) */
   @Input() compact = false;
 
+  /** Emesso dal bottone "Modifica quest" nel popup: naviga al form. */
   @Output() questSelected = new EventEmitter<string>();
+  /** Emesso cliccando un marker: seleziona la quest (senza navigare). */
+  @Output() questFocused = new EventEmitter<string>();
+
+  /** Zoom usato quando si centra su una singola quest. */
+  private readonly FOCUS_ZOOM = 15;
 
   private map!: L.Map;
   private markersLayer!: L.LayerGroup;
@@ -97,9 +103,25 @@ export class QuestMapViewerComponent implements AfterViewInit, OnChanges, OnDest
     ) {
       this.renderMarkers();
     }
+    // Quando cambia la quest selezionata (es. click nella lista), centra
+    // e zooma la mappa su di essa con un'animazione fluida.
+    if (changes['selectedQuestId'] && this.selectedQuestId) {
+      this.focusOnQuest(this.selectedQuestId);
+    }
     if (changes['centerOn'] && this.centerOn) {
       this.map.setView([this.centerOn.lat, this.centerOn.lng], 14);
     }
+  }
+
+  /** Centra e zooma la mappa sulla quest indicata, se ne conosciamo la posizione. */
+  private focusOnQuest(questId: string): void {
+    const quest = this.quests.find((q) => q.id === questId);
+    if (!quest) return;
+    const geo = quest.type === QuestType.PRIMARY ? quest.searchArea : quest.position;
+    if (!geo) return;
+    this.map.flyTo([geo.lat, geo.lng], Math.max(this.map.getZoom(), this.FOCUS_ZOOM), {
+      duration: 0.6,
+    });
   }
 
   ngOnDestroy(): void {
@@ -165,6 +187,8 @@ export class QuestMapViewerComponent implements AfterViewInit, OnChanges, OnDest
           maxWidth: 240,
           offset: [0, -15],
         });
+        // Cliccare il marker seleziona la quest (evidenzia nella lista e zooma).
+        marker.on('click', () => this.questFocused.emit(quest.id));
       }
 
       this.markersLayer.addLayer(marker);
