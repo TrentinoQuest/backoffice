@@ -5,6 +5,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AnyQuest, QuestStatus, QuestType } from '@trentino-quest/shared-types';
 import { QuestsAdminService } from '../../../core/services/quests-admin.service';
 import { BreadcrumbService } from '../../../core/services/breadcrumb.service';
+import { GeocodingService } from '../../../core/services/geocoding.service';
 import {
   FilterChipsComponent,
   FilterGroup,
@@ -22,6 +23,10 @@ export class AdminQuestsPage implements OnInit {
   private readonly snackBar = inject(MatSnackBar);
   private readonly router = inject(Router);
   private readonly breadcrumb = inject(BreadcrumbService);
+  private readonly geocoding = inject(GeocodingService);
+
+  /** Etichette luogo (es. "Via Roma, Trento") risolte via reverse-geocoding, per quest id. */
+  readonly placeNames = signal<Record<string, string>>({});
 
   readonly QuestType = QuestType;
   readonly QuestStatus = QuestStatus;
@@ -75,10 +80,24 @@ export class AdminQuestsPage implements OnInit {
         offset: 0,
       });
       this.quests.set(res.data);
+      void this.resolvePlaceNames(res.data);
     } catch {
       this.snackBar.open('Errore nel caricamento delle quest', 'OK', { duration: 3000 });
     } finally {
       this.isLoading.set(false);
+    }
+  }
+
+  /**
+   * Risolve in background le etichette luogo per le quest tramite
+   * reverse-geocoding. Aggiorna placeNames mano a mano che arrivano.
+   */
+  private async resolvePlaceNames(quests: AnyQuest[]): Promise<void> {
+    for (const quest of quests) {
+      const geo = quest.type === QuestType.PRIMARY ? quest.searchArea : quest.position;
+      if (!geo) continue;
+      const label = await this.geocoding.reverse(geo.lat, geo.lng);
+      this.placeNames.update((m) => ({ ...m, [quest.id]: label }));
     }
   }
 
@@ -124,11 +143,15 @@ export class AdminQuestsPage implements OnInit {
   }
 
   /**
-   * Etichetta posizione: le quest non hanno un indirizzo, mostriamo le
-   * coordinate del punto (searchArea per le principali, position per le
-   * secondarie). GeoPoint è GeoJSON: coordinates = [lng, lat].
+   * Etichetta posizione: mostra il luogo fisico (es. "Via Roma, Trento")
+   * risolto via reverse-geocoding; finché non è disponibile, mostra le
+   * coordinate del punto come fallback.
    */
-  questCoords(quest: AnyQuest): string {
+  questPlace(quest: AnyQuest): string {
+    const resolved = this.placeNames()[quest.id];
+    if (resolved) {
+      return resolved;
+    }
     const geo = quest.type === QuestType.PRIMARY ? quest.searchArea : quest.position;
     if (!geo) {
       return '—';

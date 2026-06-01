@@ -21,6 +21,19 @@ import {
 } from '../../leaflet/leaflet-config';
 
 applyLeafletIconFix();
+
+/** Marker custom Terrain B (verde) — coerente con QuestMapViewerComponent. */
+function createPickerMarker(): L.DivIcon {
+  const html = `
+    <div style="transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center">
+      <div style="width:12px;height:12px;border-radius:50%;background:#1a5c38;border:2.5px solid #fff;
+                  box-shadow:0 2px 6px rgba(0,0,0,0.3)"></div>
+      <div style="width:2px;height:7px;background:#fff;opacity:0.7"></div>
+      <div style="width:9px;height:3px;border-radius:50%;background:rgba(0,0,0,0.2);margin-top:1px"></div>
+    </div>`;
+  return L.divIcon({ html, className: '', iconSize: [12, 22], iconAnchor: [6, 22] });
+}
+
 /**
  * Valore gestito dal form control: punto geografico + raggio.
  */
@@ -66,18 +79,29 @@ export interface MapPickerValue {
     `
       :host {
         display: block;
+        position: relative;
+        height: 100%;
+        min-height: 320px;
       }
       .map-container {
         width: 100%;
-        height: 400px;
-        border-radius: 4px;
-        border: 1px solid #ccc;
+        height: 100%;
       }
       .hint {
-        margin-top: 0.5rem;
-        font-size: 0.875rem;
-        color: rgba(0, 0, 0, 0.6);
-        font-style: italic;
+        position: absolute;
+        left: 50%;
+        bottom: 16px;
+        transform: translateX(-50%);
+        z-index: 500;
+        margin: 0;
+        padding: 6px 14px;
+        font-size: 12.5px;
+        color: var(--tq-text-muted);
+        background: var(--tq-surface);
+        border: 1px solid var(--tq-border);
+        border-radius: 20px;
+        box-shadow: var(--tq-shadow-sm);
+        white-space: nowrap;
       }
     `,
   ],
@@ -182,17 +206,18 @@ export class QuestMapPickerComponent
     if (this.marker) {
       this.marker.setLatLng([lat, lng]);
     } else {
-      this.marker = L.marker([lat, lng]).addTo(this.map);
+      this.marker = L.marker([lat, lng], { icon: createPickerMarker() }).addTo(this.map);
     }
     if (this.circle) {
       this.circle.setLatLng([lat, lng]).setRadius(this.radius);
     } else {
       this.circle = L.circle([lat, lng], {
         radius: this.radius,
-        color: '#1976d2',
-        fillColor: '#1976d2',
-        fillOpacity: 0.15,
+        color: '#1a5c38',
+        fillColor: '#1a5c38',
+        fillOpacity: 0.12,
         weight: 2,
+        dashArray: '5 5',
       }).addTo(this.map);
     }
 

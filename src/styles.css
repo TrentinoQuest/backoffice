@@ -296,6 +296,44 @@ kbd {
 .mat-mdc-form-field { font-family: var(--tq-font-body) !important; }
 .mdc-text-field { font-family: var(--tq-font-body) !important; }
 
+/* Integra i form field Material (outline) nello stile Terrain B:
+   superficie, bordi caldi, raggio coerente, testo dei token. */
+.mat-mdc-form-field {
+  --mat-sys-surface: var(--tq-surface);
+  --mat-sys-on-surface: var(--tq-text);
+  --mat-sys-on-surface-variant: var(--tq-text-muted);
+  --mat-sys-outline: var(--tq-border-strong);
+  --mat-sys-outline-variant: var(--tq-border);
+  width: 100%;
+}
+
+/* Sfondo della superficie input coerente col tema */
+.mat-mdc-text-field-wrapper {
+  background: var(--tq-surface) !important;
+  border-radius: var(--tq-r-sm) !important;
+}
+
+/* Testo digitato e label leggibili in entrambi i temi */
+.mat-mdc-form-field input.mat-mdc-input-element,
+.mat-mdc-form-field textarea.mat-mdc-input-element,
+.mat-mdc-select-value-text {
+  color: var(--tq-text) !important;
+}
+.mat-mdc-form-field .mdc-floating-label,
+.mat-mdc-form-field .mat-mdc-form-field-hint,
+.mat-mdc-select-placeholder {
+  color: var(--tq-text-muted) !important;
+}
+
+/* Pannello del mat-select nel tema */
+.mat-mdc-select-panel,
+.cdk-overlay-pane .mat-mdc-select-panel {
+  background: var(--tq-surface) !important;
+}
+.mat-mdc-option .mdc-list-item__primary-text {
+  color: var(--tq-text) !important;
+}
+
 /* Snackbar */
 .mat-mdc-snack-bar-container .mdc-snackbar__surface {
   background: var(--tq-text) !important;

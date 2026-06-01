@@ -90,9 +90,16 @@ export class AdminQuestFormPage implements OnInit {
     { value: CollectibleRarity.LEGENDARY, label: 'Leggendario' },
   ];
 
-  readonly questType = computed(() => this.form.controls.type.value);
+  /** Tipo quest corrente come signal reattivo (il value del FormControl non lo è). */
+  readonly questType = signal<QuestType>(QuestType.PRIMARY);
 
   readonly mapSearchQuery = signal('');
+
+  /** Cambia il tipo di quest aggiornando sia il form che il signal reattivo. */
+  setType(type: QuestType): void {
+    this.form.controls.type.setValue(type);
+    this.questType.set(type);
+  }
 
   readonly selectedCollectibleImage = computed(() => {
     const id = this.form.controls.collectibleId.value;
@@ -132,6 +139,7 @@ export class AdminQuestFormPage implements OnInit {
   }
 
   private patchForm(quest: AnyQuest): void {
+    this.questType.set(quest.type);
     this.form.patchValue({
       type: quest.type,
       name: quest.name ?? '',

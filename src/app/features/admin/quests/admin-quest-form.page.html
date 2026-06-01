@@ -47,7 +47,7 @@
             type="button"
             class="type-opt"
             [class.type-opt--sel]="questType() === QuestType.PRIMARY"
-            (click)="form.controls.type.setValue(QuestType.PRIMARY)"
+            (click)="setType(QuestType.PRIMARY)"
           >
             <span class="to-icon">★</span>
             <span class="to-label">Principale</span>
@@ -56,7 +56,7 @@
             type="button"
             class="type-opt"
             [class.type-opt--sel]="questType() === QuestType.SECONDARY"
-            (click)="form.controls.type.setValue(QuestType.SECONDARY)"
+            (click)="setType(QuestType.SECONDARY)"
           >
             <span class="to-icon">●</span>
             <span class="to-label">Secondaria</span>

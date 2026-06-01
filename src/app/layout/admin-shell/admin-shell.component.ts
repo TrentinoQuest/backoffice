@@ -1,7 +1,6 @@
-import { Component, computed, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, computed, inject, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet, NavigationEnd } from '@angular/router';
-import { filter } from 'rxjs/operators';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { BreadcrumbService } from '../../core/services/breadcrumb.service';
 import { CommandPaletteComponent } from '../../shared/components/command-palette/command-palette.component';
@@ -22,7 +21,7 @@ interface NavItem {
   templateUrl: './admin-shell.component.html',
   styleUrl: './admin-shell.component.scss',
 })
-export class AdminShellComponent implements OnInit {
+export class AdminShellComponent {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   readonly breadcrumb = inject(BreadcrumbService);
@@ -77,17 +76,8 @@ export class AdminShellComponent implements OnInit {
     },
   ];
 
-  ngOnInit(): void {
-    // Auto-collapse sidebar when navigating to map page
-    this.router.events
-      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
-      .subscribe((e) => {
-        if (e.urlAfterRedirects.includes('/quests-map')) {
-          this.sidebarCollapsed.set(true);
-          localStorage.setItem('tq-sidebar-collapsed', 'true');
-        }
-      });
-  }
+  // Nessun auto-collapse: lo stato della sidebar resta sotto controllo
+  // esplicito dell'utente (toggle + persistenza in localStorage).
 
   toggleSidebar(): void {
     this.sidebarCollapsed.update((v) => !v);

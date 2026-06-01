@@ -116,6 +116,19 @@
   color: var(--tq-text-muted);
 }
 
+/* Lo slider Punti incorniciato come un campo, per coerenza visiva con
+   il mat-select Stato accanto (stessa altezza, stesso bordo). */
+.fld app-tq-slider {
+  display: block;
+  border: 1px solid var(--tq-border-strong);
+  border-radius: var(--tq-r-sm);
+  background: var(--tq-surface);
+  padding: 0 14px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+}
+
 // ─── Type selector ─────────────────────────────────────────────────────────────
 .type-sel {
   display: flex;
