@@ -1,169 +1,152 @@
-import { Component, computed, inject, signal, ViewChild, AfterViewInit } from '@angular/core';
-import { CommonModule, DatePipe, TitleCasePipe } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSelectModule } from '@angular/material/select';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Business, BusinessApprovalStatus } from '@trentino-quest/shared-types';
+import { Business, BusinessApprovalStatus, BusinessType } from '@trentino-quest/shared-types';
 import { BusinessAdminService } from '../../../core/services/business-admin.service';
+import { BreadcrumbService } from '../../../core/services/breadcrumb.service';
+import {
+  FilterChipsComponent,
+  FilterGroup,
+} from '../../../shared/components/filter-chips/filter-chips.component';
+import {
+  ConfirmDialogComponent,
+  ConfirmDialogData,
+} from '../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { firstValueFrom } from 'rxjs';
 
-/**
- * Pagina amministrativa per la gestione delle affiliazioni delle
- * Attivita Locali (RF38 del Deliverable D1).
- *
- * Mostra una tabella paginata delle attivita con filtro per stato di
- * approvazione. Per ogni attivita pending sono disponibili le azioni di
- * approvazione e rifiuto.
- */
 @Component({
   selector: 'app-admin-businesses',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
     DatePipe,
-    TitleCasePipe,
-    MatCardModule,
-    MatTableModule,
-    MatPaginatorModule,
-    MatFormFieldModule,
-    MatSelectModule,
-    MatButtonModule,
-    MatIconModule,
-    MatMenuModule,
-    MatProgressSpinnerModule,
+    FilterChipsComponent,
+    MatDialogModule,
     MatSnackBarModule,
     MatTooltipModule,
   ],
   templateUrl: './admin-businesses.page.html',
   styleUrl: './admin-businesses.page.scss',
 })
-export class AdminBusinessesPage implements AfterViewInit {
-  private readonly businessService = inject(BusinessAdminService);
+export class AdminBusinessesPage implements OnInit {
+  private readonly service = inject(BusinessAdminService);
   private readonly snackBar = inject(MatSnackBar);
-
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-
-  readonly displayedColumns = [
-    'businessName',
-    'businessType',
-    'address',
-    'approvalStatus',
-    'createdAt',
-    'actions',
-  ];
-
-  readonly statusOptions: { value: BusinessApprovalStatus | null; label: string }[] = [
-    { value: null, label: 'Tutti gli stati' },
-    { value: BusinessApprovalStatus.PENDING, label: 'In attesa' },
-    { value: BusinessApprovalStatus.APPROVED, label: 'Approvate' },
-    { value: BusinessApprovalStatus.REJECTED, label: 'Rifiutate' },
-  ];
-
-  readonly statusFilter = signal<BusinessApprovalStatus | null>(BusinessApprovalStatus.PENDING);
-
-  readonly businesses = signal<Business[]>([]);
-  readonly totalCount = signal(0);
-  readonly isLoading = signal(false);
+  private readonly breadcrumb = inject(BreadcrumbService);
+  private readonly dialog = inject(MatDialog);
 
   readonly BusinessApprovalStatus = BusinessApprovalStatus;
 
-  /**
-   * Helper visivo per lo stato di approvazione: ritorna una classe CSS
-   * per colorare il badge.
-   */
-  statusClass = computed(
-    () =>
-      (status: BusinessApprovalStatus): string =>
-        `badge badge-${status}`,
-  );
+  readonly isLoading = signal(false);
+  readonly businesses = signal<Business[]>([]);
+  readonly statusFilter = signal<BusinessApprovalStatus | null>(BusinessApprovalStatus.PENDING);
 
-  ngAfterViewInit(): void {
-    this.loadBusinesses();
+  readonly statusGroups: FilterGroup<BusinessApprovalStatus | null>[] = [
+    {
+      chips: [
+        { label: 'Tutte', value: null },
+        { label: 'In attesa', value: BusinessApprovalStatus.PENDING },
+        { label: 'Approvate', value: BusinessApprovalStatus.APPROVED },
+        { label: 'Rifiutate', value: BusinessApprovalStatus.REJECTED },
+      ],
+    },
+  ];
+
+  ngOnInit(): void {
+    this.breadcrumb.set('Affiliazioni');
+    void this.load();
   }
 
-  /**
-   * Carica le attivita dal backend usando il filtro corrente e lo stato
-   * del paginator.
-   */
-  async loadBusinesses(): Promise<void> {
+  async load(): Promise<void> {
     this.isLoading.set(true);
     try {
-      const limit = this.paginator?.pageSize ?? 20;
-      const offset = (this.paginator?.pageIndex ?? 0) * limit;
-
-      const response = await this.businessService.list({
+      const res = await this.service.list({
         approvalStatus: this.statusFilter() ?? undefined,
-        limit,
-        offset,
+        limit: 100,
+        offset: 0,
       });
-
-      this.businesses.set(response.data);
-      this.totalCount.set(response.total);
+      this.businesses.set(res.data);
     } catch (err) {
-      this.showError('Errore nel caricamento delle attivita', err);
+      this.showError('Errore nel caricamento delle attività', err);
     } finally {
       this.isLoading.set(false);
     }
   }
 
-  /**
-   * Reagisce al cambio di filtro: riporta il paginator a pagina 0 e
-   * ricarica i dati.
-   */
-  onFilterChange(): void {
-    if (this.paginator) {
-      this.paginator.pageIndex = 0;
-    }
-    void this.loadBusinesses();
+  onStatusFilter(value: BusinessApprovalStatus | null): void {
+    this.statusFilter.set(value);
+    void this.load();
   }
 
-  onPageChange(): void {
-    void this.loadBusinesses();
-  }
-
-  /**
-   * Approva un'attivita dopo conferma e ricarica la lista.
-   */
-  async onApproveClick(business: Business): Promise<void> {
-    const confirmed = confirm(
-      `Approvare l'affiliazione di "${business.businessName}"? L'attivita potra' pubblicare offerte.`,
+  async onApprove(b: Business): Promise<void> {
+    const data: ConfirmDialogData = {
+      title: "Approvare l'affiliazione?",
+      message: `"${b.businessName}" potrà pubblicare offerte per i giocatori.`,
+      confirmLabel: 'Approva',
+    };
+    const ok = await firstValueFrom(
+      this.dialog.open(ConfirmDialogComponent, { data, width: '440px' }).afterClosed(),
     );
-    if (!confirmed) {
-      return;
-    }
+    if (!ok) return;
     try {
-      await this.businessService.approve(business.id);
-      this.snackBar.open(`"${business.businessName}" approvata`, 'OK', { duration: 3000 });
-      await this.loadBusinesses();
+      await this.service.approve(b.id);
+      this.snackBar.open(`"${b.businessName}" approvata`, 'OK', { duration: 3000 });
+      await this.load();
     } catch (err) {
       this.showError("Errore nell'approvazione", err);
     }
   }
 
-  /**
-   * Rifiuta un'attivita dopo conferma e ricarica la lista.
-   */
-  async onRejectClick(business: Business): Promise<void> {
-    const confirmed = confirm(`Rifiutare l'affiliazione di "${business.businessName}"?`);
-    if (!confirmed) {
-      return;
-    }
+  async onReject(b: Business): Promise<void> {
+    const data: ConfirmDialogData = {
+      title: "Rifiutare l'affiliazione?",
+      message: `La richiesta di "${b.businessName}" verrà rifiutata.`,
+      confirmLabel: 'Rifiuta',
+      danger: true,
+    };
+    const ok = await firstValueFrom(
+      this.dialog.open(ConfirmDialogComponent, { data, width: '440px' }).afterClosed(),
+    );
+    if (!ok) return;
     try {
-      await this.businessService.reject(business.id);
-      this.snackBar.open(`"${business.businessName}" rifiutata`, 'OK', { duration: 3000 });
-      await this.loadBusinesses();
+      await this.service.reject(b.id);
+      this.snackBar.open(`"${b.businessName}" rifiutata`, 'OK', { duration: 3000 });
+      await this.load();
     } catch (err) {
       this.showError('Errore nel rifiuto', err);
+    }
+  }
+
+  typeLabel(t: BusinessType): string {
+    const map: Record<BusinessType, string> = {
+      [BusinessType.RESTAURANT]: 'Ristorante',
+      [BusinessType.MUSEUM]: 'Museo',
+      [BusinessType.FARM_STAY]: 'Agriturismo',
+      [BusinessType.MOUNTAIN_HUT]: 'Rifugio',
+      [BusinessType.OTHER]: 'Altro',
+    };
+    return map[t] ?? t;
+  }
+
+  statusLabel(s: BusinessApprovalStatus): string {
+    const map: Record<BusinessApprovalStatus, string> = {
+      [BusinessApprovalStatus.PENDING]: 'In attesa',
+      [BusinessApprovalStatus.APPROVED]: 'Approvata',
+      [BusinessApprovalStatus.REJECTED]: 'Rifiutata',
+    };
+    return map[s];
+  }
+
+  statusBadgeClass(s: BusinessApprovalStatus): string {
+    switch (s) {
+      case BusinessApprovalStatus.APPROVED:
+        return 'tq-badge tq-badge--green';
+      case BusinessApprovalStatus.PENDING:
+        return 'tq-badge tq-badge--amber';
+      case BusinessApprovalStatus.REJECTED:
+        return 'tq-badge tq-badge--danger';
     }
   }
 
