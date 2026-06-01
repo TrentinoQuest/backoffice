@@ -1,61 +1,36 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { CollectibleRarity } from '@trentino-quest/shared-types';
 import { CollectiblesAdminService } from '../../../core/services/collectibles-admin.service';
+import { BreadcrumbService } from '../../../core/services/breadcrumb.service';
+import { toSignal } from '@angular/core/rxjs-interop';
 
-/**
- * Pagina di creazione e modifica di un collezionabile.
- *
- * Un singolo componente serve entrambi i flussi, distinti dalla presenza
- * del parametro :id nella route. In modalita' modifica i campi vengono
- * precaricati dal backend.
- */
 @Component({
   selector: 'app-admin-collectible-form',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatButtonModule,
-    MatIconModule,
-    MatProgressSpinnerModule,
-    MatSnackBarModule,
-  ],
+  imports: [CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatSnackBarModule],
   templateUrl: './admin-collectible-form.page.html',
   styleUrl: './admin-collectible-form.page.scss',
 })
-export class AdminCollectibleFormPage implements OnInit {
+export class AdminCollectibleFormPage implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
-  private readonly collectiblesService = inject(CollectiblesAdminService);
+  private readonly service = inject(CollectiblesAdminService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly breadcrumb = inject(BreadcrumbService);
 
-  /**
-   * Id del collezionabile in modifica, null in creazione.
-   */
   readonly collectibleId = signal<string | null>(null);
   readonly isLoading = signal(false);
   readonly isSaving = signal(false);
 
-  /**
-   * Opzioni di rarita' per il select, derivate dall'enum di shared-types.
-   */
+  readonly CollectibleRarity = CollectibleRarity;
   readonly rarityOptions: { value: CollectibleRarity; label: string }[] = [
     { value: CollectibleRarity.COMMON, label: 'Comune' },
     { value: CollectibleRarity.UNCOMMON, label: 'Non comune' },
@@ -63,9 +38,6 @@ export class AdminCollectibleFormPage implements OnInit {
     { value: CollectibleRarity.LEGENDARY, label: 'Leggendario' },
   ];
 
-  /**
-   * Form reattivo del collezionabile.
-   */
   readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
     description: ['', [Validators.required, Validators.maxLength(500)]],
@@ -73,11 +45,25 @@ export class AdminCollectibleFormPage implements OnInit {
     rarity: [CollectibleRarity.COMMON, [Validators.required]],
   });
 
+  /** Anteprima live dell'URL immagine */
+  private readonly imageUrlValue = toSignal(this.form.controls.imageUrl.valueChanges, {
+    initialValue: this.form.controls.imageUrl.value,
+  });
+  readonly previewUrl = computed(() => this.imageUrlValue()?.trim() || '');
+  private readonly rarityValue = toSignal(this.form.controls.rarity.valueChanges, {
+    initialValue: this.form.controls.rarity.value,
+  });
+
   get isEditMode(): boolean {
     return this.collectibleId() !== null;
   }
 
+  selectedRarity(): CollectibleRarity {
+    return this.rarityValue() ?? CollectibleRarity.COMMON;
+  }
+
   ngOnInit(): void {
+    this.breadcrumb.set('Collezionabili', true);
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.collectibleId.set(id);
@@ -85,18 +71,19 @@ export class AdminCollectibleFormPage implements OnInit {
     }
   }
 
-  /**
-   * Carica un collezionabile esistente e popola il form.
-   */
+  ngOnDestroy(): void {
+    this.breadcrumb.set('', false);
+  }
+
   async loadCollectible(id: string): Promise<void> {
     this.isLoading.set(true);
     try {
-      const collectible = await this.collectiblesService.getById(id);
+      const c = await this.service.getById(id);
       this.form.patchValue({
-        name: collectible.name,
-        description: collectible.description,
-        imageUrl: collectible.imageUrl,
-        rarity: collectible.rarity,
+        name: c.name,
+        description: c.description,
+        imageUrl: c.imageUrl,
+        rarity: c.rarity,
       });
     } catch (err) {
       this.showError('Errore nel caricamento del collezionabile', err);
@@ -106,25 +93,24 @@ export class AdminCollectibleFormPage implements OnInit {
     }
   }
 
-  /**
-   * Salva il collezionabile: crea o aggiorna in base alla modalita'.
-   */
+  setRarity(r: CollectibleRarity): void {
+    this.form.controls.rarity.setValue(r);
+  }
+
   async onSubmit(): Promise<void> {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
-
     this.isSaving.set(true);
     const value = this.form.getRawValue();
-
     try {
       const id = this.collectibleId();
       if (id) {
-        await this.collectiblesService.update(id, value);
+        await this.service.update(id, value);
         this.snackBar.open('Collezionabile aggiornato', 'OK', { duration: 3000 });
       } else {
-        await this.collectiblesService.create(value);
+        await this.service.create(value);
         this.snackBar.open('Collezionabile creato', 'OK', { duration: 3000 });
       }
       void this.router.navigateByUrl('/admin/collectibles');
@@ -135,9 +121,6 @@ export class AdminCollectibleFormPage implements OnInit {
     }
   }
 
-  /**
-   * Annulla e torna alla lista.
-   */
   onCancel(): void {
     void this.router.navigateByUrl('/admin/collectibles');
   }
