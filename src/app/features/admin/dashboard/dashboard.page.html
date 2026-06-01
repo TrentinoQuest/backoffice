@@ -1,0 +1,85 @@
+<div class="tq-page">
+  <div class="tq-page-inner dash">
+    <header class="page-head">
+      <h1 class="tq-page-title">Dashboard</h1>
+      <p class="tq-page-subtitle">Una vista d'insieme di ciò che richiede attenzione.</p>
+    </header>
+
+    <!-- Metric strip -->
+    <div class="metrics">
+      <button type="button" class="metric" (click)="goTo('/admin/quests')">
+        <span class="metric__value">{{ activeQuestsCount() }}</span>
+        <span class="metric__label">Quest attive</span>
+      </button>
+      <button type="button" class="metric" (click)="goTo('/admin/quests')">
+        <span class="metric__value">{{ inactiveQuestsCount() }}</span>
+        <span class="metric__label">Quest inattive</span>
+      </button>
+      <button type="button" class="metric" (click)="goTo('/admin/collectibles')">
+        <span class="metric__value">{{ collectiblesCount() }}</span>
+        <span class="metric__label">Collezionabili</span>
+      </button>
+      <button
+        type="button"
+        class="metric"
+        [class.metric--alert]="pendingCount() > 0"
+        (click)="goTo('/admin/businesses')"
+      >
+        <span class="metric__value">{{ pendingCount() }}</span>
+        <span class="metric__label">Affiliazioni in attesa</span>
+      </button>
+    </div>
+
+    <!-- Mid layout -->
+    <div class="mid">
+      <div class="col-left">
+        <section class="card">
+          <h2 class="card__title">Da fare</h2>
+          @if (pendingCount() === 0) {
+            <p class="empty">Nessuna azione in sospeso. Tutto in ordine.</p>
+          } @else {
+            <ul class="todo-list">
+              @for (b of pendingBusinesses(); track b.id) {
+                <li class="todo">
+                  <span class="tq-badge tq-badge--amber">Da rivedere</span>
+                  <span class="todo__text"
+                    >Affiliazione di <strong>{{ b.businessName }}</strong></span
+                  >
+                  <button type="button" class="tq-btn-ghost sm" (click)="goTo('/admin/businesses')">
+                    Rivedi
+                  </button>
+                </li>
+              }
+            </ul>
+          }
+        </section>
+
+        <section class="card">
+          <h2 class="card__title">Azioni rapide</h2>
+          <div class="quick">
+            <button type="button" class="quick__btn" (click)="goTo('/admin/quests/new')">
+              + Nuova quest
+            </button>
+            <button type="button" class="quick__btn" (click)="goTo('/admin/collectibles/new')">
+              + Nuovo collezionabile
+            </button>
+          </div>
+        </section>
+      </div>
+
+      <div class="col-right">
+        <section class="card map-card">
+          <div class="map-card__head">
+            <h2 class="card__title">Mappa quest</h2>
+            <button type="button" class="link" (click)="goTo('/admin/quests-map')">
+              Apri completa →
+            </button>
+          </div>
+          <div class="map-preview">
+            <app-quest-map-viewer [quests]="activeQuests()" [interactive]="false" [compact]="true" />
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
