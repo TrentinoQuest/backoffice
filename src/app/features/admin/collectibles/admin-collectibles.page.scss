@@ -55,34 +55,14 @@
 .actions {
   text-align: right;
   white-space: nowrap;
-}
 
-.icon-btn {
-  width: 30px;
-  height: 30px;
-  border-radius: var(--tq-r-sm);
-  border: 1px solid var(--tq-border);
-  background: var(--tq-surface);
-  color: var(--tq-text-muted);
-  cursor: pointer;
-  font-size: 14px;
-  transition:
-    border-color 130ms,
-    color 130ms,
-    background 130ms;
-
-  &:hover {
-    border-color: var(--tq-border-strong);
-    color: var(--tq-text);
-    background: var(--tq-surface-alt);
-  }
-
-  &--danger:hover {
-    border-color: var(--tq-danger);
-    color: var(--tq-danger);
-  }
-
-  & + & {
+  .tq-icon-btn + .tq-icon-btn {
     margin-left: 6px;
   }
+}
+
+.tq-icon-btn--danger:hover {
+  border-color: var(--tq-danger);
+  color: var(--tq-danger);
+  background: var(--tq-danger-light);
 }
