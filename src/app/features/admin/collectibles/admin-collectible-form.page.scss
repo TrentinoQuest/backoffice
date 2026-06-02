@@ -114,6 +114,8 @@
 }
 
 .rarity-chip {
+  --rc: var(--tq-text-subtle);
+  --rc-bg: var(--tq-surface-alt);
   border: 1px solid var(--tq-border);
   border-radius: 20px;
   padding: 6px 14px;
@@ -127,14 +129,32 @@
     background 130ms;
 
   &:hover {
-    border-color: var(--tq-border-strong);
-    color: var(--tq-text);
+    border-color: var(--rc);
+    color: var(--rc);
+  }
+
+  // Colore per rarità (crescente).
+  &--common {
+    --rc: var(--tq-text-subtle);
+    --rc-bg: var(--tq-surface-alt);
+  }
+  &--uncommon {
+    --rc: var(--tq-primary);
+    --rc-bg: var(--tq-primary-light);
+  }
+  &--rare {
+    --rc: var(--tq-amber);
+    --rc-bg: var(--tq-amber-light);
+  }
+  &--legendary {
+    --rc: var(--tq-amber);
+    --rc-bg: var(--tq-amber-light);
   }
 
   &--active {
-    background: var(--tq-amber-light);
-    border-color: var(--tq-amber);
-    color: var(--tq-amber);
+    background: var(--rc-bg);
+    border-color: var(--rc);
+    color: var(--rc);
     font-weight: 500;
   }
 }

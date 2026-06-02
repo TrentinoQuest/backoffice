@@ -48,7 +48,7 @@
               @for (opt of rarityOptions; track opt.value) {
                 <button
                   type="button"
-                  class="rarity-chip"
+                  class="rarity-chip rarity-chip--{{ opt.value }}"
                   [class.rarity-chip--active]="selectedRarity() === opt.value"
                   (click)="setRarity(opt.value)"
                 >

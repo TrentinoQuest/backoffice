@@ -121,16 +121,26 @@
 }
 
 /* Lo slider Punti incorniciato come un campo, per coerenza visiva con
-   il mat-select Stato accanto (stessa altezza, stesso bordo). */
+   il select Stato accanto (stessa altezza, stesso bordo). */
 .fld app-tq-slider {
-  display: block;
+  display: flex;
+  align-items: center;
   border: 1px solid var(--tq-border-strong);
   border-radius: var(--tq-r-sm);
   background: var(--tq-surface);
   padding: 0 14px;
-  height: 56px;
-  display: flex;
-  align-items: center;
+  height: 48px;
+}
+
+/* Il select Stato sotto la sua label esterna: niente larghezza/altezza
+   sballata, allineato allo slider Punti accanto. */
+.fld-select {
+  width: 100%;
+
+  // Rimuove lo spazio del subscript (hint/error) per pareggiare l'altezza.
+  ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+    display: none;
+  }
 }
 
 // ─── Type selector ─────────────────────────────────────────────────────────────
@@ -206,6 +216,23 @@
   display: flex;
   align-items: center;
   gap: 10px;
+}
+.coll-opt--create {
+  color: var(--tq-primary);
+  font-weight: 600;
+}
+.coll-opt__plus {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--tq-r-sm);
+  border: 1px dashed var(--tq-primary);
+  color: var(--tq-primary);
+  font-size: 16px;
+  line-height: 1;
 }
 .coll-opt__img {
   width: 26px;
@@ -339,20 +366,40 @@
 }
 
 .rchip {
-  border: 1.5px solid rgba(26, 92, 56, 0.2);
+  --rc: var(--tq-text-subtle);
+  border: 1.5px solid var(--tq-border);
   border-radius: 20px;
   padding: 3px 11px;
   font-size: 11px;
-  color: var(--tq-primary);
+  color: var(--tq-text-muted);
   background: var(--tq-surface);
   cursor: pointer;
   font-family: var(--tq-font-body);
   transition: all 120ms;
 
+  &:hover {
+    border-color: var(--rc);
+    color: var(--rc);
+  }
+
+  // Colore per rarità (crescente): grigio → verde → ambra → ambra intenso.
+  &--common {
+    --rc: var(--tq-text-subtle);
+  }
+  &--uncommon {
+    --rc: var(--tq-primary);
+  }
+  &--rare {
+    --rc: var(--tq-amber);
+  }
+  &--legendary {
+    --rc: var(--tq-amber);
+  }
+
   &--sel {
-    background: var(--tq-primary);
+    background: var(--rc);
     color: #fff;
-    border-color: var(--tq-primary);
+    border-color: var(--rc);
   }
 }
 

@@ -89,13 +89,15 @@
                 label="Punti quest"
               />
             </div>
-            <mat-form-field appearance="outline">
-              <mat-label>Stato</mat-label>
-              <mat-select formControlName="status">
-                <mat-option [value]="QuestStatus.ACTIVE">Attiva</mat-option>
-                <mat-option [value]="QuestStatus.INACTIVE">Inattiva</mat-option>
-              </mat-select>
-            </mat-form-field>
+            <div class="fld">
+              <label class="fld-label">Stato</label>
+              <mat-form-field appearance="outline" class="fld-select">
+                <mat-select formControlName="status">
+                  <mat-option [value]="QuestStatus.ACTIVE">Attiva</mat-option>
+                  <mat-option [value]="QuestStatus.INACTIVE">Inattiva</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
           </div>
 
           <!-- Collezionabile (solo per quest Principale) -->
@@ -106,8 +108,17 @@
               @if (!showInlineCollectibleForm()) {
                 <mat-form-field appearance="outline" class="coll-select">
                   <mat-label>Seleziona collezionabile</mat-label>
-                  <mat-select formControlName="collectibleId">
-                    <mat-option [value]="null">Nessuno</mat-option>
+                  <mat-select
+                    formControlName="collectibleId"
+                    panelClass="coll-select-panel"
+                    (selectionChange)="onCollectibleSelectionChange($event.value)"
+                  >
+                    <mat-option [value]="CREATE_SENTINEL" class="coll-opt--create">
+                      <span class="coll-opt coll-opt--create">
+                        <span class="coll-opt__plus" aria-hidden="true">+</span>
+                        <span class="coll-opt__name">Crea nuovo collezionabile</span>
+                      </span>
+                    </mat-option>
                     @for (c of collectibles(); track c.id) {
                       <mat-option [value]="c.id">
                         <span class="coll-opt">
@@ -126,18 +137,12 @@
                     <img class="coll-preview__img" [src]="coll.imageUrl" [alt]="coll.name" />
                     <div class="coll-preview__meta">
                       <span class="coll-preview__name">{{ coll.name }}</span>
-                      <span class="coll-preview__rarity">{{ coll.rarity }}</span>
+                      <span [class]="rarityBadgeClass(coll.rarity)">{{
+                        rarityLabel(coll.rarity)
+                      }}</span>
                     </div>
                   </div>
                 }
-
-                <button
-                  type="button"
-                  class="tq-btn-ghost coll-create-btn"
-                  (click)="onToggleInlineCollectible()"
-                >
-                  + Crea nuovo collezionabile
-                </button>
               }
 
               <!-- Inline creation form -->
@@ -189,7 +194,7 @@
                       @for (opt of rarityOptions; track opt.value) {
                         <button
                           type="button"
-                          class="rchip"
+                          class="rchip rchip--{{ opt.value }}"
                           [class.rchip--sel]="
                             inlineCollectibleForm.controls.rarity.value === opt.value
                           "

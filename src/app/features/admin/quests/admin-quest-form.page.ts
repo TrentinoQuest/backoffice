@@ -101,6 +101,37 @@ export class AdminQuestFormPage implements OnInit {
     { value: CollectibleRarity.LEGENDARY, label: 'Leggendario' },
   ];
 
+  /** Valore sentinella dell'opzione "Crea nuovo" nel select collezionabile. */
+  readonly CREATE_SENTINEL = '__create__';
+
+  rarityLabel(r: CollectibleRarity): string {
+    return this.rarityOptions.find((o) => o.value === r)?.label ?? r;
+  }
+
+  /** Classe badge per rarità: grigio/verde/ambra crescente. */
+  rarityBadgeClass(r: CollectibleRarity): string {
+    switch (r) {
+      case CollectibleRarity.COMMON:
+        return 'tq-badge tq-badge--gray';
+      case CollectibleRarity.UNCOMMON:
+        return 'tq-badge tq-badge--green';
+      case CollectibleRarity.RARE:
+      case CollectibleRarity.LEGENDARY:
+        return 'tq-badge tq-badge--amber';
+    }
+  }
+
+  /**
+   * Gestisce la scelta nel select collezionabile: se è la sentinella
+   * "Crea nuovo", riporta il control a null e apre il form inline.
+   */
+  onCollectibleSelectionChange(value: string | null): void {
+    if (value === this.CREATE_SENTINEL) {
+      this.form.controls.collectibleId.setValue(null);
+      this.showInlineCollectibleForm.set(true);
+    }
+  }
+
   /** Tipo quest corrente come signal reattivo (il value del FormControl non lo è). */
   readonly questType = signal<QuestType>(QuestType.PRIMARY);
 
@@ -122,6 +153,7 @@ export class AdminQuestFormPage implements OnInit {
   setType(type: QuestType): void {
     this.form.controls.type.setValue(type);
     this.questType.set(type);
+    this.applyCollectibleRequirement(type);
 
     const { min, max } = RADIUS_LIMITS[type];
     const current = this.form.controls.radiusMeters.value;
@@ -129,6 +161,22 @@ export class AdminQuestFormPage implements OnInit {
     if (clamped !== current) {
       this.form.controls.radiusMeters.setValue(clamped);
     }
+  }
+
+  /**
+   * Una quest principale DEVE avere un collezionabile associato (è il
+   * premio sbloccato al completamento); una secondaria non ne ha. Applica
+   * o rimuove il validator required di conseguenza.
+   */
+  private applyCollectibleRequirement(type: QuestType): void {
+    const ctrl = this.form.controls.collectibleId;
+    if (type === QuestType.PRIMARY) {
+      ctrl.addValidators(Validators.required);
+    } else {
+      ctrl.removeValidators(Validators.required);
+      ctrl.setValue(null);
+    }
+    ctrl.updateValueAndValidity();
   }
 
   /**
@@ -191,6 +239,8 @@ export class AdminQuestFormPage implements OnInit {
     const id = this.route.snapshot.paramMap.get('id');
     this.questId.set(id);
     this.breadcrumb.set(id ? 'Modifica quest' : 'Nuova quest', true);
+    // Tipo di default PRIMARY → collezionabile obbligatorio fin da subito.
+    this.applyCollectibleRequirement(this.questType());
     void this.loadCollectibles();
     if (id) void this.loadQuest(id);
   }

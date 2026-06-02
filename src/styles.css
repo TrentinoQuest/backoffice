@@ -333,6 +333,21 @@ kbd {
 .mat-mdc-option .mdc-list-item__primary-text {
   color: var(--tq-text) !important;
 }
+/* Hover / focus / selezione delle opzioni coerenti col tema (il default
+   Material non si vede sul nostro surface). */
+.mat-mdc-option:hover:not(.mdc-list-item--disabled),
+.mat-mdc-option.mat-mdc-option-active {
+  background: var(--tq-surface-alt) !important;
+}
+.mat-mdc-option.mdc-list-item--selected:not(.mat-mdc-option-multiple) {
+  background: var(--tq-primary-light) !important;
+}
+
+/* Opzione "Crea nuovo" del select collezionabile: in cima, separata
+   dalle voci esistenti da un bordo. */
+.coll-select-panel .coll-opt--create {
+  border-bottom: 1px solid var(--tq-border);
+}
 
 /* Snackbar */
 .mat-mdc-snack-bar-container .mdc-snackbar__surface {
