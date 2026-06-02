@@ -2,6 +2,7 @@ import { Component, computed, inject, signal, OnInit, ViewChild } from '@angular
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -106,6 +107,7 @@ export class AdminQuestFormPage implements OnInit {
   readonly mapSearchQuery = signal('');
   readonly searchResults = signal<GeocodingResult[]>([]);
   readonly isSearching = signal(false);
+  private searchDebounce: ReturnType<typeof setTimeout> | null = null;
 
   /** Limiti raggio per il tipo corrente (pilotano min/max dello slider). */
   readonly radiusMin = computed(() => RADIUS_LIMITS[this.questType()].min);
@@ -129,8 +131,29 @@ export class AdminQuestFormPage implements OnInit {
     }
   }
 
+  /**
+   * Reagisce alla digitazione: aggiorna la query e lancia la ricerca con
+   * debounce (350ms) così i suggerimenti appaiono mentre si scrive, senza
+   * martellare il servizio di geocoding a ogni tasto.
+   */
+  onSearchInput(value: string): void {
+    this.mapSearchQuery.set(value);
+    if (this.searchDebounce) {
+      clearTimeout(this.searchDebounce);
+    }
+    if (!value.trim()) {
+      this.searchResults.set([]);
+      return;
+    }
+    this.searchDebounce = setTimeout(() => void this.onSearchLocation(), 350);
+  }
+
   /** Esegue la ricerca geografica del luogo digitato. */
   async onSearchLocation(): Promise<void> {
+    if (this.searchDebounce) {
+      clearTimeout(this.searchDebounce);
+      this.searchDebounce = null;
+    }
     const q = this.mapSearchQuery().trim();
     if (!q) {
       this.searchResults.set([]);
@@ -153,11 +176,15 @@ export class AdminQuestFormPage implements OnInit {
     this.searchResults.set([]);
   }
 
-  readonly selectedCollectibleImage = computed(() => {
-    const id = this.form.controls.collectibleId.value;
-    if (!id) return '';
-    const c = this.collectibles().find((x) => x.id === id);
-    return c?.imageUrl ?? '';
+  /** Id collezionabile selezionato come signal reattivo (il value del control non lo è). */
+  private readonly selectedCollectibleId = toSignal(this.form.controls.collectibleId.valueChanges, {
+    initialValue: this.form.controls.collectibleId.value,
+  });
+
+  readonly selectedCollectible = computed(() => {
+    const id = this.selectedCollectibleId();
+    if (!id) return null;
+    return this.collectibles().find((x) => x.id === id) ?? null;
   });
 
   ngOnInit(): void {
@@ -226,7 +253,11 @@ export class AdminQuestFormPage implements OnInit {
 
   onToggleInlineCollectible(): void {
     this.showInlineCollectibleForm.update((v) => !v);
-    if (!this.showInlineCollectibleForm()) {
+    if (this.showInlineCollectibleForm()) {
+      // Aprendo la creazione, deseleziona l'eventuale collezionabile
+      // esistente: stai creando il nuovo, non vuoi che ne resti uno scelto.
+      this.form.controls.collectibleId.setValue(null);
+    } else {
       this.inlineCollectibleForm.reset({
         name: '',
         description: '',
