@@ -71,8 +71,26 @@
                     >
                       ✕
                     </button>
+                  } @else if (b.approvalStatus === BusinessApprovalStatus.APPROVED) {
+                    <button
+                      type="button"
+                      class="action-circle action-circle--reject"
+                      matTooltip="Revoca accesso"
+                      (click)="onRevoke(b)"
+                      aria-label="Revoca accesso"
+                    >
+                      ⦸
+                    </button>
                   } @else {
-                    <span class="muted">—</span>
+                    <button
+                      type="button"
+                      class="action-circle action-circle--approve"
+                      matTooltip="Approva"
+                      (click)="onApprove(b)"
+                      aria-label="Approva"
+                    >
+                      ✓
+                    </button>
                   }
                 </td>
               </tr>

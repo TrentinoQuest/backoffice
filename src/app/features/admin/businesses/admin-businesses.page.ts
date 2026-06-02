@@ -99,6 +99,26 @@ export class AdminBusinessesPage implements OnInit {
     }
   }
 
+  async onRevoke(b: Business): Promise<void> {
+    const data: ConfirmDialogData = {
+      title: "Revocare l'accesso?",
+      message: `"${b.businessName}" non potrà più pubblicare offerte finché non verrà ri-approvata.`,
+      confirmLabel: 'Revoca',
+      danger: true,
+    };
+    const ok = await firstValueFrom(
+      this.dialog.open(ConfirmDialogComponent, { data, width: '440px' }).afterClosed(),
+    );
+    if (!ok) return;
+    try {
+      await this.service.reject(b.id);
+      this.snackBar.open(`Accesso revocato a "${b.businessName}"`, 'OK', { duration: 3000 });
+      await this.load();
+    } catch (err) {
+      this.showError('Errore nella revoca', err);
+    }
+  }
+
   async onReject(b: Business): Promise<void> {
     const data: ConfirmDialogData = {
       title: "Rifiutare l'affiliazione?",
