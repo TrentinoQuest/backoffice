@@ -1,9 +1,7 @@
-.pal-backdrop {
+.pal-backdrop-shell {
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: rgba(7, 26, 14, 0.5);
-  backdrop-filter: blur(6px);
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -20,7 +18,20 @@
   }
 }
 
+.pal-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border: 0;
+  padding: 0;
+  background: rgba(7, 26, 14, 0.5);
+  backdrop-filter: blur(6px);
+  cursor: default;
+}
+
 .pal-box {
+  position: relative;
+  z-index: 1;
   width: 560px;
   background: var(--tq-surface);
   border: 1px solid var(--tq-border-strong);
@@ -92,6 +103,12 @@
   gap: 10px;
   padding: 8px 10px;
   border-radius: var(--tq-r-sm);
+  border: 0;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  color: inherit;
+  font: inherit;
   cursor: pointer;
   transition: background 100ms;
 

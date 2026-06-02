@@ -208,7 +208,7 @@ export class QuestMapViewerComponent implements AfterViewInit, OnChanges, OnDest
       const marker = L.marker([geo.lat, geo.lng], { icon, zIndexOffset: isSelected ? 1000 : 0 });
 
       if (this.interactive) {
-        const popupHtml = this.buildPopupHtml(quest, isSelected);
+        const popupHtml = this.buildPopupHtml(quest);
         marker.bindPopup(popupHtml, {
           className: 'tq-leaflet-popup',
           maxWidth: 240,
@@ -225,7 +225,7 @@ export class QuestMapViewerComponent implements AfterViewInit, OnChanges, OnDest
     }
   }
 
-  private buildPopupHtml(quest: AnyQuest, _isSelected: boolean): string {
+  private buildPopupHtml(quest: AnyQuest): string {
     const typeLabel = quest.type === QuestType.PRIMARY ? '★ Principale' : '● Secondaria';
     const statusLabel = quest.status === QuestStatus.ACTIVE ? 'Attiva' : 'Inattiva';
     // Usa i token CSS del design system: il popup è stilizzato anche via

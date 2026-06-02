@@ -115,14 +115,6 @@ export class AdminQuestsMapPage implements OnInit {
     this.selectedQuestId.set(quest.id);
   }
 
-  goToList(): void {
-    void this.router.navigateByUrl('/admin/quests');
-  }
-
-  onCreateClick(): void {
-    void this.router.navigate(['/admin/quests/new']);
-  }
-
   toggleActiveOnly(): void {
     this.showActiveOnly.update((v) => !v);
   }

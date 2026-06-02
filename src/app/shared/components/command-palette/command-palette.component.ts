@@ -5,10 +5,8 @@ import {
   computed,
   HostListener,
   OnInit,
-  OnDestroy,
   ElementRef,
   ViewChild,
-  AfterViewInit,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -32,7 +30,7 @@ export interface PaletteItem {
   templateUrl: './command-palette.component.html',
   styleUrl: './command-palette.component.scss',
 })
-export class CommandPaletteComponent implements OnInit, OnDestroy, AfterViewInit {
+export class CommandPaletteComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly questsService = inject(QuestsAdminService);
   private readonly collectiblesService = inject(CollectiblesAdminService);
@@ -66,7 +64,7 @@ export class CommandPaletteComponent implements OnInit, OnDestroy, AfterViewInit
       label: 'Mappa quest',
       sublabel: 'Vista geografica',
       category: 'nav',
-      action: () => this.navigate('/admin/quests-map'),
+      action: () => this.navigate('/admin/quests/map'),
     },
     {
       id: 'nav-collectibles',
@@ -141,14 +139,6 @@ export class CommandPaletteComponent implements OnInit, OnDestroy, AfterViewInit
 
   ngOnInit(): void {
     void this.loadData();
-  }
-
-  ngAfterViewInit(): void {
-    // Focus the input when palette opens (called from shell after setting isOpen)
-  }
-
-  ngOnDestroy(): void {
-    /* nothing to clean up */
   }
 
   open(): void {

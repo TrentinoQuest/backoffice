@@ -41,8 +41,8 @@ export class TqSliderComponent implements ControlValueAccessor {
     return ((this.value() - this.min()) / range) * 100;
   });
 
-  private onChange: (v: number) => void = () => {};
-  private onTouched: () => void = () => {};
+  private onChange?: (v: number) => void;
+  private onTouched?: () => void;
   private dragging = false;
 
   writeValue(v: number): void {
@@ -61,13 +61,46 @@ export class TqSliderComponent implements ControlValueAccessor {
   onTrackClick(event: MouseEvent): void {
     if (this.disabled()) return;
     this.setFromEvent(event);
-    this.onTouched();
+    this.onTouched?.();
   }
 
   onThumbMousedown(event: MouseEvent): void {
     if (this.disabled()) return;
     event.preventDefault();
     this.dragging = true;
+  }
+
+  onTrackKeydown(event: KeyboardEvent): void {
+    if (this.disabled()) return;
+
+    let nextValue: number | null = null;
+    const current = this.value();
+    const step = this.step();
+
+    switch (event.key) {
+      case 'ArrowLeft':
+      case 'ArrowDown':
+        nextValue = current - step;
+        break;
+      case 'ArrowRight':
+      case 'ArrowUp':
+        nextValue = current + step;
+        break;
+      case 'Home':
+        nextValue = this.min();
+        break;
+      case 'End':
+        nextValue = this.max();
+        break;
+      default:
+        return;
+    }
+
+    event.preventDefault();
+    const clamped = Math.max(this.min(), Math.min(this.max(), nextValue));
+    this.value.set(clamped);
+    this.onChange?.(clamped);
+    this.onTouched?.();
   }
 
   @HostListener('window:mousemove', ['$event'])
@@ -80,7 +113,7 @@ export class TqSliderComponent implements ControlValueAccessor {
   onMouseUp(): void {
     if (this.dragging) {
       this.dragging = false;
-      this.onTouched();
+      this.onTouched?.();
     }
   }
 
@@ -92,6 +125,6 @@ export class TqSliderComponent implements ControlValueAccessor {
     const stepped = Math.round(raw / this.step()) * this.step();
     const clamped = Math.max(this.min(), Math.min(this.max(), stepped));
     this.value.set(clamped);
-    this.onChange(clamped);
+    this.onChange?.(clamped);
   }
 }

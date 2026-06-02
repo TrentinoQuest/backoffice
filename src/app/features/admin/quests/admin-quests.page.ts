@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { AnyQuest, Collectible, PrimaryQuest, QuestStatus, QuestType } from '@trentino-quest/shared-types';
+import { AnyQuest, PrimaryQuest, QuestStatus, QuestType } from '@trentino-quest/shared-types';
 import { QuestsAdminService } from '../../../core/services/quests-admin.service';
 import { CollectiblesAdminService } from '../../../core/services/collectibles-admin.service';
 import { BreadcrumbService } from '../../../core/services/breadcrumb.service';
@@ -189,15 +189,8 @@ export class AdminQuestsPage implements OnInit {
     this.statusFilter.set(value);
     void this.loadQuests();
   }
-
-  onCreateClick(): void {
-    void this.router.navigate(['/admin/quests/new']);
-  }
   onEditClick(quest: AnyQuest): void {
     void this.router.navigate(['/admin/quests', quest.id, 'edit']);
-  }
-  goToMap(): void {
-    void this.router.navigateByUrl('/admin/quests-map');
   }
 
   typeLabel(type: string): string {

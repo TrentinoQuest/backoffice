@@ -128,7 +128,12 @@
           }
         </nav>
         <div class="toolbar-spacer"></div>
-        <div class="global-search" role="search" aria-label="Ricerca globale" (click)="openPalette()">
+        <button
+          type="button"
+          class="global-search"
+          aria-label="Ricerca globale"
+          (click)="openPalette()"
+        >
           <svg
             width="13"
             height="13"
@@ -144,7 +149,7 @@
           </svg>
           <span class="gs-label">Cerca ovunque…</span>
           <kbd aria-label="Scorciatoia tastiera Command K">⌘K</kbd>
-        </div>
+        </button>
       </div>
     }
 

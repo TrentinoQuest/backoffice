@@ -105,8 +105,7 @@ export class GeocodingService {
       return res.display_name ?? '';
     }
     const street = a.road ?? a.pedestrian ?? a.footway ?? '';
-    const streetWithNumber =
-      street && a.house_number ? `${street} ${a.house_number}` : street;
+    const streetWithNumber = street && a.house_number ? `${street} ${a.house_number}` : street;
     const city = a.city ?? a.town ?? a.village ?? a.hamlet ?? a.municipality ?? '';
     const parts = [streetWithNumber, city].filter((p) => p.length > 0);
     return parts.join(', ');

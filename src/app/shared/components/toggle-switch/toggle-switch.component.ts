@@ -27,8 +27,8 @@ export class ToggleSwitchComponent implements ControlValueAccessor {
   readonly state = signal<boolean>(false);
   readonly disabled = signal<boolean>(false);
 
-  private onChange: (v: boolean) => void = () => {};
-  private onTouched: () => void = () => {};
+  private onChange?: (v: boolean) => void;
+  private onTouched?: () => void;
 
   /** Valore effettivo: input controllato se presente, altrimenti stato interno */
   isOn(): boolean {
@@ -40,8 +40,8 @@ export class ToggleSwitchComponent implements ControlValueAccessor {
     if (this.disabled()) return;
     const next = !this.isOn();
     this.state.set(next);
-    this.onChange(next);
-    this.onTouched();
+    this.onChange?.(next);
+    this.onTouched?.();
     this.checkedChange.emit(next);
   }
 

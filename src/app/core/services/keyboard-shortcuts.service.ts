@@ -79,7 +79,7 @@ export class KeyboardShortcutsService {
       case 'q':
         return '/admin/quests';
       case 'm':
-        return '/admin/quests-map';
+        return '/admin/quests/map';
       case 's':
         return '/admin/settings';
       default:

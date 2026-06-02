@@ -80,7 +80,7 @@
 
           <div class="flds-2">
             <div class="fld">
-              <label class="fld-label">Punti</label>
+              <span class="fld-label">Punti</span>
               <app-tq-slider
                 formControlName="points"
                 [min]="10"
@@ -90,7 +90,7 @@
               />
             </div>
             <div class="fld">
-              <label class="fld-label">Stato</label>
+              <span class="fld-label">Stato</span>
               <mat-form-field appearance="outline" class="fld-select">
                 <mat-select formControlName="status">
                   <mat-option [value]="QuestStatus.ACTIVE">Attiva</mat-option>
@@ -153,7 +153,10 @@
                   <div class="icf-img-row">
                     <div class="icf-preview">
                       @if (inlineCollectibleForm.controls.imageUrl.value) {
-                        <img [src]="inlineCollectibleForm.controls.imageUrl.value" alt="Anteprima" />
+                        <img
+                          [src]="inlineCollectibleForm.controls.imageUrl.value"
+                          alt="Anteprima"
+                        />
                       } @else {
                         <svg
                           width="20"
@@ -207,7 +210,11 @@
                   </div>
 
                   <div class="icf-actions">
-                    <button type="button" class="tq-btn-ghost" (click)="onToggleInlineCollectible()">
+                    <button
+                      type="button"
+                      class="tq-btn-ghost"
+                      (click)="onToggleInlineCollectible()"
+                    >
                       Annulla
                     </button>
                     <button

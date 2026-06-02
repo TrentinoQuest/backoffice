@@ -1,79 +1,93 @@
 /* ─── Reset & Base ─────────────────────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; }
-html, body { height: 100%; margin: 0; }
-body { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+body {
+  font-family:
+    'DM Sans',
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
 
 /* ─── Design Tokens — Light ────────────────────────────────────────────────── */
 :root {
   /* Surfaces */
-  --tq-page-bg:       #faf8f4;
-  --tq-surface:       #ffffff;
-  --tq-surface-alt:   #f7f4ef;
+  --tq-page-bg: #faf8f4;
+  --tq-surface: #ffffff;
+  --tq-surface-alt: #f7f4ef;
 
   /* Borders */
-  --tq-border:        #e8e2d8;
+  --tq-border: #e8e2d8;
   --tq-border-strong: #cec5b5;
 
   /* Text */
-  --tq-text:          #1a1a14;
-  --tq-text-muted:    #6b6452;
-  --tq-text-subtle:   #9a8f7e;
+  --tq-text: #1a1a14;
+  --tq-text-muted: #6b6452;
+  --tq-text-subtle: #9a8f7e;
 
   /* Brand */
-  --tq-primary:       #1a5c38;
+  --tq-primary: #1a5c38;
   --tq-primary-light: #edf5f0;
-  --tq-amber:         #a06010;
-  --tq-amber-light:   #fef4e2;
-  --tq-danger:        #9b1c1c;
-  --tq-danger-light:  #fff0f0;
+  --tq-amber: #a06010;
+  --tq-amber-light: #fef4e2;
+  --tq-danger: #9b1c1c;
+  --tq-danger-light: #fff0f0;
 
   /* Sidebar */
-  --tq-sidebar-bg:      #071a0e;
-  --tq-sidebar-border:  rgba(255, 255, 255, 0.07);
-  --tq-sidebar-text:    rgba(255, 255, 255, 0.42);
-  --tq-sidebar-hover:   rgba(255, 255, 255, 0.05);
-  --tq-sidebar-active:  rgba(255, 255, 255, 0.08);
-  --tq-sidebar-accent:  #c9a227;
-  --tq-sidebar-w:       236px;
-  --tq-sidebar-w-col:   56px;
+  --tq-sidebar-bg: #071a0e;
+  --tq-sidebar-border: rgba(255, 255, 255, 0.07);
+  --tq-sidebar-text: rgba(255, 255, 255, 0.42);
+  --tq-sidebar-hover: rgba(255, 255, 255, 0.05);
+  --tq-sidebar-active: rgba(255, 255, 255, 0.08);
+  --tq-sidebar-accent: #c9a227;
+  --tq-sidebar-w: 236px;
+  --tq-sidebar-w-col: 56px;
 
   /* Layout */
   --tq-toolbar-h: 52px;
 
   /* Typography */
   --tq-font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
-  --tq-font-body:    'DM Sans', system-ui, -apple-system, sans-serif;
-  --tq-font-mono:    'JetBrains Mono', 'Courier New', monospace;
+  --tq-font-body: 'DM Sans', system-ui, -apple-system, sans-serif;
+  --tq-font-mono: 'JetBrains Mono', 'Courier New', monospace;
 
   /* Radii */
   --tq-r-sm: 6px;
-  --tq-r:    10px;
+  --tq-r: 10px;
   --tq-r-lg: 14px;
   --tq-r-xl: 20px;
 
   /* Shadows */
   --tq-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05), 0 1px 4px rgba(0, 0, 0, 0.04);
-  --tq-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.10), 0 2px 6px rgba(0, 0, 0, 0.06);
-  --tq-shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.20), 0 8px 24px rgba(0, 0, 0, 0.12);
+  --tq-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.06);
+  --tq-shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 /* ─── Design Tokens — Dark ─────────────────────────────────────────────────── */
 :root.dark {
   color-scheme: dark;
-  --tq-page-bg:       #0f1a10;
-  --tq-surface:       #172118;
-  --tq-surface-alt:   #1e2d1f;
-  --tq-border:        #2a3d2b;
+  --tq-page-bg: #0f1a10;
+  --tq-surface: #172118;
+  --tq-surface-alt: #1e2d1f;
+  --tq-border: #2a3d2b;
   --tq-border-strong: #384f39;
-  --tq-text:          #d4e8d6;
-  --tq-text-muted:    #8aaa8c;
-  --tq-text-subtle:   #5a7a5d;
+  --tq-text: #d4e8d6;
+  --tq-text-muted: #8aaa8c;
+  --tq-text-subtle: #5a7a5d;
   --tq-primary-light: rgba(26, 92, 56, 0.22);
-  --tq-amber:         #c9a227;
-  --tq-amber-light:   rgba(201, 162, 39, 0.12);
-  --tq-danger-light:  rgba(155, 28, 28, 0.15);
-  --tq-sidebar-bg:    #060f07;
-  --tq-shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.55), 0 8px 24px rgba(0, 0, 0, 0.30);
+  --tq-amber: #c9a227;
+  --tq-amber-light: rgba(201, 162, 39, 0.12);
+  --tq-danger-light: rgba(155, 28, 28, 0.15);
+  --tq-sidebar-bg: #060f07;
+  --tq-shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.55), 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
 /* ─── Page base ─────────────────────────────────────────────────────────────── */
@@ -119,11 +133,17 @@ body { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; }
   cursor: pointer;
   box-shadow: 0 1px 4px rgba(26, 92, 56, 0.35);
   letter-spacing: -0.01em;
-  transition: filter 140ms, transform 80ms;
+  transition:
+    filter 140ms,
+    transform 80ms;
   white-space: nowrap;
 }
-.tq-btn-primary:hover  { filter: brightness(1.08); }
-.tq-btn-primary:active { transform: scale(0.97); }
+.tq-btn-primary:hover {
+  filter: brightness(1.08);
+}
+.tq-btn-primary:active {
+  transform: scale(0.97);
+}
 
 .tq-btn-ghost {
   display: inline-flex;
@@ -138,9 +158,14 @@ body { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; }
   font-weight: 500;
   font-family: var(--tq-font-body);
   cursor: pointer;
-  transition: border-color 140ms, color 140ms;
+  transition:
+    border-color 140ms,
+    color 140ms;
 }
-.tq-btn-ghost:hover { border-color: var(--tq-border-strong); color: var(--tq-text); }
+.tq-btn-ghost:hover {
+  border-color: var(--tq-border-strong);
+  color: var(--tq-text);
+}
 
 .tq-icon-btn {
   width: 30px;
@@ -156,7 +181,16 @@ body { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; }
   transition: all 130ms;
   flex-shrink: 0;
 }
-.tq-icon-btn:hover { border-color: var(--tq-primary); color: var(--tq-primary); background: var(--tq-primary-light); }
+.tq-icon-btn:hover {
+  border-color: var(--tq-primary);
+  color: var(--tq-primary);
+  background: var(--tq-primary-light);
+}
+.tq-icon-btn--danger:hover {
+  border-color: var(--tq-danger);
+  color: var(--tq-danger);
+  background: var(--tq-danger-light);
+}
 
 /* ─── Shared Badges ─────────────────────────────────────────────────────────── */
 .tq-badge {
@@ -169,10 +203,22 @@ body { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; }
   font-weight: 500;
   white-space: nowrap;
 }
-.tq-badge--green    { background: var(--tq-primary-light); color: var(--tq-primary); }
-.tq-badge--gray     { background: var(--tq-surface-alt);   color: var(--tq-text-subtle); }
-.tq-badge--amber    { background: var(--tq-amber-light);   color: var(--tq-amber); }
-.tq-badge--danger   { background: var(--tq-danger-light);  color: var(--tq-danger); }
+.tq-badge--green {
+  background: var(--tq-primary-light);
+  color: var(--tq-primary);
+}
+.tq-badge--gray {
+  background: var(--tq-surface-alt);
+  color: var(--tq-text-subtle);
+}
+.tq-badge--amber {
+  background: var(--tq-amber-light);
+  color: var(--tq-amber);
+}
+.tq-badge--danger {
+  background: var(--tq-danger-light);
+  color: var(--tq-danger);
+}
 
 /* ─── Table shared ──────────────────────────────────────────────────────────── */
 .tq-table-wrap {
@@ -181,10 +227,18 @@ body { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; }
   border-radius: var(--tq-r-lg);
   overflow: hidden;
   box-shadow: var(--tq-shadow-sm);
-  transition: background 220ms, border-color 220ms;
+  transition:
+    background 220ms,
+    border-color 220ms;
 }
-.tq-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-.tq-table thead tr { border-bottom: 1px solid var(--tq-border); }
+.tq-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.tq-table thead tr {
+  border-bottom: 1px solid var(--tq-border);
+}
 .tq-table th {
   padding: 10px 16px;
   text-align: left;
@@ -202,18 +256,31 @@ body { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; }
   color: var(--tq-text);
   border-bottom: 1px solid var(--tq-border);
   vertical-align: middle;
-  transition: background 130ms, border-color 220ms;
+  transition:
+    background 130ms,
+    border-color 220ms;
 }
-.tq-table tbody tr:last-child td { border-bottom: none; }
-.tq-table tbody tr { cursor: pointer; }
-.tq-table tbody tr:hover td { background: var(--tq-surface-alt); }
+.tq-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.tq-table tbody tr {
+  cursor: pointer;
+}
+.tq-table tbody tr:hover td {
+  background: var(--tq-surface-alt);
+}
 
 /* Left-border hover bar (apply to first td in each row) */
-.tq-table td.tq-td-first { position: relative; padding-left: 19px; }
+.tq-table td.tq-td-first {
+  position: relative;
+  padding-left: 19px;
+}
 .tq-table td.tq-td-first::before {
   content: '';
   position: absolute;
-  left: 0; top: 0; bottom: 0;
+  left: 0;
+  top: 0;
+  bottom: 0;
   width: 3px;
   background: var(--tq-primary);
   transform: scaleY(0);
@@ -221,22 +288,42 @@ body { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; }
   transition: transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1);
   border-radius: 0 2px 2px 0;
 }
-.tq-table tr:hover td.tq-td-first::before { transform: scaleY(1); }
+.tq-table tr:hover td.tq-td-first::before {
+  transform: scaleY(1);
+}
 
 /* ─── Table row stagger animation ───────────────────────────────────────────── */
 @keyframes tq-row-in {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 .tq-table tbody tr {
   animation: tq-row-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
-.tq-table tbody tr:nth-child(1)  { animation-delay: 40ms; }
-.tq-table tbody tr:nth-child(2)  { animation-delay: 80ms; }
-.tq-table tbody tr:nth-child(3)  { animation-delay: 120ms; }
-.tq-table tbody tr:nth-child(4)  { animation-delay: 160ms; }
-.tq-table tbody tr:nth-child(5)  { animation-delay: 200ms; }
-.tq-table tbody tr:nth-child(n+6){ animation-delay: 240ms; }
+.tq-table tbody tr:nth-child(1) {
+  animation-delay: 40ms;
+}
+.tq-table tbody tr:nth-child(2) {
+  animation-delay: 80ms;
+}
+.tq-table tbody tr:nth-child(3) {
+  animation-delay: 120ms;
+}
+.tq-table tbody tr:nth-child(4) {
+  animation-delay: 160ms;
+}
+.tq-table tbody tr:nth-child(5) {
+  animation-delay: 200ms;
+}
+.tq-table tbody tr:nth-child(n + 6) {
+  animation-delay: 240ms;
+}
 
 /* ─── Search input ──────────────────────────────────────────────────────────── */
 .tq-search {
@@ -247,13 +334,19 @@ body { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; }
   border-radius: var(--tq-r-sm);
   padding: 6px 12px;
   background: var(--tq-surface);
-  transition: border-color 140ms, box-shadow 140ms, background 220ms;
+  transition:
+    border-color 140ms,
+    box-shadow 140ms,
+    background 220ms;
 }
 .tq-search:focus-within {
   border-color: var(--tq-primary);
   box-shadow: 0 0 0 3px rgba(26, 92, 56, 0.09);
 }
-.tq-search svg { color: var(--tq-text-subtle); flex-shrink: 0; }
+.tq-search svg {
+  color: var(--tq-text-subtle);
+  flex-shrink: 0;
+}
 .tq-search input {
   border: none;
   outline: none;
@@ -263,7 +356,9 @@ body { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; }
   background: none;
   width: 100%;
 }
-.tq-search input::placeholder { color: var(--tq-text-subtle); }
+.tq-search input::placeholder {
+  color: var(--tq-text-subtle);
+}
 
 /* ─── kbd ───────────────────────────────────────────────────────────────────── */
 kbd {
@@ -275,26 +370,36 @@ kbd {
   font-size: 11px;
   font-family: var(--tq-font-mono);
   color: var(--tq-text);
-  transition: background 220ms, border-color 220ms;
+  transition:
+    background 220ms,
+    border-color 220ms;
 }
 
 /* ─── Reduced motion ────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
 }
 /* Also applied when user explicitly sets "Animazioni ridotte" in Settings */
-:root.reduce-motion *, :root.reduce-motion *::before, :root.reduce-motion *::after {
+:root.reduce-motion *,
+:root.reduce-motion *::before,
+:root.reduce-motion *::after {
   animation-duration: 0.01ms !important;
   transition-duration: 0.01ms !important;
 }
 
 /* ─── Angular Material overrides ────────────────────────────────────────────── */
 /* Ensure Material form fields use our font */
-.mat-mdc-form-field { font-family: var(--tq-font-body) !important; }
-.mdc-text-field { font-family: var(--tq-font-body) !important; }
+.mat-mdc-form-field {
+  font-family: var(--tq-font-body) !important;
+}
+.mdc-text-field {
+  font-family: var(--tq-font-body) !important;
+}
 
 /* Integra i form field Material (outline) nello stile Terrain B:
    superficie, bordi caldi, raggio coerente, testo dei token. */
@@ -354,6 +459,35 @@ kbd {
   background: var(--tq-text) !important;
   color: var(--tq-surface) !important;
   font-family: var(--tq-font-body) !important;
+}
+
+/* Dialog surfaces: ensure overlays follow our theme (light & dark) */
+.cdk-overlay-container .mdc-dialog__surface,
+.cdk-overlay-pane .mdc-dialog__surface,
+.mat-mdc-dialog-container .mdc-dialog__surface {
+  background: var(--tq-surface) !important;
+  color: var(--tq-text) !important;
+  border-radius: var(--tq-r) !important;
+  box-shadow: var(--tq-shadow-lg) !important;
+  font-family: var(--tq-font-body) !important;
+}
+
+/* Ensure MDC theme variables for overlays match our tokens so internal MDC
+   components render correctly (ripristina contrasto in dark mode). */
+.cdk-overlay-container .mdc-dialog__surface,
+.cdk-overlay-pane .mdc-dialog__surface,
+.mat-mdc-dialog-container .mdc-dialog__surface {
+  --mdc-theme-surface: var(--tq-surface) !important;
+  --mdc-theme-on-surface: var(--tq-text) !important;
+  --mdc-theme-on-surface-variant: var(--tq-text-muted) !important;
+  --mdc-theme-outline: var(--tq-border) !important;
+}
+
+/* Dialog title/content default colors */
+.cdk-overlay-container .mdc-dialog__surface h2,
+.cdk-overlay-container .mdc-dialog__surface p,
+.cdk-overlay-container .mdc-dialog__surface .mdc-dialog__content {
+  color: var(--tq-text) !important;
 }
 
 /* ─── Route enter transition ─────────────────────────────────────────────── */

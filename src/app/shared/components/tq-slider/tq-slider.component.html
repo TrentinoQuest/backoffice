@@ -1,6 +1,12 @@
 <div class="tq-slider" [class.tq-slider--disabled]="disabled()">
   <div class="tq-slider-value" aria-live="polite">{{ value() }}</div>
-  <div class="tq-slider-track" #track (click)="onTrackClick($event)">
+  <div
+    class="tq-slider-track"
+    #track
+    (click)="onTrackClick($event)"
+    (keydown)="onTrackKeydown($event)"
+    tabindex="0"
+  >
     <div class="tq-slider-fill" [style.width.%]="fillPct()"></div>
     <div
       class="tq-slider-thumb"

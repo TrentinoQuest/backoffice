@@ -14,7 +14,13 @@ import { toSignal } from '@angular/core/rxjs-interop';
 @Component({
   selector: 'app-admin-collectible-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatSnackBarModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSnackBarModule,
+  ],
   templateUrl: './admin-collectible-form.page.html',
   styleUrl: './admin-collectible-form.page.scss',
 })

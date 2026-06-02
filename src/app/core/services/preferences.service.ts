@@ -12,7 +12,9 @@ const KEYS = {
 @Injectable({ providedIn: 'root' })
 export class PreferencesService {
   readonly density = signal<Density>(this.readDensity());
-  readonly sidebarCollapsedStart = signal<boolean>(this.readBool(KEYS.sidebarCollapsedStart, false));
+  readonly sidebarCollapsedStart = signal<boolean>(
+    this.readBool(KEYS.sidebarCollapsedStart, false),
+  );
   readonly collapseOnMap = signal<boolean>(this.readBool(KEYS.collapseOnMap, true));
   /** Default true: confermare prima di archiviare è la scelta sicura */
   readonly confirmBeforeArchive = signal<boolean>(this.readBool(KEYS.confirmBeforeArchive, true));

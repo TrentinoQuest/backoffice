@@ -1,12 +1,12 @@
 @if (isOpen()) {
-  <div
-    class="pal-backdrop"
-    (click)="close()"
-    role="dialog"
-    aria-modal="true"
-    aria-label="Ricerca globale"
-  >
-    <div class="pal-box" (click)="$event.stopPropagation()">
+  <div class="pal-backdrop-shell" role="dialog" aria-modal="true" aria-label="Ricerca globale">
+    <button
+      type="button"
+      class="pal-backdrop"
+      (click)="close()"
+      aria-label="Chiudi ricerca globale"
+    ></button>
+    <div class="pal-box">
       <!-- Input -->
       <div class="pal-search-row">
         <svg
@@ -39,7 +39,8 @@
       <!-- Results -->
       <div class="pal-results" role="listbox">
         @for (item of results(); track item.id; let i = $index) {
-          <div
+          <button
+            type="button"
             class="pal-item"
             [class.pal-item--focused]="i === focusIndex()"
             role="option"
@@ -119,7 +120,7 @@
             <span class="pal-item-badge pal-badge--{{ item.category }}">
               {{ categoryLabel(item.category) }}
             </span>
-          </div>
+          </button>
         }
         @if (results().length === 0) {
           <div class="pal-empty">Nessun risultato per "{{ query() }}"</div>

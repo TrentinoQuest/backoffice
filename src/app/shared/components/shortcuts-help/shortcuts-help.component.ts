@@ -13,8 +13,14 @@ interface HelpRow {
   imports: [CommonModule],
   template: `
     @if (shortcuts.helpVisible()) {
-      <div class="overlay" (click)="shortcuts.closeHelp()">
-        <div class="panel" (click)="$event.stopPropagation()" role="dialog" aria-label="Scorciatoie">
+      <div class="overlay" role="dialog" aria-modal="true" aria-label="Scorciatoie">
+        <button
+          type="button"
+          class="overlay__backdrop"
+          (click)="shortcuts.closeHelp()"
+          aria-label="Chiudi scorciatoie"
+        ></button>
+        <div class="panel">
           <header class="panel__head">
             <h2>Scorciatoie da tastiera</h2>
             <button type="button" class="close" (click)="shortcuts.closeHelp()" aria-label="Chiudi">
@@ -43,14 +49,21 @@ interface HelpRow {
       .overlay {
         position: fixed;
         inset: 0;
-        background: rgba(7, 26, 14, 0.5);
-        backdrop-filter: blur(6px);
+        z-index: 1000;
         display: flex;
         align-items: flex-start;
         justify-content: center;
         padding-top: 12vh;
-        z-index: 1000;
         animation: fade 160ms ease-out;
+      }
+      .overlay__backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(7, 26, 14, 0.5);
+        backdrop-filter: blur(6px);
+        border: 0;
+        padding: 0;
+        cursor: default;
       }
       @keyframes fade {
         from {
@@ -61,6 +74,8 @@ interface HelpRow {
         }
       }
       .panel {
+        position: relative;
+        z-index: 1;
         width: 460px;
         max-width: 92vw;
         background: var(--tq-surface);
