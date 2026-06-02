@@ -36,6 +36,11 @@ export class AdminDashboardPage implements OnInit {
   readonly activeQuests = signal<AnyQuest[]>([]);
 
   readonly pendingCount = computed(() => this.pendingBusinesses().length);
+  readonly totalQuests = computed(() => this.activeQuestsCount() + this.inactiveQuestsCount());
+  readonly activeRatio = computed(() => {
+    const total = this.totalQuests();
+    return total === 0 ? 0 : Math.round((this.activeQuestsCount() / total) * 100);
+  });
 
   ngOnInit(): void {
     this.breadcrumb.set('Dashboard');

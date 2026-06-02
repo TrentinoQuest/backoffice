@@ -7,15 +7,35 @@
 
     <!-- Metric strip -->
     <div class="metrics">
-      <button type="button" class="metric" (click)="goTo('/admin/quests')">
+      <button type="button" class="metric metric--green" (click)="goTo('/admin/quests')">
+        <span class="metric__icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+            <path d="M4 22V15" />
+          </svg>
+        </span>
         <span class="metric__value">{{ activeQuestsCount() }}</span>
         <span class="metric__label">Quest attive</span>
       </button>
-      <button type="button" class="metric" (click)="goTo('/admin/quests')">
+      <button type="button" class="metric metric--muted" (click)="goTo('/admin/quests')">
+        <span class="metric__icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 7v5l3 2" />
+          </svg>
+        </span>
         <span class="metric__value">{{ inactiveQuestsCount() }}</span>
         <span class="metric__label">Quest inattive</span>
       </button>
-      <button type="button" class="metric" (click)="goTo('/admin/collectibles')">
+      <button type="button" class="metric metric--amber" (click)="goTo('/admin/collectibles')">
+        <span class="metric__icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+          </svg>
+        </span>
         <span class="metric__value">{{ collectiblesCount() }}</span>
         <span class="metric__label">Collezionabili</span>
       </button>
@@ -23,12 +43,37 @@
         type="button"
         class="metric"
         [class.metric--alert]="pendingCount() > 0"
+        [class.metric--muted]="pendingCount() === 0"
         (click)="goTo('/admin/businesses')"
       >
+        <span class="metric__icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+            <path d="M9 22V12h6v10" />
+          </svg>
+        </span>
         <span class="metric__value">{{ pendingCount() }}</span>
         <span class="metric__label">Affiliazioni in attesa</span>
       </button>
     </div>
+
+    <!-- Ripartizione quest: barra attive vs inattive -->
+    @if (totalQuests() > 0) {
+      <section class="health">
+        <div class="health__head">
+          <span class="health__title">Stato delle quest</span>
+          <span class="health__legend">
+            <span class="dot dot--green"></span> {{ activeQuestsCount() }} attive
+            <span class="dot dot--muted"></span> {{ inactiveQuestsCount() }} inattive
+          </span>
+        </div>
+        <div class="health__bar" role="img"
+          [attr.aria-label]="activeQuestsCount() + ' attive su ' + totalQuests()">
+          <span class="health__fill" [style.width.%]="activeRatio()"></span>
+        </div>
+      </section>
+    }
 
     <!-- Mid layout -->
     <div class="mid">
