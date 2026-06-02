@@ -1,0 +1,164 @@
+.op-quests {
+  padding: 0 16px 24px;
+
+  @media (min-width: 600px) {
+    padding: 0 28px 28px;
+  }
+}
+
+.page-head {
+  margin-bottom: 20px;
+}
+
+.filter-row {
+  margin-bottom: 16px;
+}
+
+.state {
+  padding: 40px;
+  text-align: center;
+  color: var(--tq-text-muted);
+  font-size: 14px;
+}
+
+.muted {
+  color: var(--tq-text-muted);
+  font-size: 13px;
+}
+
+.quest-name {
+  font-weight: 500;
+  color: var(--tq-text);
+  font-size: 13.5px;
+}
+
+.quest-sub {
+  font-size: 11.5px;
+  color: var(--tq-text-subtle);
+  font-family: var(--tq-font-mono);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// ─── Responsive columns ───────────────────────────────────────────────────────
+.col-area {
+  @media (max-width: 720px) {
+    display: none;
+  }
+}
+
+.col-radius {
+  @media (max-width: 560px) {
+    display: none;
+  }
+}
+
+// ─── Action column ────────────────────────────────────────────────────────────
+.col-actions {
+  text-align: right;
+  white-space: nowrap;
+  min-width: 160px;
+
+  @media (max-width: 480px) {
+    min-width: 120px;
+  }
+}
+
+// ─── Action buttons ───────────────────────────────────────────────────────────
+.tq-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 11px;
+  border-radius: var(--tq-r-sm);
+  font-size: 12.5px;
+  font-family: var(--tq-font-body);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 130ms;
+  white-space: nowrap;
+  margin-left: 4px;
+  border: 1px solid transparent;
+
+  &--primary {
+    background: var(--tq-primary);
+    color: #fff;
+    border-color: var(--tq-primary);
+    box-shadow: 0 1px 4px rgba(26, 92, 56, 0.3);
+
+    &:hover {
+      filter: brightness(1.1);
+    }
+
+    &:active {
+      transform: scale(0.97);
+    }
+  }
+
+  &--ghost {
+    background: var(--tq-surface);
+    color: var(--tq-text-muted);
+    border-color: var(--tq-border);
+
+    &:hover {
+      border-color: var(--tq-primary);
+      color: var(--tq-primary);
+      background: var(--tq-primary-light);
+    }
+  }
+
+  &--danger {
+    background: var(--tq-surface);
+    color: var(--tq-danger);
+    border-color: rgba(155, 28, 28, 0.25);
+
+    &:hover {
+      background: var(--tq-danger-light);
+      border-color: var(--tq-danger);
+    }
+  }
+
+  // Comodi col pollice su mobile: area tocco almeno 44px
+  @media (max-width: 600px) {
+    padding: 9px 12px;
+    min-height: 44px;
+  }
+}
+
+// ─── Empty state ──────────────────────────────────────────────────────────────
+.empty-state {
+  padding: 32px;
+  text-align: center;
+  color: var(--tq-text-muted);
+  font-size: 13.5px;
+  cursor: default !important;
+}
+
+// ─── Pagination ───────────────────────────────────────────────────────────────
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.pag-btn {
+  padding: 7px 12px;
+  min-width: 36px;
+  justify-content: center;
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+}
+
+.pag-info {
+  font-size: 13px;
+  color: var(--tq-text-muted);
+  min-width: 60px;
+  text-align: center;
+}

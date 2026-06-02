@@ -1,0 +1,201 @@
+<div class="tq-page">
+  <div class="tq-page-inner op-quests">
+    <header class="page-head">
+      <div>
+        <h1 class="tq-page-title">Quest</h1>
+        <p class="tq-page-subtitle">Piazza, aggiorna o segnala i QR code sul territorio.</p>
+      </div>
+    </header>
+
+    <div class="filter-row">
+      <app-filter-chips
+        [groups]="filterGroups"
+        [selected]="statusFilter()"
+        (selectedChange)="onStatusFilter($event)"
+      />
+    </div>
+
+    @if (isLoading()) {
+      <div class="state">Caricamento…</div>
+    } @else if (quests().length === 0) {
+      <div class="state">
+        @switch (statusFilter()) {
+          @case (PlacementStatus.PENDING) {
+            Nessuna quest in attesa di piazzamento.
+          }
+          @case (PlacementStatus.PLACED) {
+            Nessuna quest piazzata.
+          }
+          @case (PlacementStatus.REPORTED) {
+            Nessuna quest segnalata.
+          }
+        }
+      </div>
+    } @else {
+      <div class="tq-table-wrap">
+        <table class="tq-table" aria-label="Lista quest operatore">
+          <thead>
+            <tr>
+              <th scope="col">Quest</th>
+              <th scope="col" class="col-area">Area di ricerca</th>
+              <th scope="col" class="col-radius">Raggio</th>
+              <th scope="col">Stato QR</th>
+              <th scope="col" class="col-actions">Azioni</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (quest of quests(); track quest.id) {
+              <tr>
+                <td class="tq-td-first">
+                  <div class="quest-name">{{ quest.name }}</div>
+                  @if (quest.exactPosition) {
+                    <div class="quest-sub">
+                      QR: {{ quest.exactPosition.lat.toFixed(5) }},
+                      {{ quest.exactPosition.lng.toFixed(5) }}
+                    </div>
+                  }
+                </td>
+                <td class="col-area muted">{{ searchAreaLabel(quest) }}</td>
+                <td class="col-radius muted">{{ quest.searchRadiusMeters }} m</td>
+                <td>
+                  <span [class]="placementStatusBadgeClass(quest.placementStatus)">
+                    {{ placementStatusLabel(quest.placementStatus) }}
+                  </span>
+                </td>
+                <td class="col-actions">
+                  @if (
+                    quest.placementStatus === PlacementStatus.PENDING ||
+                    quest.placementStatus === PlacementStatus.REPORTED
+                  ) {
+                    <button
+                      type="button"
+                      class="tq-action-btn tq-action-btn--primary"
+                      (click)="onPlace(quest)"
+                      [attr.aria-label]="'Piazza QR per ' + quest.name"
+                    >
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        aria-hidden="true"
+                      >
+                        <circle cx="12" cy="12" r="10" />
+                        <circle cx="12" cy="12" r="3" />
+                        <line x1="12" y1="2" x2="12" y2="6" />
+                        <line x1="12" y1="18" x2="12" y2="22" />
+                        <line x1="2" y1="12" x2="6" y2="12" />
+                        <line x1="18" y1="12" x2="22" y2="12" />
+                      </svg>
+                      Piazza QR
+                    </button>
+                  }
+                  @if (quest.placementStatus === PlacementStatus.PLACED) {
+                    <button
+                      type="button"
+                      class="tq-action-btn tq-action-btn--ghost"
+                      (click)="onUpdatePosition(quest)"
+                      [attr.aria-label]="'Aggiorna posizione per ' + quest.name"
+                    >
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                      </svg>
+                      Aggiorna
+                    </button>
+                    <button
+                      type="button"
+                      class="tq-action-btn tq-action-btn--danger"
+                      (click)="onReportIssue(quest)"
+                      [attr.aria-label]="'Segnala problema per ' + quest.name"
+                    >
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+                        />
+                        <line x1="12" y1="9" x2="12" y2="13" />
+                        <line x1="12" y1="17" x2="12.01" y2="17" />
+                      </svg>
+                      Problema
+                    </button>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="empty-state">Nessuna quest trovata.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (totalPages() > 1) {
+        <div class="pagination" role="navigation" aria-label="Paginazione">
+          <button
+            type="button"
+            class="tq-btn-ghost pag-btn"
+            [disabled]="!hasPrev()"
+            (click)="prevPage()"
+            aria-label="Pagina precedente"
+          >
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+          <span class="pag-info">{{ currentPage() }} / {{ totalPages() }}</span>
+          <button
+            type="button"
+            class="tq-btn-ghost pag-btn"
+            [disabled]="!hasNext()"
+            (click)="nextPage()"
+            aria-label="Pagina successiva"
+          >
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+        </div>
+      }
+    }
+  </div>
+</div>

@@ -93,6 +93,23 @@ export const routes: Routes = [
     ],
   },
   {
+    path: 'operator',
+    canActivate: [authGuard, roleGuard([UserRole.MAINTENANCE])],
+    loadComponent: () =>
+      import('./layout/operator-shell/operator-shell.component').then(
+        (m) => m.OperatorShellComponent,
+      ),
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./features/operator/quests/operator-quests.page').then(
+            (m) => m.OperatorQuestsPage,
+          ),
+      },
+    ],
+  },
+  {
     path: '',
     pathMatch: 'full',
     redirectTo: 'login',

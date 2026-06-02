@@ -1,5 +1,6 @@
 import {
   ApplicationConfig,
+  isDevMode,
   provideBrowserGlobalErrorListeners,
   provideZoneChangeDetection,
 } from '@angular/core';
@@ -10,6 +11,7 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 // Quando Material rilascera' la migrazione, sostituire con la nuova API.
 
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { provideServiceWorker } from '@angular/service-worker';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { refreshInterceptor } from './core/interceptors/refresh.interceptor';
@@ -20,7 +22,10 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor, refreshInterceptor])),
-
     provideAnimationsAsync(),
+    provideServiceWorker('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      registrationStrategy: 'registerWhenStable:30000',
+    }),
   ],
 };
