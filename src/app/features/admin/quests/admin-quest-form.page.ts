@@ -4,6 +4,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -23,11 +25,17 @@ import { CollectiblesAdminService } from '../../../core/services/collectibles-ad
 import { BreadcrumbService } from '../../../core/services/breadcrumb.service';
 import { GeocodingService, GeocodingResult } from '../../../core/services/geocoding.service';
 import {
+  QrCodeDisplayComponent,
+  QrCodeDisplayData,
+} from '../../../shared/components/qr-code-display/qr-code-display.component';
+import {
   MapPickerValue,
   QuestMapPickerComponent,
 } from '../../../shared/components/quest-map-picker/quest-map-picker.component';
 import { TqSliderComponent } from '../../../shared/components/tq-slider/tq-slider.component';
 import { ToggleSwitchComponent } from '../../../shared/components/toggle-switch/toggle-switch.component';
+
+type QuestWithQr = AnyQuest & { qrToken?: string | null };
 
 /** Limiti raggio per tipo quest, coerenti con gli slider e le guard backend. */
 const RADIUS_LIMITS: Record<QuestType, { min: number; max: number; def: number }> = {
@@ -42,6 +50,8 @@ const RADIUS_LIMITS: Record<QuestType, { min: number; max: number; def: number }
     CommonModule,
     ReactiveFormsModule,
     MatFormFieldModule,
+    MatDialogModule,
+    MatIconModule,
     MatInputModule,
     MatSelectModule,
     MatProgressSpinnerModule,
@@ -62,6 +72,7 @@ export class AdminQuestFormPage implements OnInit {
   private readonly snackBar = inject(MatSnackBar);
   private readonly breadcrumb = inject(BreadcrumbService);
   private readonly geocoding = inject(GeocodingService);
+  private readonly dialog = inject(MatDialog);
 
   @ViewChild(QuestMapPickerComponent) private mapPicker?: QuestMapPickerComponent;
 
@@ -73,6 +84,7 @@ export class AdminQuestFormPage implements OnInit {
   readonly isLoading = signal(false);
   readonly isSubmitting = signal(false);
   readonly collectibles = signal<Collectible[]>([]);
+  readonly currentQuest = signal<QuestWithQr | null>(null);
 
   readonly showInlineCollectibleForm = signal(false);
   readonly isCreatingCollectible = signal(false);
@@ -86,6 +98,26 @@ export class AdminQuestFormPage implements OnInit {
     collectibleId: [null as string | null],
     locationValue: [null as MapPickerValue | null, Validators.required],
     radiusMeters: [25, Validators.required],
+  });
+
+  readonly questNameValue = toSignal(this.form.controls.name.valueChanges, {
+    initialValue: this.form.controls.name.value,
+  });
+
+  readonly currentQrToken = computed(() => {
+    const quest = this.currentQuest();
+    if (!quest || quest.type !== QuestType.PRIMARY) {
+      return null;
+    }
+    return quest.qrToken ?? null;
+  });
+
+  readonly currentQuestName = computed(() => {
+    const name = this.questNameValue()?.trim();
+    if (name) {
+      return name;
+    }
+    return this.currentQuest()?.name ?? 'Quest';
   });
 
   readonly inlineCollectibleForm = this.fb.nonNullable.group({
@@ -258,7 +290,8 @@ export class AdminQuestFormPage implements OnInit {
   private async loadQuest(id: string): Promise<void> {
     this.isLoading.set(true);
     try {
-      const quest = await this.questsService.getById(id);
+      const quest = (await this.questsService.getById(id)) as QuestWithQr;
+      this.currentQuest.set(quest);
       this.patchForm(quest);
     } catch {
       this.snackBar.open('Errore nel caricamento della quest', 'OK', { duration: 3000 });
@@ -420,6 +453,25 @@ export class AdminQuestFormPage implements OnInit {
     }
 
     await this.questsService.update(id, payload);
+  }
+
+  openQrCode(): void {
+    const token = this.currentQrToken();
+    if (!token) return;
+
+    const data: QrCodeDisplayData = {
+      qrToken: token,
+      questName: this.currentQuestName(),
+      subtitle: "Inquadra con l'app Trentino Quest",
+      note: 'Stampa e affiggi questo QR sul territorio.',
+    };
+
+    this.dialog.open(QrCodeDisplayComponent, {
+      data,
+      width: '560px',
+      maxWidth: '95vw',
+      panelClass: ['qr-dialog-panel'],
+    });
   }
 
   onCancel(): void {

@@ -94,6 +94,17 @@
                     </button>
                   }
                   @if (quest.placementStatus === PlacementStatus.PLACED) {
+                    @if (quest.qrToken) {
+                      <button
+                        type="button"
+                        class="tq-action-btn tq-action-btn--ghost"
+                        (click)="onShowQr(quest)"
+                        [attr.aria-label]="'Mostra QR per ' + quest.name"
+                      >
+                        <mat-icon aria-hidden="true">qr_code_2</mat-icon>
+                        Mostra QR
+                      </button>
+                    }
                     <button
                       type="button"
                       class="tq-action-btn tq-action-btn--ghost"

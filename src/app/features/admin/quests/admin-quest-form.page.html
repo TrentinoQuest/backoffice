@@ -14,6 +14,12 @@
     </nav>
     <div class="form-toolbar-spacer"></div>
     <button type="button" class="tq-btn-ghost" (click)="onCancel()">Annulla</button>
+    @if (currentQrToken()) {
+      <button type="button" class="tq-btn-ghost" (click)="openQrCode()">
+        <mat-icon>qr_code_2</mat-icon>
+        Mostra QR
+      </button>
+    }
     <button type="button" class="tq-btn-primary" (click)="onSubmit()" [disabled]="isSubmitting()">
       @if (isSubmitting()) {
         <mat-spinner diameter="16" />
@@ -91,7 +97,14 @@
 
           <!-- Attiva subito (solo in creazione di quest secondaria) -->
           @if (!isEdit() && questType() === QuestType.SECONDARY) {
-            <div class="activate-toggle" (click)="activateOnCreate.set(!activateOnCreate())">
+            <div
+              class="activate-toggle"
+              role="button"
+              tabindex="0"
+              (click)="activateOnCreate.set(!activateOnCreate())"
+              (keydown.enter)="activateOnCreate.set(!activateOnCreate())"
+              (keydown.space)="$event.preventDefault(); activateOnCreate.set(!activateOnCreate())"
+            >
               <div class="activate-toggle__text">
                 <span class="activate-toggle__label">Attiva subito</span>
                 <span class="activate-toggle__hint"

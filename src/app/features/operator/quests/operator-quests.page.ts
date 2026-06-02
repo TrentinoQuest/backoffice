@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
+import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -10,6 +11,10 @@ import {
   FilterChipsComponent,
   FilterGroup,
 } from '../../../shared/components/filter-chips/filter-chips.component';
+import {
+  QrCodeDisplayComponent,
+  QrCodeDisplayData,
+} from '../../../shared/components/qr-code-display/qr-code-display.component';
 import {
   PlaceQuestDialogComponent,
   PlaceQuestDialogData,
@@ -24,12 +29,15 @@ import { firstValueFrom } from 'rxjs';
 
 const PAGE_SIZE = 20;
 
+type OperatorQuestWithQr = OperatorQuestView & { qrToken?: string | null };
+
 @Component({
   selector: 'app-operator-quests',
   standalone: true,
   imports: [
     CommonModule,
     FilterChipsComponent,
+    MatIconModule,
     MatDialogModule,
     MatSnackBarModule,
     MatTooltipModule,
@@ -45,7 +53,7 @@ export class OperatorQuestsPage implements OnInit {
   readonly PlacementStatus = PlacementStatus;
 
   readonly isLoading = signal(false);
-  readonly quests = signal<OperatorQuestView[]>([]);
+  readonly quests = signal<OperatorQuestWithQr[]>([]);
   readonly statusFilter = signal<PlacementStatus>(PlacementStatus.PENDING);
   readonly total = signal(0);
   readonly offset = signal(0);
@@ -72,7 +80,7 @@ export class OperatorQuestsPage implements OnInit {
         limit: PAGE_SIZE,
         offset: this.offset(),
       });
-      this.quests.set(res.data);
+      this.quests.set(res.data as OperatorQuestWithQr[]);
       this.total.set(res.total);
     } catch (err) {
       this.showError('Errore nel caricamento delle quest', err);
@@ -114,7 +122,7 @@ export class OperatorQuestsPage implements OnInit {
     return Math.max(1, Math.ceil(this.total() / PAGE_SIZE));
   }
 
-  async onPlace(quest: OperatorQuestView): Promise<void> {
+  async onPlace(quest: OperatorQuestWithQr): Promise<void> {
     const data: PlaceQuestDialogData = {
       questName: quest.name ?? quest.id,
       mode: 'place',
@@ -139,7 +147,7 @@ export class OperatorQuestsPage implements OnInit {
     }
   }
 
-  async onUpdatePosition(quest: OperatorQuestView): Promise<void> {
+  async onUpdatePosition(quest: OperatorQuestWithQr): Promise<void> {
     const data: PlaceQuestDialogData = {
       questName: quest.name ?? quest.id,
       mode: 'update',
@@ -165,7 +173,7 @@ export class OperatorQuestsPage implements OnInit {
     }
   }
 
-  async onReportIssue(quest: OperatorQuestView): Promise<void> {
+  async onReportIssue(quest: OperatorQuestWithQr): Promise<void> {
     const data: ReportIssueDialogData = { questName: quest.name ?? quest.id };
     const result = (await firstValueFrom(
       this.dialog
@@ -182,6 +190,22 @@ export class OperatorQuestsPage implements OnInit {
     } catch (err) {
       this.showError('Errore nella segnalazione', err);
     }
+  }
+
+  onShowQr(quest: OperatorQuestWithQr): void {
+    if (!quest.qrToken) return;
+    const data: QrCodeDisplayData = {
+      qrToken: quest.qrToken,
+      questName: quest.name ?? quest.id,
+      subtitle: "Inquadra con l'app Trentino Quest",
+      note: 'Stampa e affiggi questo QR sul territorio.',
+    };
+    this.dialog.open(QrCodeDisplayComponent, {
+      data,
+      width: '560px',
+      maxWidth: '95vw',
+      panelClass: ['qr-dialog-panel'],
+    });
   }
 
   placementStatusLabel(s: PlacementStatus): string {

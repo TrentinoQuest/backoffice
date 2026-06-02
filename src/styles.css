@@ -17,6 +17,44 @@ body {
     sans-serif;
 }
 
+@media print {
+  body.tq-print-qr {
+    background: #fff !important;
+  }
+
+  body.tq-print-qr app-root {
+    visibility: hidden !important;
+  }
+
+  body.tq-print-qr .cdk-overlay-backdrop {
+    display: none !important;
+  }
+
+  body.tq-print-qr .cdk-overlay-container {
+    position: fixed !important;
+    inset: 0 !important;
+    visibility: visible !important;
+  }
+
+  body.tq-print-qr .cdk-overlay-container * {
+    visibility: visible !important;
+  }
+
+  body.tq-print-qr .cdk-overlay-pane {
+    max-width: none !important;
+  }
+
+  body.tq-print-qr .qr-dialog-panel .mat-mdc-dialog-surface {
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+
+  body.tq-print-qr .qr-dialog-panel {
+    width: 100% !important;
+    max-width: none !important;
+  }
+}
+
 /* ─── Design Tokens — Light ────────────────────────────────────────────────── */
 :root {
   /* Surfaces */
