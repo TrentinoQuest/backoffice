@@ -110,10 +110,14 @@
   flex-direction: column;
   gap: 6px;
 }
+/* Label di campo coerente con le altre pagine (.block-label del form
+   collezionabile): 13px, peso 500, colore testo pieno, non uppercase. */
 .fld-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--tq-text-muted);
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--tq-text);
+  margin-bottom: 2px;
 }
 
 /* Lo slider Punti incorniciato come un campo, per coerenza visiva con
