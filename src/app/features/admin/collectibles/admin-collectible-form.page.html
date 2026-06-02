@@ -1,97 +1,64 @@
-<div class="page">
-  <div class="page-header">
-    <button
-      mat-icon-button
-      (click)="onCancel()"
-      matTooltip="Torna alla lista"
-      aria-label="Indietro"
-    >
-      <mat-icon>arrow_back</mat-icon>
+<div class="form-shell">
+  <header class="form-toolbar">
+    <nav class="crumb">
+      Collezionabili <span class="sep">›</span>
+      <span class="current">{{ isEditMode ? 'Modifica' : 'Nuovo collezionabile' }}</span>
+    </nav>
+    <div class="spacer"></div>
+    <button type="button" class="tq-btn-ghost" (click)="onCancel()">Annulla</button>
+    <button type="button" class="tq-btn-primary" [disabled]="isSaving()" (click)="onSubmit()">
+      {{ isSaving() ? 'Salvataggio…' : 'Salva' }}
     </button>
-    <div>
-      <h1 class="page-title">
-        {{ isEditMode ? 'Modifica collezionabile' : 'Nuovo collezionabile' }}
-      </h1>
-      <p class="page-subtitle">
-        {{
-          isEditMode
-            ? 'Aggiorna i dettagli del collezionabile'
-            : 'Crea un nuovo collezionabile sbloccabile dalle quest principali'
-        }}
-      </p>
-    </div>
-  </div>
+  </header>
 
-  @if (isLoading()) {
-    <div class="loading">
-      <mat-spinner diameter="40"></mat-spinner>
-    </div>
-  } @else {
-    <mat-card appearance="outlined" class="form-card">
-      <mat-card-content>
-        <form [formGroup]="form" (ngSubmit)="onSubmit()">
-          <mat-form-field appearance="outline" class="full-width">
+  <div class="form-body">
+    @if (isLoading()) {
+      <div class="state">Caricamento…</div>
+    } @else {
+      <form class="card" [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="preview-col">
+          <div class="preview-frame">
+            @if (previewUrl()) {
+              <img [src]="previewUrl()" alt="Anteprima collezionabile" />
+            } @else {
+              <span class="preview-empty">Anteprima immagine</span>
+            }
+          </div>
+        </div>
+
+        <div class="fields-col">
+          <mat-form-field appearance="outline" class="full">
             <mat-label>Nome</mat-label>
             <input matInput formControlName="name" maxlength="100" />
-            @if (form.controls.name.hasError('required') && form.controls.name.touched) {
-              <mat-error>Il nome e' obbligatorio</mat-error>
-            }
-            @if (form.controls.name.hasError('minlength')) {
-              <mat-error>Il nome deve contenere almeno 3 caratteri</mat-error>
-            }
           </mat-form-field>
 
-          <mat-form-field appearance="outline" class="full-width">
+          <mat-form-field appearance="outline" class="full">
             <mat-label>Descrizione</mat-label>
             <textarea matInput formControlName="description" rows="3" maxlength="500"></textarea>
-            @if (
-              form.controls.description.hasError('required') && form.controls.description.touched
-            ) {
-              <mat-error>La descrizione e' obbligatoria</mat-error>
-            }
           </mat-form-field>
 
-          <mat-form-field appearance="outline" class="full-width">
+          <mat-form-field appearance="outline" class="full">
             <mat-label>URL immagine</mat-label>
-            <input matInput formControlName="imageUrl" placeholder="https://..." />
-            @if (form.controls.imageUrl.hasError('required') && form.controls.imageUrl.touched) {
-              <mat-error>L'URL immagine e' obbligatorio</mat-error>
-            }
+            <input matInput formControlName="imageUrl" placeholder="https://…" />
           </mat-form-field>
 
-          @if (form.controls.imageUrl.value) {
-            <div class="preview">
-              <img
-                [src]="form.controls.imageUrl.value"
-                alt="Anteprima"
-                referrerpolicy="no-referrer"
-              />
+          <div class="rarity-block">
+            <span class="block-label">Rarità</span>
+            <div class="rarity-chips">
+              @for (opt of rarityOptions; track opt.value) {
+                <button
+                  type="button"
+                  class="rarity-chip rarity-chip--{{ opt.value }}"
+                  [class.rarity-chip--active]="selectedRarity() === opt.value"
+                  (click)="setRarity(opt.value)"
+                >
+                  {{ opt.label }}
+                </button>
+              }
             </div>
-          }
-
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Rarita</mat-label>
-            <mat-select formControlName="rarity">
-              @for (option of rarityOptions; track option.value) {
-                <mat-option [value]="option.value">{{ option.label }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-
-          <div class="form-actions">
-            <button mat-stroked-button type="button" (click)="onCancel()" [disabled]="isSaving()">
-              Annulla
-            </button>
-            <button mat-flat-button color="primary" type="submit" [disabled]="isSaving()">
-              @if (isSaving()) {
-                <mat-spinner diameter="20"></mat-spinner>
-              } @else {
-                <span>{{ isEditMode ? 'Salva modifiche' : 'Crea collezionabile' }}</span>
-              }
-            </button>
           </div>
-        </form>
-      </mat-card-content>
-    </mat-card>
-  }
+        </div>
+      </form>
+    }
+  </div>
 </div>

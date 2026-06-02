@@ -21,6 +21,18 @@ import {
 } from '../../leaflet/leaflet-config';
 
 applyLeafletIconFix();
+
+/**
+ * Marker custom Terrain B (verde): un dot centrato, ancorato al proprio
+ * centro così da coincidere esattamente col centro del cerchio del raggio.
+ */
+function createPickerMarker(): L.DivIcon {
+  const html = `
+    <div style="width:14px;height:14px;border-radius:50%;background:#1a5c38;border:2.5px solid #fff;
+                box-shadow:0 1px 5px rgba(0,0,0,0.35)"></div>`;
+  return L.divIcon({ html, className: '', iconSize: [14, 14], iconAnchor: [7, 7] });
+}
+
 /**
  * Valore gestito dal form control: punto geografico + raggio.
  */
@@ -66,18 +78,29 @@ export interface MapPickerValue {
     `
       :host {
         display: block;
+        position: relative;
+        height: 100%;
+        min-height: 320px;
       }
       .map-container {
         width: 100%;
-        height: 400px;
-        border-radius: 4px;
-        border: 1px solid #ccc;
+        height: 100%;
       }
       .hint {
-        margin-top: 0.5rem;
-        font-size: 0.875rem;
-        color: rgba(0, 0, 0, 0.6);
-        font-style: italic;
+        position: absolute;
+        left: 50%;
+        bottom: 16px;
+        transform: translateX(-50%);
+        z-index: 500;
+        margin: 0;
+        padding: 6px 14px;
+        font-size: 12.5px;
+        color: var(--tq-text-muted);
+        background: var(--tq-surface);
+        border: 1px solid var(--tq-border);
+        border-radius: 20px;
+        box-shadow: var(--tq-shadow-sm);
+        white-space: nowrap;
       }
     `,
   ],
@@ -182,17 +205,18 @@ export class QuestMapPickerComponent
     if (this.marker) {
       this.marker.setLatLng([lat, lng]);
     } else {
-      this.marker = L.marker([lat, lng]).addTo(this.map);
+      this.marker = L.marker([lat, lng], { icon: createPickerMarker() }).addTo(this.map);
     }
     if (this.circle) {
       this.circle.setLatLng([lat, lng]).setRadius(this.radius);
     } else {
       this.circle = L.circle([lat, lng], {
         radius: this.radius,
-        color: '#1976d2',
-        fillColor: '#1976d2',
-        fillOpacity: 0.15,
+        color: '#1a5c38',
+        fillColor: '#1a5c38',
+        fillOpacity: 0.12,
         weight: 2,
+        dashArray: '5 5',
       }).addTo(this.map);
     }
 
@@ -214,6 +238,17 @@ export class QuestMapPickerComponent
       return;
     }
     this.map.setView(this.marker.getLatLng(), QUEST_ZOOM, { animate: true });
+  }
+
+  /**
+   * Posiziona il punto a coordinate date dall'esterno (es. risultato di
+   * una ricerca luogo) ed effettua un fly animato alla posizione. Emette
+   * il nuovo valore al form.
+   */
+  focusLocation(lat: number, lng: number): void {
+    this.setMarker(lat, lng);
+    this.onTouched();
+    this.map?.flyTo([lat, lng], QUEST_ZOOM, { duration: 0.6 });
   }
 
   // ===== ControlValueAccessor =====

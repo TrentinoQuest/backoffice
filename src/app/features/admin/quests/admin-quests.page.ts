@@ -1,238 +1,233 @@
-import { Component, computed, inject, signal, ViewChild, AfterViewInit } from '@angular/core';
-import { CommonModule, DatePipe, TitleCasePipe } from '@angular/common';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
-import { HttpErrorResponse } from '@angular/common/http';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSelectModule } from '@angular/material/select';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { AnyQuest, QuestStatus, QuestType } from '@trentino-quest/shared-types';
+import { AnyQuest, PrimaryQuest, QuestStatus, QuestType } from '@trentino-quest/shared-types';
 import { QuestsAdminService } from '../../../core/services/quests-admin.service';
+import { CollectiblesAdminService } from '../../../core/services/collectibles-admin.service';
+import { BreadcrumbService } from '../../../core/services/breadcrumb.service';
+import { PreferencesService } from '../../../core/services/preferences.service';
+import { GeocodingService } from '../../../core/services/geocoding.service';
+import {
+  FilterChipsComponent,
+  FilterGroup,
+} from '../../../shared/components/filter-chips/filter-chips.component';
+import {
+  ConfirmDialogComponent,
+  ConfirmDialogData,
+} from '../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { firstValueFrom } from 'rxjs';
 
-/**
- * Pagina amministrativa per la gestione delle quest.
- *
- * Mostra una tabella paginata di tutte le quest del sistema, con
- * filtri per tipo e status. Per ogni quest sono disponibili azioni
- * contestuali (attiva/disattiva/archivia) coerenti con il suo stato
- * corrente. La creazione e la modifica avvengono in pagine dedicate.
- */
+interface CollectibleRef {
+  name: string;
+  imageUrl: string;
+}
+
 @Component({
   selector: 'app-admin-quests',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
-    DatePipe,
-    TitleCasePipe,
-    MatCardModule,
-    MatTableModule,
-    MatPaginatorModule,
-    MatFormFieldModule,
-    MatSelectModule,
-    MatButtonModule,
-    MatIconModule,
-    MatMenuModule,
-    MatProgressSpinnerModule,
     MatSnackBarModule,
+    MatDialogModule,
     MatTooltipModule,
+    FilterChipsComponent,
   ],
   templateUrl: './admin-quests.page.html',
   styleUrl: './admin-quests.page.scss',
 })
-export class AdminQuestsPage implements AfterViewInit {
+export class AdminQuestsPage implements OnInit {
   private readonly questsService = inject(QuestsAdminService);
+  private readonly collectiblesService = inject(CollectiblesAdminService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly router = inject(Router);
+  private readonly breadcrumb = inject(BreadcrumbService);
+  private readonly prefs = inject(PreferencesService);
+  private readonly dialog = inject(MatDialog);
+  private readonly geocoding = inject(GeocodingService);
 
-  /**
-   * Riferimento al paginator nel template, necessario per leggerne lo
-   * stato corrente (pageIndex, pageSize) quando ricarichiamo i dati.
-   */
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  /** Mappa collectibleId → {nome, immagine} per la colonna collezionabile. */
+  readonly collectiblesById = signal<Record<string, CollectibleRef>>({});
 
-  /**
-   * Colonne mostrate dalla MatTable. L'ordine determina la sequenza
-   * delle colonne nell'header e nelle righe.
-   */
-  readonly displayedColumns = ['name', 'type', 'status', 'basePoints', 'createdAt', 'actions'];
+  /** Etichette luogo (es. "Via Roma, Trento") risolte via reverse-geocoding, per quest id. */
+  readonly placeNames = signal<Record<string, string>>({});
 
-  /**
-   * Opzioni per i filtri. Espongono le enum di shared-types come
-   * array per iterazione nel template.
-   */
-  readonly typeOptions: { value: QuestType | null; label: string }[] = [
-    { value: null, label: 'Tutti i tipi' },
-    { value: QuestType.PRIMARY, label: 'Principali' },
-    { value: QuestType.SECONDARY, label: 'Secondarie' },
-  ];
-
-  readonly statusOptions: { value: QuestStatus | null; label: string }[] = [
-    { value: null, label: 'Tutti gli stati' },
-    { value: QuestStatus.ACTIVE, label: 'Attive' },
-    { value: QuestStatus.INACTIVE, label: 'Inattive' },
-    { value: QuestStatus.ARCHIVED, label: 'Archiviate' },
-  ];
-
-  /**
-   * Stato corrente dei filtri. Nullable per indicare "nessun filtro".
-   */
-  readonly typeFilter = signal<QuestType | null>(null);
-  readonly statusFilter = signal<QuestStatus | null>(null);
-
-  /**
-   * Lista delle quest e contatori per la paginazione.
-   */
-  readonly quests = signal<AnyQuest[]>([]);
-  readonly totalCount = signal(0);
-  readonly isLoading = signal(false);
-
-  /**
-   * Computed che espone gli enum a template senza dovere fare
-   * comparazioni manuali con stringhe.
-   */
   readonly QuestType = QuestType;
   readonly QuestStatus = QuestStatus;
 
-  /**
-   * Helper visivi per status e tipo: ritorna una classe CSS in base
-   * al valore. Usati per colorare i badge nella tabella.
-   */
-  statusClass = computed(
-    () =>
-      (status: QuestStatus): string =>
-        `badge badge-${status}`,
-  );
-  typeClass = computed(
-    () =>
-      (type: QuestType): string =>
-        `badge badge-${type}`,
-  );
+  readonly isLoading = signal(false);
+  readonly quests = signal<AnyQuest[]>([]);
+  readonly typeFilter = signal<QuestType | null>(null);
+  readonly statusFilter = signal<QuestStatus | null>(null);
+  readonly searchQuery = signal('');
 
-  ngAfterViewInit(): void {
-    this.loadQuests();
+  readonly typeGroups: FilterGroup<QuestType | null>[] = [
+    {
+      chips: [
+        { label: 'Tutte', value: null },
+        { label: '★ Principali', value: QuestType.PRIMARY },
+        { label: '● Secondarie', value: QuestType.SECONDARY },
+      ],
+    },
+  ];
+
+  readonly statusGroups: FilterGroup<QuestStatus | null>[] = [
+    {
+      chips: [
+        { label: 'Tutti gli stati', value: null },
+        { label: 'Attive', value: QuestStatus.ACTIVE },
+        { label: 'Inattive', value: QuestStatus.INACTIVE },
+      ],
+    },
+  ];
+
+  readonly filteredQuests = computed(() => {
+    const q = this.searchQuery().toLowerCase();
+    return this.quests().filter((quest) => {
+      if (q && !(quest.name ?? '').toLowerCase().includes(q)) return false;
+      return true;
+    });
+  });
+
+  ngOnInit(): void {
+    this.breadcrumb.set('Quest');
+    void this.loadCollectibles();
+    void this.loadQuests();
   }
 
-  /**
-   * Carica le quest dal backend usando i filtri correnti e lo stato
-   * del paginator. In caso di errore mostra una snackbar.
-   */
+  private async loadCollectibles(): Promise<void> {
+    try {
+      const list = await this.collectiblesService.list();
+      const map: Record<string, CollectibleRef> = {};
+      for (const c of list) {
+        map[c.id] = { name: c.name, imageUrl: c.imageUrl };
+      }
+      this.collectiblesById.set(map);
+    } catch {
+      /* la colonna collezionabile resterà vuota: non bloccante */
+    }
+  }
+
   async loadQuests(): Promise<void> {
     this.isLoading.set(true);
     try {
-      const limit = this.paginator?.pageSize ?? 20;
-      const offset = (this.paginator?.pageIndex ?? 0) * limit;
-
-      const response = await this.questsService.list({
+      const res = await this.questsService.list({
         type: this.typeFilter() ?? undefined,
         status: this.statusFilter() ?? undefined,
-        limit,
-        offset,
+        limit: 100,
+        offset: 0,
       });
-
-      this.quests.set(response.data);
-      this.totalCount.set(response.total);
-    } catch (err) {
-      this.showError('Errore nel caricamento delle quest', err);
+      this.quests.set(res.data);
+      void this.resolvePlaceNames(res.data);
+    } catch {
+      this.snackBar.open('Errore nel caricamento delle quest', 'OK', { duration: 3000 });
     } finally {
       this.isLoading.set(false);
     }
   }
 
   /**
-   * Reagisce al cambio di filtro: riporta il paginator a pagina 0
-   * e ricarica i dati.
+   * Ritorna il collezionabile associato a una quest primaria, se presente
+   * e già caricato. Le quest secondarie non hanno collezionabile.
    */
-  onFilterChange(): void {
-    if (this.paginator) {
-      this.paginator.pageIndex = 0;
+  questCollectible(quest: AnyQuest): CollectibleRef | null {
+    if (quest.type !== QuestType.PRIMARY) {
+      return null;
     }
-    void this.loadQuests();
-  }
-
-  /**
-   * Reagisce al cambio di pagina del paginator (offset/limit).
-   */
-  onPageChange(): void {
-    void this.loadQuests();
-  }
-
-  /**
-   * Naviga alla pagina di creazione di una nuova quest.
-   * La pagina form sara' implementata nel Mini-step H.
-   */
-  onCreateClick(): void {
-    void this.router.navigateByUrl('/admin/quests/new');
-  }
-
-  /**
-   * Naviga alla pagina di modifica di una quest esistente.
-   */
-  onEditClick(quest: AnyQuest): void {
-    void this.router.navigateByUrl(`/admin/quests/${quest.id}/edit`);
-  }
-
-  /**
-   * Attiva una quest e ricarica la lista.
-   */
-  async onActivateClick(quest: AnyQuest): Promise<void> {
-    try {
-      await this.questsService.activate(quest.id);
-      this.snackBar.open(`Quest "${quest.name}" attivata`, 'OK', { duration: 3000 });
-      await this.loadQuests();
-    } catch (err) {
-      this.showError("Errore nell'attivazione", err);
+    const cid = (quest as PrimaryQuest).collectibleId;
+    if (!cid) {
+      return null;
     }
+    return this.collectiblesById()[cid] ?? null;
   }
 
-  /**
-   * Disattiva una quest e ricarica la lista.
-   */
-  async onDeactivateClick(quest: AnyQuest): Promise<void> {
-    try {
-      await this.questsService.deactivate(quest.id);
-      this.snackBar.open(`Quest "${quest.name}" disattivata`, 'OK', { duration: 3000 });
-      await this.loadQuests();
-    } catch (err) {
-      this.showError('Errore nella disattivazione', err);
-    }
-  }
-
-  /**
-   * Archivia una quest dopo conferma e ricarica la lista.
-   */
-  async onArchiveClick(quest: AnyQuest): Promise<void> {
-    const confirmed = confirm(
-      `Archiviare la quest "${quest.name}"? La quest non sara' piu' visibile ai giocatori ma resta nel sistema.`,
-    );
-    if (!confirmed) {
-      return;
+  /** Archivia una quest, previa conferma (se l'utente la richiede). */
+  async onArchive(quest: AnyQuest, event: MouseEvent): Promise<void> {
+    event.stopPropagation();
+    if (this.prefs.confirmBeforeArchive()) {
+      const data: ConfirmDialogData = {
+        title: 'Archiviare la quest?',
+        message: `"${quest.name}" verrà archiviata e non sarà più visibile ai giocatori.`,
+        confirmLabel: 'Archivia',
+        danger: true,
+      };
+      const ok = await firstValueFrom(
+        this.dialog.open(ConfirmDialogComponent, { data, width: '440px' }).afterClosed(),
+      );
+      if (!ok) return;
     }
     try {
       await this.questsService.archive(quest.id);
-      this.snackBar.open(`Quest "${quest.name}" archiviata`, 'OK', { duration: 3000 });
+      this.snackBar.open(`"${quest.name}" archiviata`, 'OK', { duration: 3000 });
       await this.loadQuests();
-    } catch (err) {
-      this.showError("Errore nell'archiviazione", err);
+    } catch {
+      this.snackBar.open("Errore nell'archiviazione", 'OK', { duration: 3000 });
     }
   }
 
   /**
-   * Mostra una snackbar di errore traducendo i codici HTTP comuni.
+   * Risolve in background le etichette luogo per le quest tramite
+   * reverse-geocoding. Aggiorna placeNames mano a mano che arrivano.
    */
-  private showError(prefix: string, err: unknown): void {
-    let detail = 'Errore sconosciuto';
-    if (err instanceof HttpErrorResponse) {
-      detail = err.error?.message ?? `HTTP ${err.status}`;
+  private async resolvePlaceNames(quests: AnyQuest[]): Promise<void> {
+    for (const quest of quests) {
+      const geo = quest.type === QuestType.PRIMARY ? quest.searchArea : quest.position;
+      if (!geo) continue;
+      const label = await this.geocoding.reverse(geo.lat, geo.lng);
+      this.placeNames.update((m) => ({ ...m, [quest.id]: label }));
     }
-    this.snackBar.open(`${prefix}: ${detail}`, 'Chiudi', { duration: 5000 });
+  }
+
+  onTypeFilter(value: QuestType | null): void {
+    this.typeFilter.set(value);
+    void this.loadQuests();
+  }
+
+  onStatusFilter(value: QuestStatus | null): void {
+    this.statusFilter.set(value);
+    void this.loadQuests();
+  }
+  onEditClick(quest: AnyQuest): void {
+    void this.router.navigate(['/admin/quests', quest.id, 'edit']);
+  }
+
+  typeLabel(type: string): string {
+    return type === QuestType.PRIMARY ? '★ Principale' : '● Secondaria';
+  }
+
+  statusLabel(status: string): string {
+    const map: Record<string, string> = {
+      [QuestStatus.ACTIVE]: 'Attiva',
+      [QuestStatus.INACTIVE]: 'Inattiva',
+      [QuestStatus.ARCHIVED]: 'Archiviata',
+    };
+    return map[status] ?? status;
+  }
+
+  typeBadgeClass(type: string): string {
+    return type === QuestType.PRIMARY ? 'tq-badge tq-badge--green' : 'tq-badge tq-badge--gray';
+  }
+
+  statusBadgeClass(status: string): string {
+    return status === QuestStatus.ACTIVE ? 'tq-badge tq-badge--green' : 'tq-badge tq-badge--gray';
+  }
+
+  /**
+   * Etichetta posizione: mostra il luogo fisico (es. "Via Roma, Trento")
+   * risolto via reverse-geocoding; finché non è disponibile, mostra le
+   * coordinate del punto come fallback.
+   */
+  questPlace(quest: AnyQuest): string {
+    const resolved = this.placeNames()[quest.id];
+    if (resolved) {
+      return resolved;
+    }
+    const geo = quest.type === QuestType.PRIMARY ? quest.searchArea : quest.position;
+    if (!geo) {
+      return '—';
+    }
+    return `${geo.lat.toFixed(4)}, ${geo.lng.toFixed(4)}`;
   }
 }

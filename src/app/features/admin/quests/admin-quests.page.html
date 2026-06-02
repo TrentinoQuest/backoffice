@@ -1,147 +1,166 @@
-<div class="page">
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">Quest</h1>
-      <p class="page-subtitle">Gestisci le quest principali e secondarie del territorio</p>
+<div class="tq-page-inner quest-list-page">
+  <div class="filter-bar">
+    <app-filter-chips
+      [groups]="typeGroups"
+      [selected]="typeFilter()"
+      (selectedChange)="onTypeFilter($event)"
+    />
+    <app-filter-chips
+      [groups]="statusGroups"
+      [selected]="statusFilter()"
+      (selectedChange)="onStatusFilter($event)"
+    />
+    <div class="tq-search" style="min-width: 180px">
+      <svg
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        aria-hidden="true"
+      >
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
+      <input
+        type="text"
+        placeholder="Cerca per nome…"
+        [value]="searchQuery()"
+        (input)="searchQuery.set($any($event.target).value)"
+        aria-label="Cerca quest per nome"
+      />
     </div>
-    <button mat-flat-button color="primary" (click)="onCreateClick()">
-      <mat-icon>add</mat-icon>
-      <span>Nuova quest</span>
-    </button>
   </div>
 
-  <mat-card appearance="outlined" class="filters-card">
-    <mat-card-content>
-      <div class="filters">
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>Tipo</mat-label>
-          <mat-select
-            [ngModel]="typeFilter()"
-            (ngModelChange)="typeFilter.set($event); onFilterChange()"
-          >
-            @for (option of typeOptions; track option.value) {
-              <mat-option [value]="option.value">{{ option.label }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>Status</mat-label>
-          <mat-select
-            [ngModel]="statusFilter()"
-            (ngModelChange)="statusFilter.set($event); onFilterChange()"
-          >
-            @for (option of statusOptions; track option.value) {
-              <mat-option [value]="option.value">{{ option.label }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-      </div>
-    </mat-card-content>
-  </mat-card>
-
-  <mat-card appearance="outlined" class="table-card">
-    @if (isLoading()) {
-      <div class="loading">
-        <mat-spinner diameter="40"></mat-spinner>
-      </div>
-    }
-
-    <table mat-table [dataSource]="quests()" class="quests-table">
-      <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef>Nome</th>
-        <td mat-cell *matCellDef="let quest">
-          <div class="cell-name">{{ quest.name }}</div>
-          <div class="cell-description">{{ quest.description }}</div>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="type">
-        <th mat-header-cell *matHeaderCellDef>Tipo</th>
-        <td mat-cell *matCellDef="let quest">
-          <span [class]="typeClass()(quest.type)">{{ quest.type | titlecase }}</span>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="status">
-        <th mat-header-cell *matHeaderCellDef>Status</th>
-        <td mat-cell *matCellDef="let quest">
-          <span [class]="statusClass()(quest.status)">{{ quest.status | titlecase }}</span>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="basePoints">
-        <th mat-header-cell *matHeaderCellDef>Punti</th>
-        <td mat-cell *matCellDef="let quest">{{ quest.basePoints }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="createdAt">
-        <th mat-header-cell *matHeaderCellDef>Creata il</th>
-        <td mat-cell *matCellDef="let quest">{{ quest.createdAt | date: 'dd/MM/yyyy' }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef class="actions-header">Azioni</th>
-        <td mat-cell *matCellDef="let quest" class="actions-cell">
-          <button
-            mat-icon-button
-            [matMenuTriggerFor]="menu"
-            matTooltip="Azioni"
-            aria-label="Azioni"
-          >
-            <mat-icon>more_vert</mat-icon>
-          </button>
-          <mat-menu #menu="matMenu">
-            <button mat-menu-item (click)="onEditClick(quest)">
-              <mat-icon>edit</mat-icon>
-              <span>Modifica</span>
-            </button>
-
-            @if (quest.status !== QuestStatus.ACTIVE && quest.status !== QuestStatus.ARCHIVED) {
-              <button mat-menu-item (click)="onActivateClick(quest)">
-                <mat-icon>play_arrow</mat-icon>
-                <span>Attiva</span>
-              </button>
-            }
-
-            @if (quest.status === QuestStatus.ACTIVE) {
-              <button mat-menu-item (click)="onDeactivateClick(quest)">
-                <mat-icon>pause</mat-icon>
-                <span>Disattiva</span>
-              </button>
-            }
-
-            @if (quest.status !== QuestStatus.ARCHIVED) {
-              <button mat-menu-item (click)="onArchiveClick(quest)">
-                <mat-icon>archive</mat-icon>
-                <span>Archivia</span>
-              </button>
-            }
-          </mat-menu>
-        </td>
-      </ng-container>
-
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-
-      <tr class="no-data" *matNoDataRow>
-        <td [attr.colspan]="displayedColumns.length">
-          @if (!isLoading()) {
-            <div class="empty">
-              <mat-icon>flag</mat-icon>
-              <p>Nessuna quest trovata con i filtri correnti.</p>
-            </div>
+  @if (isLoading()) {
+    <div class="loading-state">Caricamento…</div>
+  } @else {
+    <div class="tq-table-wrap">
+      <table class="tq-table" aria-label="Lista quest">
+        <colgroup>
+          <col />
+          <col style="width: 130px" />
+          <col style="width: 190px" />
+          <col style="width: 110px" />
+          <col style="width: 100px" />
+          <col style="width: 92px" />
+        </colgroup>
+        <thead>
+          <tr>
+            <th scope="col">Quest</th>
+            <th scope="col">Tipo</th>
+            <th scope="col">Collezionabile</th>
+            <th scope="col">Stato</th>
+            <th scope="col">Punti</th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (quest of filteredQuests(); track quest.id) {
+            <tr (click)="onEditClick(quest)">
+              <td class="tq-td-first">
+                <div class="quest-name">{{ quest.name }}</div>
+                <div class="quest-loc">{{ questPlace(quest) }}</div>
+              </td>
+              <td>
+                <span [class]="typeBadgeClass(quest.type)">{{ typeLabel(quest.type) }}</span>
+              </td>
+              <td>
+                @if (questCollectible(quest); as coll) {
+                  <div class="coll-cell">
+                    <img class="coll-thumb" [src]="coll.imageUrl" [alt]="coll.name" />
+                    <span class="coll-name">{{ coll.name }}</span>
+                  </div>
+                } @else if (quest.type === QuestType.PRIMARY) {
+                  <span class="coll-none">Nessuno</span>
+                } @else {
+                  <span class="coll-none">—</span>
+                }
+              </td>
+              <td>
+                <span [class]="statusBadgeClass(quest.status)">{{
+                  statusLabel(quest.status)
+                }}</span>
+              </td>
+              <td>
+                <div class="pts-cell">
+                  <svg
+                    width="11"
+                    height="11"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    class="pts-icon"
+                    aria-hidden="true"
+                  >
+                    <polygon
+                      points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+                    />
+                  </svg>
+                  <div>
+                    <div class="pts-val">{{ quest.basePoints }}</div>
+                    <div class="pts-label">punti</div>
+                  </div>
+                </div>
+              </td>
+              <td class="actions-cell">
+                <button
+                  type="button"
+                  class="tq-icon-btn"
+                  matTooltip="Modifica"
+                  (click)="$event.stopPropagation(); onEditClick(quest)"
+                  aria-label="Modifica quest"
+                >
+                  <svg
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                  </svg>
+                </button>
+                @if (quest.status !== QuestStatus.ARCHIVED) {
+                  <button
+                    type="button"
+                    class="tq-icon-btn tq-icon-btn--danger"
+                    matTooltip="Archivia"
+                    (click)="onArchive(quest, $event)"
+                    aria-label="Archivia quest"
+                  >
+                    <svg
+                      width="13"
+                      height="13"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+                      <path d="M10 11v6M14 11v6" />
+                      <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
+                    </svg>
+                  </button>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="empty-state">Nessuna quest trovata.</td>
+            </tr>
           }
-        </td>
-      </tr>
-    </table>
-
-    <mat-paginator
-      [length]="totalCount()"
-      [pageSize]="20"
-      [pageSizeOptions]="[20, 50, 100]"
-      (page)="onPageChange()"
-      showFirstLastButtons
-    ></mat-paginator>
-  </mat-card>
+        </tbody>
+      </table>
+    </div>
+  }
 </div>

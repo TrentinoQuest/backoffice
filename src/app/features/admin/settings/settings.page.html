@@ -1,0 +1,162 @@
+<div class="tq-page">
+  <div class="tq-page-inner">
+    <header class="page-head">
+      <h1 class="tq-page-title">Impostazioni</h1>
+      <p class="tq-page-subtitle">Personalizza l'aspetto e il comportamento del pannello.</p>
+    </header>
+
+    <div class="settings-layout">
+      <nav class="settings-nav">
+        @for (s of sections; track s.id) {
+          <button
+            type="button"
+            class="nav-item"
+            [class.nav-item--active]="activeSection() === s.id"
+            (click)="selectSection(s.id)"
+          >
+            {{ s.label }}
+          </button>
+        }
+      </nav>
+
+      <div class="settings-body">
+        <!-- Aspetto -->
+        @if (activeSection() === 'appearance') {
+          <section class="card">
+            <h2 class="card__title">Tema</h2>
+            <p class="card__hint">Scegli come deve apparire l'interfaccia.</p>
+            <div class="picker-grid">
+              @for (m of themeModes; track m.value) {
+                <button
+                  type="button"
+                  class="theme-card"
+                  [class.theme-card--active]="theme.mode() === m.value"
+                  (click)="setTheme(m.value)"
+                >
+                  <span class="theme-mini" [attr.data-mode]="m.value">
+                    <span class="theme-mini__bar"></span>
+                    <span class="theme-mini__bar short"></span>
+                  </span>
+                  <span class="theme-card__label">{{ m.label }}</span>
+                </button>
+              }
+            </div>
+          </section>
+        }
+
+        <!-- Personalizzazione -->
+        @if (activeSection() === 'customization') {
+          <section class="card">
+            <h2 class="card__title">Densità</h2>
+            <p class="card__hint">Quanto spazio dare alle righe delle tabelle.</p>
+            <div class="picker-grid">
+              @for (d of densities; track d.value) {
+                <button
+                  type="button"
+                  class="theme-card"
+                  [class.theme-card--active]="prefs.density() === d.value"
+                  (click)="setDensity(d.value)"
+                >
+                  <span class="density-mini" [attr.data-density]="d.value">
+                    <span></span><span></span><span></span>
+                  </span>
+                  <span class="theme-card__label">{{ d.label }}</span>
+                </button>
+              }
+            </div>
+          </section>
+        }
+
+        <!-- Preferenze -->
+        @if (activeSection() === 'preferences') {
+          <section class="card">
+            <h2 class="card__title">Preferenze</h2>
+            <div class="pref-row">
+              <div class="pref-text">
+                <span class="pref-title">Sidebar ridotta all'avvio</span>
+                <span class="pref-desc">Apri il pannello con la sidebar già collassata.</span>
+              </div>
+              <app-toggle-switch
+                ariaLabel="Sidebar ridotta all'avvio"
+                [checked]="prefs.sidebarCollapsedStart()"
+                (checkedChange)="prefs.setSidebarCollapsedStart($event)"
+              />
+            </div>
+            <div class="pref-row">
+              <div class="pref-text">
+                <span class="pref-title">Collassa sidebar sulla mappa</span>
+                <span class="pref-desc">Più spazio alla mappa aprendo la vista geografica.</span>
+              </div>
+              <app-toggle-switch
+                ariaLabel="Collassa sidebar sulla mappa"
+                [checked]="prefs.collapseOnMap()"
+                (checkedChange)="prefs.setCollapseOnMap($event)"
+              />
+            </div>
+            <div class="pref-row">
+              <div class="pref-text">
+                <span class="pref-title">Conferma prima di archiviare</span>
+                <span class="pref-desc"
+                  >Mostra un dialogo di conferma per le azioni distruttive.</span
+                >
+              </div>
+              <app-toggle-switch
+                ariaLabel="Conferma prima di archiviare"
+                [checked]="prefs.confirmBeforeArchive()"
+                (checkedChange)="prefs.setConfirmBeforeArchive($event)"
+              />
+            </div>
+            <div class="pref-row">
+              <div class="pref-text">
+                <span class="pref-title">Animazioni ridotte</span>
+                <span class="pref-desc">Disattiva transizioni e animazioni non essenziali.</span>
+              </div>
+              <app-toggle-switch
+                ariaLabel="Animazioni ridotte"
+                [checked]="theme.reduceMotion()"
+                (checkedChange)="theme.setReduceMotion($event)"
+              />
+            </div>
+          </section>
+        }
+
+        <!-- Scorciatoie -->
+        @if (activeSection() === 'shortcuts') {
+          <section class="card">
+            <h2 class="card__title">Scorciatoie da tastiera</h2>
+            @for (cat of shortcutCategories; track cat.title) {
+              <h3 class="shortcut-cat">{{ cat.title }}</h3>
+              <ul class="shortcut-list">
+                @for (sc of cat.items; track sc.label) {
+                  <li class="shortcut-row">
+                    <span class="shortcut-label">{{ sc.label }}</span>
+                    <span class="shortcut-keys">
+                      @for (k of sc.keys; track k) {
+                        <kbd>{{ k }}</kbd>
+                      }
+                    </span>
+                  </li>
+                }
+              </ul>
+            }
+          </section>
+        }
+
+        <!-- Account -->
+        @if (activeSection() === 'account') {
+          <section class="card">
+            <h2 class="card__title">Account</h2>
+            <div class="account">
+              <span class="avatar">{{ (user()?.email || '?')[0] | uppercase }}</span>
+              <div class="account__meta">
+                <span class="account__email">{{ user()?.email }}</span>
+                <span class="account__role">{{ user()?.role }}</span>
+              </div>
+              <button type="button" class="tq-btn-ghost" (click)="logout()">Esci</button>
+            </div>
+          </section>
+        }
+      </div>
+    </div>
+  </div>
+</div>
