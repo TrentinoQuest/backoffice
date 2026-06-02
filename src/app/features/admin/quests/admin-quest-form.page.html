@@ -214,27 +214,45 @@
             Punto e raggio entro cui il giocatore può fare check-in
           }
         </div>
-        <div class="tq-search map-search">
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            aria-hidden="true"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <input
-            type="text"
-            placeholder="Cerca un luogo… es. Via Roma, Trento"
-            [value]="mapSearchQuery()"
-            (input)="mapSearchQuery.set($any($event.target).value)"
-            aria-label="Cerca luogo sulla mappa"
-          />
+        <div class="map-search-wrap">
+          <form class="tq-search map-search" (submit)="$event.preventDefault(); onSearchLocation()">
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              type="text"
+              placeholder="Cerca un luogo… es. Via Roma, Trento"
+              [value]="mapSearchQuery()"
+              (input)="mapSearchQuery.set($any($event.target).value)"
+              aria-label="Cerca luogo sulla mappa"
+            />
+            <button type="submit" class="map-search-btn" [disabled]="isSearching()">
+              @if (isSearching()) {
+                …
+              } @else {
+                Cerca
+              }
+            </button>
+          </form>
+          @if (searchResults().length > 0) {
+            <ul class="map-search-results">
+              @for (r of searchResults(); track r.displayName) {
+                <li>
+                  <button type="button" (click)="pickSearchResult(r)">{{ r.displayName }}</button>
+                </li>
+              }
+            </ul>
+          }
         </div>
       </div>
 
@@ -251,8 +269,8 @@
         </span>
         <app-tq-slider
           formControlName="radiusMeters"
-          [min]="questType() === QuestType.PRIMARY ? 10 : 5"
-          [max]="questType() === QuestType.PRIMARY ? 60 : 20"
+          [min]="radiusMin()"
+          [max]="radiusMax()"
           [step]="1"
           label="Raggio in metri"
         />

@@ -240,6 +240,17 @@ export class QuestMapPickerComponent
     this.map.setView(this.marker.getLatLng(), QUEST_ZOOM, { animate: true });
   }
 
+  /**
+   * Posiziona il punto a coordinate date dall'esterno (es. risultato di
+   * una ricerca luogo) ed effettua un fly animato alla posizione. Emette
+   * il nuovo valore al form.
+   */
+  focusLocation(lat: number, lng: number): void {
+    this.setMarker(lat, lng);
+    this.onTouched();
+    this.map?.flyTo([lat, lng], QUEST_ZOOM, { duration: 0.6 });
+  }
+
   // ===== ControlValueAccessor =====
 
   writeValue(value: MapPickerValue | null): void {

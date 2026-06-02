@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal, OnInit } from '@angular/core';
+import { Component, computed, inject, signal, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -20,11 +20,18 @@ import { CollectibleRarity, QuestStatus, QuestType } from '@trentino-quest/share
 import { QuestsAdminService } from '../../../core/services/quests-admin.service';
 import { CollectiblesAdminService } from '../../../core/services/collectibles-admin.service';
 import { BreadcrumbService } from '../../../core/services/breadcrumb.service';
+import { GeocodingService, GeocodingResult } from '../../../core/services/geocoding.service';
 import {
   MapPickerValue,
   QuestMapPickerComponent,
 } from '../../../shared/components/quest-map-picker/quest-map-picker.component';
 import { TqSliderComponent } from '../../../shared/components/tq-slider/tq-slider.component';
+
+/** Limiti raggio per tipo quest, coerenti con gli slider e le guard backend. */
+const RADIUS_LIMITS: Record<QuestType, { min: number; max: number; def: number }> = {
+  [QuestType.PRIMARY]: { min: 10, max: 60, def: 25 },
+  [QuestType.SECONDARY]: { min: 5, max: 20, def: 15 },
+};
 
 @Component({
   selector: 'app-admin-quest-form',
@@ -51,6 +58,9 @@ export class AdminQuestFormPage implements OnInit {
   private readonly collectiblesService = inject(CollectiblesAdminService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly breadcrumb = inject(BreadcrumbService);
+  private readonly geocoding = inject(GeocodingService);
+
+  @ViewChild(QuestMapPickerComponent) private mapPicker?: QuestMapPickerComponent;
 
   readonly QuestType = QuestType;
   readonly QuestStatus = QuestStatus;
@@ -94,11 +104,53 @@ export class AdminQuestFormPage implements OnInit {
   readonly questType = signal<QuestType>(QuestType.PRIMARY);
 
   readonly mapSearchQuery = signal('');
+  readonly searchResults = signal<GeocodingResult[]>([]);
+  readonly isSearching = signal(false);
 
-  /** Cambia il tipo di quest aggiornando sia il form che il signal reattivo. */
+  /** Limiti raggio per il tipo corrente (pilotano min/max dello slider). */
+  readonly radiusMin = computed(() => RADIUS_LIMITS[this.questType()].min);
+  readonly radiusMax = computed(() => RADIUS_LIMITS[this.questType()].max);
+
+  /**
+   * Cambia il tipo di quest aggiornando form + signal e ri-clampando il
+   * raggio nei limiti del nuovo tipo: senza questo, passando da Principale
+   * (max 60) a Secondaria (max 20) un valore tipo 25 resterebbe fuori
+   * range e farebbe scattare la guard del backend.
+   */
   setType(type: QuestType): void {
     this.form.controls.type.setValue(type);
     this.questType.set(type);
+
+    const { min, max } = RADIUS_LIMITS[type];
+    const current = this.form.controls.radiusMeters.value;
+    const clamped = Math.min(Math.max(current, min), max);
+    if (clamped !== current) {
+      this.form.controls.radiusMeters.setValue(clamped);
+    }
+  }
+
+  /** Esegue la ricerca geografica del luogo digitato. */
+  async onSearchLocation(): Promise<void> {
+    const q = this.mapSearchQuery().trim();
+    if (!q) {
+      this.searchResults.set([]);
+      return;
+    }
+    this.isSearching.set(true);
+    try {
+      this.searchResults.set(await this.geocoding.search(q));
+    } catch {
+      this.snackBar.open('Errore nella ricerca del luogo', 'OK', { duration: 3000 });
+    } finally {
+      this.isSearching.set(false);
+    }
+  }
+
+  /** Seleziona un risultato: posiziona il punto sulla mappa e pulisce la lista. */
+  pickSearchResult(r: GeocodingResult): void {
+    this.mapPicker?.focusLocation(r.lat, r.lon);
+    this.mapSearchQuery.set(r.displayName);
+    this.searchResults.set([]);
   }
 
   readonly selectedCollectibleImage = computed(() => {
