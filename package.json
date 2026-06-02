@@ -1,6 +1,6 @@
 {
   "name": "trentino-quest-backoffice",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -33,13 +33,17 @@
   },
   "private": true,
   "dependencies": {
+    "@angular/animations": "20.3.19",
+    "@angular/cdk": "^20.2.14",
     "@angular/common": "^20.3.0",
     "@angular/compiler": "^20.3.0",
     "@angular/core": "^20.3.0",
     "@angular/forms": "^20.3.0",
+    "@angular/material": "^20.2.14",
     "@angular/platform-browser": "^20.3.0",
     "@angular/router": "^20.3.0",
     "@trentino-quest/shared-types": "github:TrentinoQuest/shared-types",
+    "leaflet": "^1.9.4",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
@@ -49,6 +53,7 @@
     "@angular/cli": "^20.3.1",
     "@angular/compiler-cli": "^20.3.0",
     "@types/jasmine": "~5.1.0",
+    "@types/leaflet": "^1.9.21",
     "angular-eslint": "21.0.1",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",

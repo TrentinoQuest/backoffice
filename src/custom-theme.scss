@@ -1,0 +1,47 @@
+@use '@angular/material' as mat;
+
+// Definisce una palette custom verde foresta per Angular Material.
+// I componenti Material (mat-input, mat-select, etc.) useranno questi colori.
+$tq-primary-palette: (
+  50:  #e8f5ee,
+  100: #c6e6d4,
+  200: #a0d6b8,
+  300: #7ac59b,
+  400: #5eb886,
+  500: #42ab72,
+  600: #2e9a60,
+  700: #1a5c38,
+  800: #154a2d,
+  900: #0e3220,
+  contrast: (
+    50: rgba(0,0,0,.87), 100: rgba(0,0,0,.87), 200: rgba(0,0,0,.87),
+    300: rgba(0,0,0,.87), 400: rgba(0,0,0,.87), 500: #fff,
+    600: #fff, 700: #fff, 800: #fff, 900: #fff,
+  ),
+);
+
+html {
+  @include mat.theme((
+    color: (
+      primary: mat.$green-palette,
+    ),
+    typography: 'DM Sans',
+    density: 0,
+  ));
+}
+
+// Forza i colori primary di Material a usare il nostro verde
+html {
+  --mat-sys-primary: #1a5c38;
+  --mat-sys-on-primary: #ffffff;
+  --mat-sys-primary-container: #edf5f0;
+  --mat-sys-on-primary-container: #1a5c38;
+}
+
+body {
+  color-scheme: light;
+  background-color: var(--tq-page-bg, #faf8f4);
+  color: var(--tq-text, #1a1a14);
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  margin: 0;
+}

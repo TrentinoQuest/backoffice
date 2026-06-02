@@ -1,0 +1,88 @@
+<div class="login">
+  <aside class="brand">
+    <svg
+      class="terrain"
+      viewBox="0 0 400 600"
+      preserveAspectRatio="xMidYMax slice"
+      aria-hidden="true"
+    >
+      <defs>
+        <radialGradient id="moon" cx="68%" cy="20%" r="40%">
+          <stop offset="0%" stop-color="rgba(201,162,39,.35)" />
+          <stop offset="100%" stop-color="rgba(201,162,39,0)" />
+        </radialGradient>
+      </defs>
+      <rect width="400" height="600" fill="url(#moon)" />
+      <path
+        d="M0 600 L0 430 L70 330 L120 380 L190 250 L250 320 L320 210 L400 300 L400 600 Z"
+        fill="rgba(201,162,39,.06)"
+        stroke="rgba(201,162,39,.55)"
+        stroke-width="1.5"
+      />
+      <path
+        d="M0 600 L0 500 L90 440 L170 480 L260 410 L340 460 L400 420 L400 600 Z"
+        fill="rgba(201,162,39,.04)"
+        stroke="rgba(201,162,39,.3)"
+        stroke-width="1"
+      />
+    </svg>
+
+    <div class="brand__content">
+      <div class="logo">
+        <span class="logo__mark">▲</span>
+        <span class="logo__name">Trentino Quest</span>
+      </div>
+      <p class="tagline">Esplora il Trentino,<br />una quest alla volta.</p>
+    </div>
+  </aside>
+
+  <main class="panel">
+    <form class="form" [formGroup]="form" (ngSubmit)="onSubmit()">
+      <h1 class="form__title">Bentornato</h1>
+      <p class="form__subtitle">Accedi al pannello di amministrazione.</p>
+
+      @if (errorMessage()) {
+        <div class="alert" role="alert">{{ errorMessage() }}</div>
+      }
+
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" formControlName="email" autocomplete="username" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>Password</mat-label>
+        <input
+          matInput
+          [type]="passwordVisible() ? 'text' : 'password'"
+          formControlName="password"
+          autocomplete="current-password"
+        />
+        <button
+          type="button"
+          matSuffix
+          class="pwd-toggle"
+          (click)="togglePasswordVisibility()"
+          [attr.aria-label]="passwordVisible() ? 'Nascondi password' : 'Mostra password'"
+        >
+          <mat-icon>{{ passwordVisible() ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+      </mat-form-field>
+
+      <div class="forgot">
+        <a href="#" (click)="$event.preventDefault()">Password dimenticata?</a>
+      </div>
+
+      <button type="submit" class="tq-btn-primary full submit" [disabled]="isSubmitting()">
+        {{ isSubmitting() ? 'Accesso…' : 'Accedi' }}
+      </button>
+
+      <div class="divider"><span>oppure</span></div>
+
+      <button type="button" class="google" disabled title="Presto disponibile">
+        <span class="google__icon">G</span> Continua con Google
+        <span class="soon">presto</span>
+      </button>
+    </form>
+  </main>
+</div>

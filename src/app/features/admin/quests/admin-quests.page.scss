@@ -1,0 +1,92 @@
+.quest-list-page {
+  padding: 0 28px 28px;
+}
+
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.quest-name {
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.quest-loc {
+  font-size: 11.5px;
+  color: var(--tq-text-muted);
+  margin-top: 2px;
+}
+
+.pts-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.pts-icon {
+  color: var(--tq-amber);
+  opacity: 0.85;
+}
+.pts-val {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tq-text);
+  line-height: 1;
+}
+.pts-label {
+  font-size: 10.5px;
+  color: var(--tq-text-subtle);
+  margin-top: 1px;
+}
+
+.loading-state,
+.empty-state {
+  padding: 48px;
+  text-align: center;
+  color: var(--tq-text-muted);
+  font-size: 14px;
+}
+
+// ─── Colonna collezionabile ──────────────────────────────────────────────────
+.coll-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.coll-thumb {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--tq-r-sm);
+  object-fit: cover;
+  border: 1px solid var(--tq-border);
+  background: var(--tq-surface-alt);
+  flex-shrink: 0;
+}
+.coll-name {
+  font-size: 12.5px;
+  color: var(--tq-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.coll-none {
+  font-size: 12px;
+  color: var(--tq-text-subtle);
+}
+
+// ─── Azioni riga ─────────────────────────────────────────────────────────────
+.actions-cell {
+  white-space: nowrap;
+
+  .tq-icon-btn + .tq-icon-btn {
+    margin-left: 6px;
+  }
+}
+.tq-icon-btn--danger:hover {
+  border-color: var(--tq-danger);
+  color: var(--tq-danger);
+  background: var(--tq-danger-light);
+}

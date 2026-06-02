@@ -1,0 +1,12 @@
+<button
+  type="button"
+  class="tq-toggle"
+  role="switch"
+  [class.tq-toggle--on]="isOn()"
+  [attr.aria-checked]="isOn()"
+  [attr.aria-label]="ariaLabel() || null"
+  [disabled]="disabled()"
+  (click)="toggle()"
+>
+  <span class="tq-toggle__thumb"></span>
+</button>
