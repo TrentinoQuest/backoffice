@@ -17,7 +17,7 @@ import {
   SecondaryQuest,
   UpdateQuestRequest,
 } from '@trentino-quest/shared-types';
-import { CollectibleRarity, QuestStatus, QuestType } from '@trentino-quest/shared-types';
+import { CollectibleRarity, QuestType } from '@trentino-quest/shared-types';
 import { QuestsAdminService } from '../../../core/services/quests-admin.service';
 import { CollectiblesAdminService } from '../../../core/services/collectibles-admin.service';
 import { BreadcrumbService } from '../../../core/services/breadcrumb.service';
@@ -27,6 +27,7 @@ import {
   QuestMapPickerComponent,
 } from '../../../shared/components/quest-map-picker/quest-map-picker.component';
 import { TqSliderComponent } from '../../../shared/components/tq-slider/tq-slider.component';
+import { ToggleSwitchComponent } from '../../../shared/components/toggle-switch/toggle-switch.component';
 
 /** Limiti raggio per tipo quest, coerenti con gli slider e le guard backend. */
 const RADIUS_LIMITS: Record<QuestType, { min: number; max: number; def: number }> = {
@@ -47,6 +48,7 @@ const RADIUS_LIMITS: Record<QuestType, { min: number; max: number; def: number }
     MatSnackBarModule,
     QuestMapPickerComponent,
     TqSliderComponent,
+    ToggleSwitchComponent,
   ],
   templateUrl: './admin-quest-form.page.html',
   styleUrl: './admin-quest-form.page.scss',
@@ -64,7 +66,6 @@ export class AdminQuestFormPage implements OnInit {
   @ViewChild(QuestMapPickerComponent) private mapPicker?: QuestMapPickerComponent;
 
   readonly QuestType = QuestType;
-  readonly QuestStatus = QuestStatus;
   readonly CollectibleRarity = CollectibleRarity;
 
   readonly questId = signal<string | null>(null);
@@ -75,13 +76,13 @@ export class AdminQuestFormPage implements OnInit {
 
   readonly showInlineCollectibleForm = signal(false);
   readonly isCreatingCollectible = signal(false);
+  readonly activateOnCreate = signal(false);
 
   readonly form = this.fb.nonNullable.group({
     type: [QuestType.PRIMARY, Validators.required],
     name: ['', [Validators.required, Validators.minLength(3)]],
     description: ['', Validators.required],
     points: [100, [Validators.required, Validators.min(10), Validators.max(500)]],
-    status: [QuestStatus.ACTIVE, Validators.required],
     collectibleId: [null as string | null],
     locationValue: [null as MapPickerValue | null, Validators.required],
     radiusMeters: [25, Validators.required],
@@ -269,12 +270,12 @@ export class AdminQuestFormPage implements OnInit {
 
   private patchForm(quest: AnyQuest): void {
     this.questType.set(quest.type);
+    this.applyCollectibleRequirement(quest.type);
     this.form.patchValue({
       type: quest.type,
       name: quest.name ?? '',
       description: quest.description ?? '',
       points: quest.basePoints ?? 100,
-      status: quest.status,
     });
 
     if (quest.type === QuestType.PRIMARY) {
@@ -390,7 +391,10 @@ export class AdminQuestFormPage implements OnInit {
         position: { lat: loc.lat, lng: loc.lng },
         checkInRadiusMeters: v.radiusMeters,
       };
-      await this.questsService.create(payload);
+      const created = await this.questsService.create(payload);
+      if (this.activateOnCreate()) {
+        await this.questsService.activate(created.id);
+      }
     }
   }
 

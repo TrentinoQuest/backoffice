@@ -58,6 +58,7 @@ export class AdminQuestsPage implements OnInit {
   readonly QuestStatus = QuestStatus;
 
   readonly isLoading = signal(false);
+  readonly togglingStatusId = signal<string | null>(null);
   readonly quests = signal<AnyQuest[]>([]);
   readonly typeFilter = signal<QuestType | null>(null);
   readonly statusFilter = signal<QuestStatus | null>(null);
@@ -141,6 +142,26 @@ export class AdminQuestsPage implements OnInit {
       return null;
     }
     return this.collectiblesById()[cid] ?? null;
+  }
+
+  async onToggleStatus(quest: AnyQuest, event: MouseEvent): Promise<void> {
+    event.stopPropagation();
+    if (this.togglingStatusId() === quest.id) return;
+    this.togglingStatusId.set(quest.id);
+    try {
+      if (quest.status === QuestStatus.ACTIVE) {
+        await this.questsService.deactivate(quest.id);
+        this.snackBar.open(`"${quest.name}" disattivata`, 'OK', { duration: 3000 });
+      } else {
+        await this.questsService.activate(quest.id);
+        this.snackBar.open(`"${quest.name}" attivata`, 'OK', { duration: 3000 });
+      }
+      await this.loadQuests();
+    } catch {
+      this.snackBar.open("Errore nell'aggiornamento dello stato", 'OK', { duration: 3000 });
+    } finally {
+      this.togglingStatusId.set(null);
+    }
   }
 
   /** Archivia una quest, previa conferma (se l'utente la richiede). */

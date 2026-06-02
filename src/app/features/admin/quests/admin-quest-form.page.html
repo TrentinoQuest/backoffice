@@ -78,27 +78,30 @@
             <textarea matInput formControlName="description" rows="3"></textarea>
           </mat-form-field>
 
-          <div class="flds-2">
-            <div class="fld">
-              <span class="fld-label">Punti</span>
-              <app-tq-slider
-                formControlName="points"
-                [min]="10"
-                [max]="500"
-                [step]="10"
-                label="Punti quest"
+          <div class="fld">
+            <span class="fld-label">Punti</span>
+            <app-tq-slider
+              formControlName="points"
+              [min]="10"
+              [max]="500"
+              [step]="10"
+              label="Punti quest"
+            />
+          </div>
+
+          <!-- Attiva subito (solo in creazione di quest secondaria) -->
+          @if (!isEdit() && questType() === QuestType.SECONDARY) {
+            <div class="activate-toggle" (click)="activateOnCreate.set(!activateOnCreate())">
+              <div class="activate-toggle__text">
+                <span class="activate-toggle__label">Attiva subito</span>
+                <span class="activate-toggle__hint">La quest sarà visibile ai giocatori immediatamente</span>
+              </div>
+              <app-toggle-switch
+                [checked]="activateOnCreate()"
+                ariaLabel="Attiva subito dopo la creazione"
               />
             </div>
-            <div class="fld">
-              <span class="fld-label">Stato</span>
-              <mat-form-field appearance="outline" class="fld-select">
-                <mat-select formControlName="status">
-                  <mat-option [value]="QuestStatus.ACTIVE">Attiva</mat-option>
-                  <mat-option [value]="QuestStatus.INACTIVE">Inattiva</mat-option>
-                </mat-select>
-              </mat-form-field>
-            </div>
-          </div>
+          }
 
           <!-- Collezionabile (solo per quest Principale) -->
           @if (questType() === QuestType.PRIMARY) {

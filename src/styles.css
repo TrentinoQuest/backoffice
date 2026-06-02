@@ -225,7 +225,8 @@ body {
   background: var(--tq-surface);
   border: 1px solid var(--tq-border);
   border-radius: var(--tq-r-lg);
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   box-shadow: var(--tq-shadow-sm);
   transition:
     background 220ms,
