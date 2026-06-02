@@ -34,15 +34,21 @@ function createCustomMarker(
   const ring = selected
     ? `box-shadow:0 0 0 6px rgba(26,92,56,0.18),0 2px 6px rgba(0,0,0,0.3);`
     : `box-shadow:0 2px 6px rgba(0,0,0,0.28);`;
+  const stem = 8;
+  const shadow = 3;
+  const w = dot; // larghezza del box = diametro del dot
+  const h = dot + stem + shadow + 1; // altezza totale del pin
+  // NB: nessun transform interno. Il posizionamento sul punto è gestito
+  // interamente da iconAnchor (punta in basso al centro), così il pin
+  // visivo coincide esattamente con la coordinata della quest.
   const html = `
-    <div style="transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;opacity:${opacity}">
+    <div style="display:flex;flex-direction:column;align-items:center;opacity:${opacity}">
       <div style="width:${dot}px;height:${dot}px;border-radius:50%;background:${color};
                   border:3px solid #fff;${ring}"></div>
-      <div style="width:2px;height:8px;background:#fff;opacity:0.75"></div>
-      <div style="width:9px;height:3px;border-radius:50%;background:rgba(0,0,0,0.2);margin-top:1px"></div>
+      <div style="width:2px;height:${stem}px;background:#fff;opacity:0.75"></div>
+      <div style="width:9px;height:${shadow}px;border-radius:50%;background:rgba(0,0,0,0.2);margin-top:1px"></div>
     </div>`;
-  const h = dot + 12;
-  return L.divIcon({ html, className: '', iconSize: [dot, h], iconAnchor: [dot / 2, h] });
+  return L.divIcon({ html, className: '', iconSize: [w, h], iconAnchor: [w / 2, h] });
 }
 
 function escapeHtml(s: string): string {
@@ -195,7 +201,10 @@ export class QuestMapViewerComponent implements AfterViewInit, OnChanges, OnDest
 
       const icon = createCustomMarker(variant, isSelected);
 
-      const dotHeight = isSelected ? 16 + 12 : 13 + 12;
+      // Altezza totale del pin: dot + stem(8) + shadow(3) + 1, coerente con
+      // createCustomMarker, per offsettare il popup sopra la punta.
+      const dot = isSelected ? 16 : 13;
+      const markerHeight = dot + 8 + 3 + 1;
       const marker = L.marker([geo.lat, geo.lng], { icon, zIndexOffset: isSelected ? 1000 : 0 });
 
       if (this.interactive) {
@@ -205,7 +214,7 @@ export class QuestMapViewerComponent implements AfterViewInit, OnChanges, OnDest
           maxWidth: 240,
           // Offset verso l'alto pari all'altezza del marker, così il popup
           // sta sopra il pin e non lo copre.
-          offset: [0, -dotHeight],
+          offset: [0, -markerHeight],
         });
         // Cliccare il marker seleziona la quest (evidenzia nella lista e zooma).
         marker.on('click', () => this.questFocused.emit(quest.id));
@@ -216,10 +225,13 @@ export class QuestMapViewerComponent implements AfterViewInit, OnChanges, OnDest
     }
   }
 
-  private buildPopupHtml(quest: AnyQuest, isSelected: boolean): string {
+  private buildPopupHtml(quest: AnyQuest, _isSelected: boolean): string {
     const typeLabel = quest.type === QuestType.PRIMARY ? '★ Principale' : '● Secondaria';
     const statusLabel = quest.status === QuestStatus.ACTIVE ? 'Attiva' : 'Inattiva';
-    const statusColor = quest.status === QuestStatus.ACTIVE ? '#1a5c38' : '#9a8f7e';
+    // Usa i token CSS del design system: il popup è stilizzato anche via
+    // .tq-leaflet-popup in styles.css, così resta leggibile in dark mode.
+    const statusColor =
+      quest.status === QuestStatus.ACTIVE ? 'var(--tq-primary)' : 'var(--tq-text-subtle)';
 
     let collectibleHtml = '';
     if (quest.type === QuestType.PRIMARY) {
@@ -230,14 +242,14 @@ export class QuestMapViewerComponent implements AfterViewInit, OnChanges, OnDest
         const imgUrl = this.collectibleImageById[cid] ?? '';
         if (name) {
           const imgTag = imgUrl
-            ? `<img src="${escapeHtml(imgUrl)}" style="width:30px;height:30px;border-radius:6px;object-fit:cover;flex-shrink:0;border:1px solid #e8e2d8" onerror="this.style.display='none'">`
+            ? `<img src="${escapeHtml(imgUrl)}" style="width:30px;height:30px;border-radius:6px;object-fit:cover;flex-shrink:0;border:1px solid var(--tq-border)" onerror="this.style.display='none'">`
             : '';
           collectibleHtml = `
-            <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:#f7f4ef;border-radius:6px;margin-bottom:10px">
+            <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--tq-surface-alt);border-radius:6px;margin-bottom:10px">
               ${imgTag}
               <div>
-                <div style="font-size:12px;font-weight:500;color:#1a1a14">${escapeHtml(name)}</div>
-                <div style="font-size:10.5px;color:#a06010;font-weight:500;margin-top:1px">★ Collezionabile</div>
+                <div style="font-size:12px;font-weight:500;color:var(--tq-text)">${escapeHtml(name)}</div>
+                <div style="font-size:10.5px;color:var(--tq-amber);font-weight:500;margin-top:1px">★ Collezionabile</div>
               </div>
             </div>`;
         }
@@ -245,23 +257,20 @@ export class QuestMapViewerComponent implements AfterViewInit, OnChanges, OnDest
     }
 
     return `
-      <div style="font-family:'DM Sans',system-ui,sans-serif;min-width:200px">
+      <div style="font-family:var(--tq-font-body);min-width:200px">
         <div style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;
-                    background:#edf5f0;color:#1a5c38;font-size:10.5px;font-weight:600;margin-bottom:6px">
+                    background:var(--tq-primary-light);color:var(--tq-primary);font-size:10.5px;font-weight:600;margin-bottom:6px">
           ${escapeHtml(typeLabel)}
         </div>
-        <div style="font-size:13.5px;font-weight:700;color:#1a1a14;margin-bottom:2px;letter-spacing:-0.01em">
+        <div style="font-size:13.5px;font-weight:700;color:var(--tq-text);margin-bottom:8px;letter-spacing:-0.01em">
           ${escapeHtml(quest.name ?? '')}
         </div>
-        <div style="font-size:11.5px;color:#6b6452;margin-bottom:8px">
-          ${escapeHtml('')}
-        </div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-          <span style="font-size:12px;font-weight:600;color:#a06010;display:flex;align-items:center;gap:3px">
+          <span style="font-size:12px;font-weight:600;color:var(--tq-amber);display:flex;align-items:center;gap:3px">
             ★ ${quest.basePoints ?? 0} pt
           </span>
           <span style="padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500;
-                       background:#edf5f0;color:${escapeHtml(statusColor)}">
+                       background:var(--tq-surface-alt);color:${statusColor}">
             ${escapeHtml(statusLabel)}
           </span>
         </div>
@@ -269,10 +278,10 @@ export class QuestMapViewerComponent implements AfterViewInit, OnChanges, OnDest
         <button
           class="tq-popup-btn"
           data-quest-id="${escapeHtml(quest.id)}"
-          style="width:100%;background:#1a5c38;color:#fff;border:none;border-radius:6px;
+          style="width:100%;background:var(--tq-primary);color:#fff;border:none;border-radius:6px;
                  padding:7px 12px;font-size:12.5px;font-weight:500;cursor:pointer;
                  display:flex;align-items:center;justify-content:center;gap:6px;
-                 font-family:'DM Sans',system-ui,sans-serif"
+                 font-family:var(--tq-font-body)"
         >
           Modifica quest →
         </button>
