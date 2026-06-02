@@ -1,0 +1,71 @@
+<div class="tq-page">
+  <div class="tq-page-inner">
+    <div class="page-header">
+      <div>
+        <h1 class="tq-page-title">Quest</h1>
+        <p class="tq-page-subtitle">Gestisci le quest del territorio trentino</p>
+      </div>
+      <div class="header-right">
+        <div class="view-toggle">
+          <button type="button" class="vt" [class.vt--on]="isListActive" (click)="goToList()">
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <line x1="8" y1="6" x2="21" y2="6" />
+              <line x1="8" y1="12" x2="21" y2="12" />
+              <line x1="8" y1="18" x2="21" y2="18" />
+              <line x1="3" y1="6" x2="3.01" y2="6" />
+              <line x1="3" y1="12" x2="3.01" y2="12" />
+              <line x1="3" y1="18" x2="3.01" y2="18" />
+            </svg>
+            Lista
+          </button>
+          <button type="button" class="vt" [class.vt--on]="isMapActive" (click)="goToMap()">
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
+              <line x1="8" y1="2" x2="8" y2="18" />
+              <line x1="16" y1="6" x2="16" y2="22" />
+            </svg>
+            Mappa
+          </button>
+        </div>
+        <button type="button" class="tq-btn-primary" (click)="onCreateClick()">
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          Nuova quest
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="quests-shell-content">
+    <router-outlet />
+  </div>
+</div>

@@ -1,0 +1,71 @@
+:host {
+  display: block;
+  height: 100%;
+  overflow: hidden;
+}
+
+.tq-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 0px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.view-toggle {
+  display: flex;
+  border: 1px solid var(--tq-border);
+  border-radius: var(--tq-r-sm);
+  overflow: hidden;
+  background: var(--tq-surface);
+  transition:
+    border-color 220ms,
+    background 220ms;
+}
+
+.vt {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 13px;
+  font-size: 12px;
+  font-family: var(--tq-font-body);
+  color: var(--tq-text-muted);
+  cursor: pointer;
+  border: none;
+  background: none;
+  transition:
+    background 130ms,
+    color 130ms;
+
+  &:hover {
+    background: var(--tq-surface-alt);
+    color: var(--tq-text);
+  }
+
+  &--on {
+    color: var(--tq-text);
+    font-weight: 600;
+    background: var(--tq-surface);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+  }
+}
+
+.quests-shell-content {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}

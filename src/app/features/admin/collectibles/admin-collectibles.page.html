@@ -1,0 +1,120 @@
+<div class="tq-page">
+  <div class="tq-page-inner">
+    <header class="page-head">
+      <div>
+        <h1 class="tq-page-title">Collezionabili</h1>
+        <p class="tq-page-subtitle">Gli oggetti sbloccabili completando le quest principali.</p>
+      </div>
+      <button type="button" class="tq-btn-primary" (click)="onCreate()">
+        Nuovo collezionabile
+      </button>
+    </header>
+
+    <div class="filter-row">
+      <app-filter-chips
+        [groups]="rarityGroups"
+        [selected]="rarityFilter()"
+        (selectedChange)="onRarityFilter($event)"
+      />
+    </div>
+
+    @if (isLoading()) {
+      <div class="state">Caricamento…</div>
+    } @else if (filtered().length === 0) {
+      <div class="state">Nessun collezionabile trovato.</div>
+    } @else {
+      <div class="tq-table-wrap">
+        <table class="tq-table" aria-label="Lista collezionabili">
+          <colgroup>
+            <col style="width: 42%" />
+            <col style="width: 18%" />
+            <col style="width: 16%" />
+            <col style="width: 24%" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Collezionabile</th>
+              <th>Rarità</th>
+              <th>Stato</th>
+              <th style="text-align: right">Azioni</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (c of filtered(); track c.id) {
+              <tr (click)="onEdit(c)">
+                <td class="tq-td-first">
+                  <div class="cell-collectible">
+                    <img class="thumb" [src]="c.imageUrl" [alt]="c.name" />
+                    <div class="meta">
+                      <span class="name">{{ c.name }}</span>
+                      <span class="desc">{{ c.description }}</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span [class]="rarityBadgeClass(c.rarity)">{{ rarityLabel(c.rarity) }}</span>
+                </td>
+                <td>
+                  @if (c.status === 'active') {
+                    <span class="tq-badge tq-badge--green">Attivo</span>
+                  } @else {
+                    <span class="tq-badge tq-badge--gray">Archiviato</span>
+                  }
+                </td>
+                <td class="actions">
+                  <button
+                    type="button"
+                    class="tq-icon-btn"
+                    matTooltip="Modifica"
+                    (click)="onEdit(c); $event.stopPropagation()"
+                    aria-label="Modifica"
+                  >
+                    <svg
+                      width="13"
+                      height="13"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                      <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                  </button>
+                  @if (c.status === 'active') {
+                    <button
+                      type="button"
+                      class="tq-icon-btn tq-icon-btn--danger"
+                      matTooltip="Archivia"
+                      (click)="onArchive(c, $event)"
+                      aria-label="Archivia"
+                    >
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <polyline points="3 6 5 6 21 6" />
+                        <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+                        <path d="M10 11v6M14 11v6" />
+                        <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
+                      </svg>
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>

@@ -27,11 +27,6 @@ export const routes: Routes = [
           import('./features/admin/dashboard/dashboard.page').then((m) => m.AdminDashboardPage),
       },
       {
-        path: 'quests',
-        loadComponent: () =>
-          import('./features/admin/quests/admin-quests.page').then((m) => m.AdminQuestsPage),
-      },
-      {
         path: 'quests/new',
         loadComponent: () =>
           import('./features/admin/quests/admin-quest-form.page').then((m) => m.AdminQuestFormPage),
@@ -42,9 +37,58 @@ export const routes: Routes = [
           import('./features/admin/quests/admin-quest-form.page').then((m) => m.AdminQuestFormPage),
       },
       {
-        path: 'quests-map',
+        path: 'quests',
         loadComponent: () =>
-          import('./features/admin/quests/admin-quests-map.page').then((m) => m.AdminQuestsMapPage),
+          import('./features/admin/quests/admin-quests-shell.page').then(
+            (m) => m.AdminQuestsShellPage,
+          ),
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./features/admin/quests/admin-quests.page').then((m) => m.AdminQuestsPage),
+          },
+          {
+            path: 'map',
+            loadComponent: () =>
+              import('./features/admin/quests/admin-quests-map.page').then(
+                (m) => m.AdminQuestsMapPage,
+              ),
+          },
+        ],
+      },
+      {
+        path: 'collectibles',
+        loadComponent: () =>
+          import('./features/admin/collectibles/admin-collectibles.page').then(
+            (m) => m.AdminCollectiblesPage,
+          ),
+      },
+      {
+        path: 'collectibles/new',
+        loadComponent: () =>
+          import('./features/admin/collectibles/admin-collectible-form.page').then(
+            (m) => m.AdminCollectibleFormPage,
+          ),
+      },
+      {
+        path: 'collectibles/:id/edit',
+        loadComponent: () =>
+          import('./features/admin/collectibles/admin-collectible-form.page').then(
+            (m) => m.AdminCollectibleFormPage,
+          ),
+      },
+      {
+        path: 'businesses',
+        loadComponent: () =>
+          import('./features/admin/businesses/admin-businesses.page').then(
+            (m) => m.AdminBusinessesPage,
+          ),
+      },
+      {
+        path: 'settings',
+        loadComponent: () =>
+          import('./features/admin/settings/settings.page').then((m) => m.SettingsPage),
       },
     ],
   },

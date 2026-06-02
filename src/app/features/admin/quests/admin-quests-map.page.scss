@@ -1,173 +1,189 @@
-.page {
-  max-width: 1400px;
-}
-
-.page-header {
-  margin-bottom: 1.5rem;
-}
-
-.page-title {
-  font-size: 1.75rem;
-  font-weight: 500;
-  margin: 0 0 0.25rem;
-}
-
-.page-subtitle {
-  color: rgba(0, 0, 0, 0.6);
-  margin: 0;
-}
-
-.filters-card {
-  margin-bottom: 1.5rem;
-}
-
-.filters {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.filters mat-form-field {
-  min-width: 200px;
-}
-
-.legend {
-  display: flex;
-  gap: 1.25rem;
-  flex-wrap: wrap;
-  margin-left: auto;
-  font-size: 0.8125rem;
-  color: rgba(0, 0, 0, 0.7);
-}
-
-.legend-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.legend-marker {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  font-size: 0.875rem;
-  color: white;
-  font-weight: bold;
-
-  &.marker-status-active {
-    background-color: #2e7d32;
-  }
-
-  &.marker-status-inactive {
-    background-color: #ef6c00;
-  }
-
-  &.marker-status-archived {
-    background-color: #757575;
-  }
-}
-
-.map-card {
-  position: relative;
-  padding: 0;
+:host {
+  display: block;
+  height: 100%;
   overflow: hidden;
 }
 
-.loading-overlay {
-  position: absolute;
-  inset: 0;
+// Pagina a piena altezza: header fisso + mappa che riempie il resto.
+.map-page {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.7);
-  z-index: 500;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
 }
 
-.map-summary {
+// ─── Map + side panel ────────────────────────────────────────────────────────
+.map-shell {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  border-top: 1px solid #e0e0e0;
-  color: rgba(0, 0, 0, 0.7);
-  font-size: 0.875rem;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
 
-  mat-icon {
-    color: #1976d2;
+.map-area {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+
+  app-quest-map-viewer {
+    display: block;
+    height: 100%;
   }
 }
 
-/* ===== Regole globali per i marker e i popup ===== */
-/* Queste regole devono essere applicate globalmente perche' Leaflet
-   inserisce gli elementi DOM dei marker fuori dall'albero del
-   componente Angular. Senza ::ng-deep o regole globali in styles.scss,
-   non verrebbero applicate. Qui le inseriamo a livello di componente
-   con encapsulation None tramite ::ng-deep. */
-
-::ng-deep .quest-marker {
-  background: transparent;
-  border: none;
-}
-
-::ng-deep .quest-marker-inner {
+.map-panel {
+  width: 280px;
+  flex-shrink: 0;
+  background: var(--tq-surface);
+  border-left: 1px solid var(--tq-border);
   display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  color: white;
-  font-size: 0.875rem;
-  font-weight: bold;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
-  border: 2px solid white;
+  flex-direction: column;
+  overflow: hidden;
+  transition:
+    background 220ms,
+    border-color 220ms;
 }
 
-::ng-deep .marker-status-active .quest-marker-inner {
-  background-color: #2e7d32;
+.mp-header {
+  padding: 12px 14px 8px;
+  border-bottom: 1px solid var(--tq-border);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-::ng-deep .marker-status-inactive .quest-marker-inner {
-  background-color: #ef6c00;
+.mp-chips {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
 }
 
-::ng-deep .marker-status-archived .quest-marker-inner {
-  background-color: #757575;
-}
-
-::ng-deep .quest-popup {
-  font-family: Roboto, sans-serif;
-  min-width: 200px;
-}
-
-::ng-deep .quest-popup-title {
-  font-size: 1rem;
-  font-weight: 500;
-  margin: 0 0 0.5rem;
-}
-
-::ng-deep .quest-popup-meta {
-  font-size: 0.8125rem;
-  color: rgba(0, 0, 0, 0.7);
-  margin: 0 0 0.75rem;
-  line-height: 1.5;
-}
-
-::ng-deep .quest-popup-action {
-  background-color: #1976d2;
-  color: white;
-  border: none;
-  padding: 0.4rem 0.875rem;
-  border-radius: 4px;
-  font-size: 0.875rem;
+.mp-chip {
+  border: 1px solid var(--tq-border);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-family: var(--tq-font-body);
+  color: var(--tq-text-muted);
+  background: var(--tq-surface);
   cursor: pointer;
-  font-weight: 500;
+  white-space: nowrap;
+  transition: all 120ms;
 
   &:hover {
-    background-color: #1565c0;
+    border-color: var(--tq-border-strong);
   }
+
+  &--on {
+    background: var(--tq-primary-light);
+    border-color: var(--tq-primary);
+    color: var(--tq-primary);
+    font-weight: 500;
+  }
+}
+
+.mp-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 8px;
+}
+
+.mp-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 8px;
+  border-radius: var(--tq-r-sm);
+  cursor: pointer;
+  position: relative;
+  transition: background 120ms;
+
+  &:hover {
+    background: var(--tq-surface-alt);
+  }
+
+  &--sel {
+    background: var(--tq-primary-light);
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: var(--tq-primary);
+      border-radius: 0 2px 2px 0;
+    }
+  }
+}
+
+.mp-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+
+  &--primary {
+    background: var(--tq-primary);
+  }
+  &--secondary {
+    background: var(--tq-amber);
+  }
+  &--inactive {
+    background: var(--tq-text-subtle);
+    opacity: 0.55;
+  }
+}
+
+.mp-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.mp-name {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--tq-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 120ms;
+
+  .mp-item--sel & {
+    color: var(--tq-primary);
+  }
+
+  &--inactive {
+    opacity: 0.5;
+  }
+}
+
+.mp-sub {
+  font-size: 11px;
+  color: var(--tq-text-muted);
+  margin-top: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mp-pts {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--tq-amber);
+  flex-shrink: 0;
+}
+
+.mp-footer {
+  padding: 10px 14px;
+  border-top: 1px solid var(--tq-border);
+  font-size: 11.5px;
+  color: var(--tq-text-muted);
+  text-align: center;
+  flex-shrink: 0;
 }

@@ -1,75 +1,110 @@
-<div class="page">
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">Mappa quest</h1>
-      <p class="page-subtitle">Panoramica geografica di tutte le quest sul territorio trentino</p>
+<div class="map-page">
+  <!-- Mappa + pannello laterale -->
+  <div class="map-shell">
+    <div class="map-area">
+      <app-quest-map-viewer
+        [quests]="filteredQuests()"
+        [selectedQuestId]="selectedQuestId()"
+        [collectiblesById]="collectiblesById()"
+        [collectibleImageById]="collectibleImages()"
+        [interactive]="true"
+        [compact]="false"
+        (questSelected)="onMapQuestSelected($event)"
+        (questFocused)="selectedQuestId.set($event)"
+      />
     </div>
-  </div>
 
-  <mat-card appearance="outlined" class="filters-card">
-    <mat-card-content>
-      <div class="filters">
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>Tipo</mat-label>
-          <mat-select
-            [ngModel]="typeFilter()"
-            (ngModelChange)="typeFilter.set($event); onFilterChange()"
+    <!-- Panel destro -->
+    <aside class="map-panel" aria-label="Lista quest">
+      <div class="mp-header">
+        <div class="tq-search">
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            aria-hidden="true"
           >
-            @for (option of typeOptions; track option.value) {
-              <mat-option [value]="option.value">{{ option.label }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>Status</mat-label>
-          <mat-select
-            [ngModel]="statusFilter()"
-            (ngModelChange)="statusFilter.set($event); onFilterChange()"
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            type="text"
+            placeholder="Cerca per nome, luogo, collezionabile…"
+            [value]="searchQuery()"
+            (input)="searchQuery.set($any($event.target).value)"
+            aria-label="Cerca quest"
+          />
+        </div>
+        <div class="mp-chips">
+          <button
+            type="button"
+            class="mp-chip"
+            [class.mp-chip--on]="typeFilter() === null"
+            (click)="typeFilter.set(null)"
           >
-            @for (option of statusOptions; track option.value) {
-              <mat-option [value]="option.value">{{ option.label }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-
-        <div class="legend">
-          <span class="legend-item">
-            <span class="legend-marker marker-primary marker-status-active">★</span>
-            Principale attiva
-          </span>
-          <span class="legend-item">
-            <span class="legend-marker marker-secondary marker-status-active">●</span>
-            Secondaria attiva
-          </span>
-          <span class="legend-item">
-            <span class="legend-marker marker-status-inactive">●</span>
-            Inattiva
-          </span>
-          <span class="legend-item">
-            <span class="legend-marker marker-status-archived">●</span>
-            Archiviata
-          </span>
+            Tutte
+          </button>
+          <button
+            type="button"
+            class="mp-chip"
+            [class.mp-chip--on]="typeFilter() === QuestType.PRIMARY"
+            (click)="typeFilter.set(QuestType.PRIMARY)"
+          >
+            ★ Principali
+          </button>
+          <button
+            type="button"
+            class="mp-chip"
+            [class.mp-chip--on]="typeFilter() === QuestType.SECONDARY"
+            (click)="typeFilter.set(QuestType.SECONDARY)"
+          >
+            ● Second.
+          </button>
+          <button
+            type="button"
+            class="mp-chip"
+            [class.mp-chip--on]="showActiveOnly()"
+            (click)="toggleActiveOnly()"
+          >
+            Attive
+          </button>
         </div>
       </div>
-    </mat-card-content>
-  </mat-card>
 
-  <mat-card appearance="outlined" class="map-card">
-    @if (isLoading()) {
-      <div class="loading-overlay">
-        <mat-spinner diameter="40"></mat-spinner>
+      <div class="mp-list">
+        @for (quest of filteredQuests(); track quest.id) {
+          <div
+            class="mp-item"
+            [class.mp-item--sel]="quest.id === selectedQuestId()"
+            (click)="onListItemClick(quest)"
+            role="button"
+            tabindex="0"
+          >
+            <div
+              class="mp-dot"
+              [class.mp-dot--primary]="quest.type === QuestType.PRIMARY"
+              [class.mp-dot--secondary]="quest.type === QuestType.SECONDARY"
+              [class.mp-dot--inactive]="quest.status !== QuestStatus.ACTIVE"
+            ></div>
+            <div class="mp-info">
+              <div class="mp-name" [class.mp-name--inactive]="quest.status !== QuestStatus.ACTIVE">
+                {{ quest.name }}
+              </div>
+              <div class="mp-sub">{{ questSub(quest) }}</div>
+            </div>
+            <span class="mp-pts">{{ typeLabel(quest.type) }} {{ questPoints(quest) }}</span>
+          </div>
+        }
       </div>
-    }
 
-    <app-quest-map-viewer
-      [quests]="quests()"
-      (questSelected)="onQuestSelected($event)"
-    ></app-quest-map-viewer>
-
-    <div class="map-summary">
-      <mat-icon>flag</mat-icon>
-      <span>{{ quests().length }} quest visualizzate</span>
-    </div>
-  </mat-card>
+      <div class="mp-footer">
+        {{ totalCount() }} quest · {{ activeCount() }} attive · {{ totalCount() - activeCount() }}
+        inattive
+      </div>
+    </aside>
+  </div>
 </div>

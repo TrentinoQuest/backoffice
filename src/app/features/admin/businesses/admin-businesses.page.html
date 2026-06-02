@@ -1,0 +1,151 @@
+<div class="tq-page">
+  <div class="tq-page-inner">
+    <header class="page-head">
+      <div>
+        <h1 class="tq-page-title">Affiliazioni</h1>
+        <p class="tq-page-subtitle">Richieste di affiliazione delle Attività Locali.</p>
+      </div>
+    </header>
+
+    <div class="filter-row">
+      <app-filter-chips
+        [groups]="statusGroups"
+        [selected]="statusFilter()"
+        (selectedChange)="onStatusFilter($event)"
+      />
+    </div>
+
+    @if (isLoading()) {
+      <div class="state">Caricamento…</div>
+    } @else if (businesses().length === 0) {
+      <div class="state">Nessuna attività trovata.</div>
+    } @else {
+      <div class="tq-table-wrap">
+        <table class="tq-table" aria-label="Lista affiliazioni">
+          <colgroup>
+            <col style="width: 38%" />
+            <col style="width: 18%" />
+            <col style="width: 18%" />
+            <col style="width: 26%" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Attività</th>
+              <th>Stato</th>
+              <th>Richiesta</th>
+              <th style="text-align: right">Azioni</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (b of businesses(); track b.id) {
+              <tr>
+                <td class="tq-td-first">
+                  <div class="meta">
+                    <span class="name">{{ b.businessName }}</span>
+                    <span class="sub">{{ typeLabel(b.businessType) }} · {{ b.address }}</span>
+                  </div>
+                </td>
+                <td>
+                  <span [class]="statusBadgeClass(b.approvalStatus)">{{
+                    statusLabel(b.approvalStatus)
+                  }}</span>
+                </td>
+                <td class="muted">{{ b.createdAt | date: 'd MMM y' }}</td>
+                <td class="actions">
+                  @if (b.approvalStatus === BusinessApprovalStatus.PENDING) {
+                    <button
+                      type="button"
+                      class="tq-icon-btn"
+                      matTooltip="Approva"
+                      (click)="onApprove(b)"
+                      aria-label="Approva"
+                    >
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      class="tq-icon-btn tq-icon-btn--danger"
+                      matTooltip="Rifiuta"
+                      (click)="onReject(b)"
+                      aria-label="Rifiuta"
+                    >
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                        aria-hidden="true"
+                      >
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
+                    </button>
+                  } @else if (b.approvalStatus === BusinessApprovalStatus.APPROVED) {
+                    <button
+                      type="button"
+                      class="tq-icon-btn tq-icon-btn--danger"
+                      matTooltip="Revoca accesso"
+                      (click)="onRevoke(b)"
+                      aria-label="Revoca accesso"
+                    >
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                        aria-hidden="true"
+                      >
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+                      </svg>
+                    </button>
+                  } @else {
+                    <button
+                      type="button"
+                      class="tq-icon-btn"
+                      matTooltip="Approva"
+                      (click)="onApprove(b)"
+                      aria-label="Approva"
+                    >
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>

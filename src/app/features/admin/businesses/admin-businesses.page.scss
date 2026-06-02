@@ -1,0 +1,42 @@
+.page-head {
+  margin-bottom: 20px;
+}
+
+.filter-row {
+  margin-bottom: 16px;
+}
+
+.state {
+  padding: 40px;
+  text-align: center;
+  color: var(--tq-text-muted);
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.name {
+  font-weight: 500;
+  color: var(--tq-text);
+}
+
+.sub {
+  font-size: 12px;
+  color: var(--tq-text-subtle);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.muted {
+  color: var(--tq-text-muted);
+  font-size: 13px;
+}
+
+.actions {
+  text-align: right;
+  white-space: nowrap;
+}
