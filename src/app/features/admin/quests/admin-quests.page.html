@@ -118,6 +118,60 @@
                     <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
                   </svg>
                 </button>
+                @if (quest.type === QuestType.PRIMARY) {
+                  @if (!questQrToken(quest)) {
+                    <button
+                      type="button"
+                      class="tq-icon-btn"
+                      matTooltip="Genera QR"
+                      [disabled]="generatingQrId() === quest.id"
+                      (click)="onGenerateQr(quest, $event)"
+                      aria-label="Genera QR per questa quest"
+                    >
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <rect x="3" y="3" width="7" height="7" rx="1" />
+                        <rect x="14" y="3" width="7" height="7" rx="1" />
+                        <rect x="3" y="14" width="7" height="7" rx="1" />
+                        <path d="M14 14h3v3M17 14h3M14 17v3M17 20h3M20 17v3" />
+                      </svg>
+                    </button>
+                  } @else {
+                    <button
+                      type="button"
+                      class="tq-icon-btn tq-icon-btn--success"
+                      matTooltip="Mostra/Stampa QR"
+                      (click)="onShowQr(quest, $event)"
+                      aria-label="Mostra e stampa QR"
+                    >
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <rect x="3" y="3" width="7" height="7" rx="1" />
+                        <rect x="14" y="3" width="7" height="7" rx="1" />
+                        <rect x="3" y="14" width="7" height="7" rx="1" />
+                        <path d="M14 14h3v3M17 14h3M14 17v3M17 20h3M20 17v3" />
+                      </svg>
+                    </button>
+                  }
+                }
                 @if (quest.status === QuestStatus.INACTIVE) {
                   <button
                     type="button"

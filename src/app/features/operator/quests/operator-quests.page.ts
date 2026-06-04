@@ -1,9 +1,9 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
+import { RouterLink } from '@angular/router';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { OperatorQuestView, PlacementStatus } from '@trentino-quest/shared-types';
 import { OperatorService } from '../../../core/services/operator.service';
 import {
@@ -27,13 +27,7 @@ const PAGE_SIZE = 20;
 @Component({
   selector: 'app-operator-quests',
   standalone: true,
-  imports: [
-    CommonModule,
-    FilterChipsComponent,
-    MatDialogModule,
-    MatSnackBarModule,
-    MatTooltipModule,
-  ],
+  imports: [CommonModule, RouterLink, FilterChipsComponent, MatDialogModule, MatSnackBarModule],
   templateUrl: './operator-quests.page.html',
   styleUrl: './operator-quests.page.scss',
 })
@@ -130,6 +124,7 @@ export class OperatorQuestsPage implements OnInit {
     try {
       await this.service.place(quest.id, {
         exactPosition: result.exactPosition,
+        scannedToken: result.scannedToken ?? '',
         fix: result.fix,
       });
       this.snackBar.open(`QR piazzato per "${quest.name}"`, 'OK', { duration: 3000 });
@@ -210,21 +205,47 @@ export class OperatorQuestsPage implements OnInit {
   }
 
   private showPlacementError(err: unknown): void {
-    if (err instanceof HttpErrorResponse && err.status === 422) {
+    if (err instanceof HttpErrorResponse) {
       const code = (err.error as { code?: string })?.code;
-      if (code === 'OUT_OF_RANGE_ACCURACY') {
-        this.snackBar.open("GPS troppo impreciso, riprova all'aperto con cielo libero.", 'Chiudi', {
-          duration: 6000,
-        });
-        return;
+      if (err.status === 409) {
+        if (code === 'QR_TOKEN_MISMATCH') {
+          this.snackBar.open(
+            'Questo QR non appartiene a questa quest. Controlla di aver scansionato il QR giusto.',
+            'Chiudi',
+            { duration: 7000 },
+          );
+          return;
+        }
+        if (code === 'QUEST_QR_NOT_GENERATED') {
+          this.snackBar.open("Il QR non è ancora stato generato dall'amministratore.", 'Chiudi', {
+            duration: 6000,
+          });
+          return;
+        }
+        if (code === 'QUEST_ALREADY_PLACED') {
+          this.snackBar.open('Il QR è già stato piazzato per questa quest.', 'Chiudi', {
+            duration: 5000,
+          });
+          return;
+        }
       }
-      if (code === 'STALE_FIX') {
-        this.snackBar.open(
-          'Fix GPS troppo vecchio. Riacquisisci la posizione e riprova subito.',
-          'Chiudi',
-          { duration: 6000 },
-        );
-        return;
+      if (err.status === 422) {
+        if (code === 'OUT_OF_RANGE_ACCURACY') {
+          this.snackBar.open(
+            "Posizione GPS imprecisa, riprova all'aperto con cielo libero.",
+            'Chiudi',
+            { duration: 6000 },
+          );
+          return;
+        }
+        if (code === 'STALE_FIX') {
+          this.snackBar.open(
+            'Fix GPS troppo vecchio. Riacquisisci la posizione e riprova subito.',
+            'Chiudi',
+            { duration: 6000 },
+          );
+          return;
+        }
       }
     }
     this.showError('Errore nel piazzamento', err);
