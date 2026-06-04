@@ -103,6 +103,13 @@ export const routes: Routes = [
       {
         path: '',
         loadComponent: () =>
+          import('./features/operator/quests/operator-quests-map.page').then(
+            (m) => m.OperatorQuestsMapPage,
+          ),
+      },
+      {
+        path: 'list',
+        loadComponent: () =>
           import('./features/operator/quests/operator-quests.page').then(
             (m) => m.OperatorQuestsPage,
           ),
