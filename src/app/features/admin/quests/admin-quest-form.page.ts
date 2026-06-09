@@ -93,7 +93,11 @@ export class AdminQuestFormPage implements OnInit {
     description: ['', Validators.required],
     imageUrl: ['', Validators.required],
     rarity: [CollectibleRarity.COMMON, Validators.required],
+    lore: ['' as string],
+    locationValue: [null as MapPickerValue | null],
   });
+
+  readonly samePositionAsQuest = signal(false);
 
   readonly rarityOptions = [
     { value: CollectibleRarity.COMMON, label: 'Comune' },
@@ -305,8 +309,6 @@ export class AdminQuestFormPage implements OnInit {
   onToggleInlineCollectible(): void {
     this.showInlineCollectibleForm.update((v) => !v);
     if (this.showInlineCollectibleForm()) {
-      // Aprendo la creazione, deseleziona l'eventuale collezionabile
-      // esistente: stai creando il nuovo, non vuoi che ne resti uno scelto.
       this.form.controls.collectibleId.setValue(null);
     } else {
       this.inlineCollectibleForm.reset({
@@ -314,8 +316,18 @@ export class AdminQuestFormPage implements OnInit {
         description: '',
         imageUrl: '',
         rarity: CollectibleRarity.COMMON,
+        lore: '',
+        locationValue: null,
       });
+      this.samePositionAsQuest.set(false);
     }
+  }
+
+  onSamePositionChange(checked: boolean): void {
+    this.samePositionAsQuest.set(checked);
+    this.inlineCollectibleForm.controls.locationValue.setValue(
+      checked ? this.form.controls.locationValue.value : null,
+    );
   }
 
   async onSaveInlineCollectible(): Promise<void> {
@@ -325,17 +337,23 @@ export class AdminQuestFormPage implements OnInit {
     }
     this.isCreatingCollectible.set(true);
     try {
-      const created = await this.collectiblesService.create(
-        this.inlineCollectibleForm.getRawValue(),
-      );
+      const { locationValue, lore, ...base } = this.inlineCollectibleForm.getRawValue();
+      const created = await this.collectiblesService.create({
+        ...base,
+        lore: lore || null,
+        coordinates: locationValue ? { lat: locationValue.lat, lng: locationValue.lng } : undefined,
+      });
       this.collectibles.update((list) => [...list, created]);
       this.form.controls.collectibleId.setValue(created.id);
       this.showInlineCollectibleForm.set(false);
+      this.samePositionAsQuest.set(false);
       this.inlineCollectibleForm.reset({
         name: '',
         description: '',
         imageUrl: '',
         rarity: CollectibleRarity.COMMON,
+        lore: '',
+        locationValue: null,
       });
       this.snackBar.open(`"${created.name}" creato e selezionato`, 'OK', { duration: 3000 });
     } catch {

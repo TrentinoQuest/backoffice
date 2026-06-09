@@ -1,0 +1,536 @@
+<div class="tq-page">
+  <div class="tq-page-inner">
+    <header class="page-head">
+      <div class="page-head__text">
+        <h1 class="tq-page-title">Analytics</h1>
+        <p class="tq-page-subtitle">
+          Dati dettagliati su completamenti, giocatori e distribuzione geografica.
+        </p>
+      </div>
+      <!-- Selettore periodo globale -->
+      <div class="period-group" role="group" aria-label="Periodo di riferimento">
+        <button
+          type="button"
+          class="period-btn"
+          [class.period-btn--active]="dateRangeDays() === 30"
+          (click)="onDateRangeChange(30)"
+        >
+          30 giorni
+        </button>
+        <button
+          type="button"
+          class="period-btn"
+          [class.period-btn--active]="dateRangeDays() === 90"
+          (click)="onDateRangeChange(90)"
+        >
+          90 giorni
+        </button>
+        <button
+          type="button"
+          class="period-btn"
+          [class.period-btn--active]="dateRangeDays() === 365"
+          (click)="onDateRangeChange(365)"
+        >
+          12 mesi
+        </button>
+      </div>
+    </header>
+
+    <!-- ═══ 1. Summary stat cards ════════════════════════════════════════════ -->
+    <section class="analytics-section">
+      <h2 class="section-title">Riepilogo attività</h2>
+      @if (loadingSummary()) {
+        <div class="section-loading"><mat-spinner diameter="32" /></div>
+      } @else if (summary(); as s) {
+        <div class="summary-grid">
+          <div class="stat-card stat-card--green">
+            <span class="stat-card__icon" aria-hidden="true">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+            </span>
+            <span class="stat-card__value">{{ s.totalPlayers }}</span>
+            <span class="stat-card__label">Giocatori registrati</span>
+          </div>
+          <div class="stat-card stat-card--blue">
+            <span class="stat-card__icon" aria-hidden="true">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="9 11 12 14 22 4" />
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+              </svg>
+            </span>
+            <span class="stat-card__value">{{ s.totalCompletions }}</span>
+            <span class="stat-card__label">Completamenti totali</span>
+          </div>
+          <div class="stat-card stat-card--green">
+            <span class="stat-card__icon" aria-hidden="true">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+                <path d="M4 22V15" />
+              </svg>
+            </span>
+            <span class="stat-card__value">{{ s.totalActiveQuests }}</span>
+            <span class="stat-card__label">Quest attive</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card__icon" aria-hidden="true">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <path d="M3 9h18" />
+                <path d="M9 21V9" />
+              </svg>
+            </span>
+            <span class="stat-card__value">{{ s.totalActivePrimaryQuests }}</span>
+            <span class="stat-card__label">Quest principali</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card__icon" aria-hidden="true">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            </span>
+            <span class="stat-card__value">{{ s.totalActiveSecondaryQuests }}</span>
+            <span class="stat-card__label">Quest secondarie</span>
+          </div>
+          <div class="stat-card stat-card--amber">
+            <span class="stat-card__icon" aria-hidden="true">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polygon
+                  points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+                />
+              </svg>
+            </span>
+            <span class="stat-card__value">{{ s.totalCollectibles }}</span>
+            <span class="stat-card__label">Collezionabili</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card__icon" aria-hidden="true">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                <path d="M9 22V12h6v10" />
+              </svg>
+            </span>
+            <span class="stat-card__value">{{ s.totalApprovedBusinesses }}</span>
+            <span class="stat-card__label">Attività affiliate</span>
+          </div>
+          <div class="stat-card" [class.stat-card--amber]="s.pendingPlacements > 0">
+            <span class="stat-card__icon" aria-hidden="true">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="1" y="3" width="15" height="13" rx="1" />
+                <path d="M16 8h4l3 3v5h-7V8z" />
+                <circle cx="5.5" cy="18.5" r="2.5" />
+                <circle cx="18.5" cy="18.5" r="2.5" />
+              </svg>
+            </span>
+            <span class="stat-card__value">{{ s.pendingPlacements }}</span>
+            <span class="stat-card__label">QR da piazzare</span>
+          </div>
+        </div>
+      } @else {
+        <p class="empty">Nessun dato disponibile.</p>
+      }
+    </section>
+
+    <!-- ═══ 2. Grafico completamenti nel tempo ════════════════════════════════ -->
+    <section class="analytics-section">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">Completamenti nel tempo</h2>
+          <p class="section-desc">
+            Numero di quest portate a termine per
+            {{
+              granularity() === AnalyticsGranularity.DAY
+                ? 'giorno'
+                : granularity() === AnalyticsGranularity.WEEK
+                  ? 'settimana'
+                  : 'mese'
+            }}
+            nel periodo selezionato.
+          </p>
+        </div>
+        <div class="granularity-group" role="group" aria-label="Granularità">
+          <button
+            type="button"
+            class="gran-btn"
+            [class.gran-btn--active]="granularity() === AnalyticsGranularity.DAY"
+            (click)="onGranularityChange(AnalyticsGranularity.DAY)"
+          >
+            Giorno
+          </button>
+          <button
+            type="button"
+            class="gran-btn"
+            [class.gran-btn--active]="granularity() === AnalyticsGranularity.WEEK"
+            (click)="onGranularityChange(AnalyticsGranularity.WEEK)"
+          >
+            Settimana
+          </button>
+          <button
+            type="button"
+            class="gran-btn"
+            [class.gran-btn--active]="granularity() === AnalyticsGranularity.MONTH"
+            (click)="onGranularityChange(AnalyticsGranularity.MONTH)"
+          >
+            Mese
+          </button>
+        </div>
+      </div>
+
+      <div class="card chart-card">
+        @if (loadingChart()) {
+          <div class="section-loading"><mat-spinner diameter="32" /></div>
+        } @else if (completionsOverTime().length === 0) {
+          <div class="empty-state">
+            <svg
+              width="36"
+              height="36"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="empty-state__icon"
+            >
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+            </svg>
+            <p>Nessun completamento nel periodo selezionato.</p>
+          </div>
+        } @else {
+          <div class="chart-wrap">
+            <canvas baseChart [data]="chartData()" [options]="chartOptions" type="bar"></canvas>
+          </div>
+          <!-- Legenda grafico -->
+          <div class="chart-legend">
+            <div class="chart-legend__item">
+              <span class="chart-legend__dot" style="background: #2d6a4f"></span>
+              <span
+                >Completamenti per
+                {{
+                  granularity() === AnalyticsGranularity.DAY
+                    ? 'giorno'
+                    : granularity() === AnalyticsGranularity.WEEK
+                      ? 'settimana'
+                      : 'mese'
+                }}</span
+              >
+            </div>
+            <div class="chart-legend__stats">
+              <span class="chart-legend__stat">
+                <span class="chart-legend__stat-label">Massimo</span>
+                <strong>{{ maxChartValue() }}</strong>
+              </span>
+              <span class="chart-legend__stat">
+                <span class="chart-legend__stat-label">Media</span>
+                <strong>{{ avgChartValue() }}</strong>
+              </span>
+              <span class="chart-legend__stat">
+                <span class="chart-legend__stat-label">Periodi</span>
+                <strong>{{ completionsOverTime().length }}</strong>
+              </span>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- ═══ 3. Heatmap flussi turistici ══════════════════════════════════════ -->
+    <section class="analytics-section">
+      <h2 class="section-title">Flussi turistici</h2>
+      <p class="section-desc">
+        Concentrazione geografica dei completamenti: le zone più calde indicano le aree più
+        frequentate dai giocatori nel periodo selezionato.
+      </p>
+      <div class="card heatmap-card">
+        @if (loadingHeatmap()) {
+          <div class="heatmap-loading"><mat-spinner diameter="32" /></div>
+        }
+        <div #heatmapDiv class="heatmap-canvas"></div>
+        @if (!loadingHeatmap() && completionsOverTime().length === 0) {
+          <div class="heatmap-empty">
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="empty-state__icon"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 8v4" />
+              <path d="M12 16h.01" />
+            </svg>
+            <p>Nessun dato di posizione disponibile per il periodo.</p>
+          </div>
+        }
+      </div>
+      <!-- Legenda heatmap -->
+      <div class="heatmap-legend">
+        <span class="heatmap-legend__label">Bassa densità</span>
+        <div class="heatmap-legend__gradient"></div>
+        <span class="heatmap-legend__label">Alta densità</span>
+        <span class="heatmap-legend__note">— completamenti per area geografica</span>
+      </div>
+    </section>
+
+    <!-- ═══ 4. Tabelle analytics ══════════════════════════════════════════════ -->
+    <div class="tables-grid">
+      <!-- Top quest per completamenti -->
+      <section class="card table-card">
+        <div class="table-card__head">
+          <h2 class="card__title">Top quest completate</h2>
+          <span class="table-badge">{{ topQuests().length }} quest</span>
+        </div>
+        <p class="table-desc">Ordinate per numero di completamenti totali.</p>
+        @if (loadingTables()) {
+          <div class="section-loading"><mat-spinner diameter="28" /></div>
+        } @else if (topQuests().length === 0) {
+          <div class="empty-state">
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="empty-state__icon"
+            >
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+            </svg>
+            <p>Nessun completamento registrato.</p>
+          </div>
+        } @else {
+          <div class="tq-table-wrap table-scroll">
+            <table class="tq-table" aria-label="Top quest">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Nome</th>
+                  <th>Tipo</th>
+                  <th class="text-right">Completamenti</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (q of topQuests(); track q.questId; let i = $index) {
+                  <tr>
+                    <td
+                      class="rank"
+                      [class.rank--gold]="i === 0"
+                      [class.rank--silver]="i === 1"
+                      [class.rank--bronze]="i === 2"
+                    >
+                      {{ i + 1 }}
+                    </td>
+                    <td class="tq-td-first name-cell">{{ q.name }}</td>
+                    <td>
+                      <span [class]="questTypeBadgeClass(q.type)">{{
+                        questTypeLabel(q.type)
+                      }}</span>
+                    </td>
+                    <td class="text-right count">{{ q.completionCount }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+
+      <!-- Zone ignorate -->
+      <section class="card table-card">
+        <div class="table-card__head">
+          <h2 class="card__title">Zone ignorate</h2>
+          <span class="table-badge table-badge--warn">{{ neverCompleted().length }} quest</span>
+        </div>
+        <p class="table-desc">
+          Quest mai completate da nessun giocatore — potenziali punti critici.
+        </p>
+        @if (loadingTables()) {
+          <div class="section-loading"><mat-spinner diameter="28" /></div>
+        } @else if (neverCompleted().length === 0) {
+          <div class="empty-state">
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="empty-state__icon"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+            <p>Tutte le quest sono state completate almeno una volta.</p>
+          </div>
+        } @else {
+          <div class="tq-table-wrap table-scroll">
+            <table class="tq-table" aria-label="Zone ignorate">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Tipo</th>
+                  <th>Creata il</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (q of neverCompleted(); track q.questId) {
+                  <tr>
+                    <td class="tq-td-first name-cell">{{ q.name }}</td>
+                    <td>
+                      <span [class]="questTypeBadgeClass(q.type)">{{
+                        questTypeLabel(q.type)
+                      }}</span>
+                    </td>
+                    <td class="muted">{{ q.createdAt | date: 'd MMM y' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+
+      <!-- Classifica giocatori -->
+      <section class="card table-card">
+        <div class="table-card__head">
+          <h2 class="card__title">Classifica giocatori</h2>
+          <span class="table-badge">{{ leaderboard().length }} giocatori</span>
+        </div>
+        <p class="table-desc">Ordinata per monete totali accumulate.</p>
+        @if (loadingTables()) {
+          <div class="section-loading"><mat-spinner diameter="28" /></div>
+        } @else if (leaderboard().length === 0) {
+          <div class="empty-state">
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="empty-state__icon"
+            >
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+            </svg>
+            <p>Nessun giocatore attivo.</p>
+          </div>
+        } @else {
+          <div class="tq-table-wrap table-scroll">
+            <table class="tq-table" aria-label="Classifica giocatori">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Giocatore</th>
+                  <th class="text-right">Monete</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (e of leaderboard(); track e.playerId; let i = $index) {
+                  <tr>
+                    <td
+                      class="rank"
+                      [class.rank--gold]="i === 0"
+                      [class.rank--silver]="i === 1"
+                      [class.rank--bronze]="i === 2"
+                    >
+                      {{ i + 1 }}
+                    </td>
+                    <td class="tq-td-first name-cell">{{ e.username }}</td>
+                    <td class="text-right count">{{ e.totalPoints }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+    </div>
+  </div>
+</div>

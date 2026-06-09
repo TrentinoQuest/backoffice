@@ -11,7 +11,7 @@ body {
 }
 body {
   font-family:
-    'DM Sans',
+    'Geist',
     system-ui,
     -apple-system,
     sans-serif;
@@ -20,26 +20,42 @@ body {
 /* ─── Design Tokens — Light ────────────────────────────────────────────────── */
 :root {
   /* Surfaces */
-  --tq-page-bg: #faf8f4;
+  --tq-page-bg: #ffffff;
   --tq-surface: #ffffff;
-  --tq-surface-alt: #f7f4ef;
+  --tq-surface-alt: #f5f5f3;
 
   /* Borders */
-  --tq-border: #e8e2d8;
-  --tq-border-strong: #cec5b5;
+  --tq-border: #e5e5e0;
+  --tq-border-strong: #ccccc7;
 
   /* Text */
-  --tq-text: #1a1a14;
-  --tq-text-muted: #6b6452;
-  --tq-text-subtle: #9a8f7e;
+  --tq-text: #1a1a18;
+  --tq-text-muted: rgba(26, 26, 24, 0.65);
+  --tq-text-subtle: rgba(26, 26, 24, 0.35);
 
-  /* Brand */
-  --tq-primary: #1a5c38;
-  --tq-primary-light: #edf5f0;
-  --tq-amber: #a06010;
-  --tq-amber-light: #fef4e2;
-  --tq-danger: #9b1c1c;
+  /* Brand — Forest Green */
+  --tq-primary: #2d6a4f;
+  --tq-primary-mid: #52b788;
+  --tq-primary-light: #d8f3dc;
+  --tq-primary-shadow: #1b4d38;
+
+  /* Accent — Ember Orange */
+  --tq-amber: #f4701b;
+  --tq-amber-mid: #ffb347;
+  --tq-amber-light: #fff3e0;
+
+  /* Semantic */
+  --tq-success: #40916c;
+  --tq-danger: #d62828;
   --tq-danger-light: #fff0f0;
+  --tq-warning: #f4a261;
+  --tq-xp: #7b2fbe;
+
+  /* Rarità collezionabili (invarianti) */
+  --tq-rarity-common: #bdc3c7;
+  --tq-rarity-uncommon: #9b59b6;
+  --tq-rarity-rare: #3498db;
+  --tq-rarity-legendary: #e67e22;
 
   /* Sidebar */
   --tq-sidebar-bg: #071a0e;
@@ -47,7 +63,7 @@ body {
   --tq-sidebar-text: rgba(255, 255, 255, 0.42);
   --tq-sidebar-hover: rgba(255, 255, 255, 0.05);
   --tq-sidebar-active: rgba(255, 255, 255, 0.08);
-  --tq-sidebar-accent: #c9a227;
+  --tq-sidebar-accent: #f4701b;
   --tq-sidebar-w: 236px;
   --tq-sidebar-w-col: 56px;
 
@@ -55,15 +71,17 @@ body {
   --tq-toolbar-h: 52px;
 
   /* Typography */
-  --tq-font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
-  --tq-font-body: 'DM Sans', system-ui, -apple-system, sans-serif;
-  --tq-font-mono: 'JetBrains Mono', 'Courier New', monospace;
+  --tq-font-display: 'Nunito', system-ui, sans-serif;
+  --tq-font-body: 'Geist', system-ui, -apple-system, sans-serif;
+  --tq-font-lore: 'Instrument Serif', Georgia, serif;
+  --tq-font-mono: 'Geist Mono', 'Courier New', monospace;
 
-  /* Radii */
-  --tq-r-sm: 6px;
-  --tq-r: 10px;
-  --tq-r-lg: 14px;
-  --tq-r-xl: 20px;
+  /* Radii — Flat 2.0, angoli generosi */
+  --tq-r-sm: 8px;
+  --tq-r: 16px;
+  --tq-r-lg: 24px;
+  --tq-r-xl: 32px;
+  --tq-r-full: 9999px;
 
   /* Shadows */
   --tq-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05), 0 1px 4px rgba(0, 0, 0, 0.04);
@@ -71,22 +89,39 @@ body {
   --tq-shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
-/* ─── Design Tokens — Dark ─────────────────────────────────────────────────── */
+/* ─── Design Tokens — Dark (Alpine Night) ──────────────────────────────────── */
 :root.dark {
   color-scheme: dark;
-  --tq-page-bg: #0f1a10;
-  --tq-surface: #172118;
-  --tq-surface-alt: #1e2d1f;
-  --tq-border: #2a3d2b;
-  --tq-border-strong: #384f39;
-  --tq-text: #d4e8d6;
-  --tq-text-muted: #8aaa8c;
-  --tq-text-subtle: #5a7a5d;
-  --tq-primary-light: rgba(26, 92, 56, 0.22);
-  --tq-amber: #c9a227;
-  --tq-amber-light: rgba(201, 162, 39, 0.12);
-  --tq-danger-light: rgba(155, 28, 28, 0.15);
-  --tq-sidebar-bg: #060f07;
+  /* Surfaces */
+  --tq-page-bg: #0d1117;
+  --tq-surface: #161c24;
+  --tq-surface-alt: #1d2533;
+  /* Borders */
+  --tq-border: #2a3545;
+  --tq-border-strong: #3a4a5e;
+  /* Text — Snow */
+  --tq-text: #ecf0f4;
+  --tq-text-muted: rgba(236, 240, 244, 0.65);
+  --tq-text-subtle: rgba(236, 240, 244, 0.35);
+  /* Brand — Neon Mint */
+  --tq-primary: #52d68a;
+  --tq-primary-mid: #7de8a8;
+  --tq-primary-light: rgba(82, 214, 138, 0.15);
+  --tq-primary-shadow: #2a9e5a;
+  /* Accent — Solar Orange */
+  --tq-amber: #ff9600;
+  --tq-amber-mid: #ffb347;
+  --tq-amber-light: rgba(255, 150, 0, 0.12);
+  /* Semantic */
+  --tq-success: #52d68a;
+  --tq-danger: #ff5c5c;
+  --tq-danger-light: rgba(255, 92, 92, 0.15);
+  --tq-warning: #ffc200;
+  --tq-xp: #a87ce8;
+  /* Sidebar */
+  --tq-sidebar-bg: #060c12;
+  --tq-sidebar-accent: #ff9600;
+  /* Shadows */
   --tq-shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.55), 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
@@ -104,17 +139,18 @@ body {
 /* ─── Typography helpers ────────────────────────────────────────────────────── */
 .tq-page-title {
   font-family: var(--tq-font-display);
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
   color: var(--tq-text);
-  letter-spacing: -0.025em;
-  line-height: 1.1;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
   margin: 0 0 4px;
 }
 .tq-page-subtitle {
-  font-size: 13.5px;
+  font-size: 13px;
   color: var(--tq-text-muted);
   margin: 0;
+  line-height: 1.5;
 }
 
 /* ─── Shared Buttons ────────────────────────────────────────────────────────── */
@@ -131,18 +167,20 @@ body {
   font-weight: 500;
   font-family: var(--tq-font-body);
   cursor: pointer;
-  box-shadow: 0 1px 4px rgba(26, 92, 56, 0.35);
+  box-shadow: 0 4px 0 var(--tq-primary-shadow);
   letter-spacing: -0.01em;
   transition:
-    filter 140ms,
-    transform 80ms;
+    filter 150ms,
+    transform 80ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 80ms;
   white-space: nowrap;
 }
 .tq-btn-primary:hover {
-  filter: brightness(1.08);
+  filter: brightness(1.07);
 }
 .tq-btn-primary:active {
-  transform: scale(0.97);
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--tq-primary-shadow);
 }
 
 .tq-btn-ghost {
@@ -393,12 +431,72 @@ kbd {
   transition-duration: 0.01ms !important;
 }
 
+/* ─── Angular Material — typography tokens globali ──────────────────────────── */
+/* mat.theme() genera --mat-sys-*-font ma i componenti MDC leggono i propri
+   token --mdc-*. Li impostiamo tutti esplicitamente. */
+html {
+  --mat-sys-body-large-font: 'Geist', system-ui, sans-serif;
+  --mat-sys-body-medium-font: 'Geist', system-ui, sans-serif;
+  --mat-sys-body-small-font: 'Geist', system-ui, sans-serif;
+  --mat-sys-label-large-font: 'Geist', system-ui, sans-serif;
+  --mat-sys-label-medium-font: 'Geist', system-ui, sans-serif;
+  --mat-sys-label-small-font: 'Geist', system-ui, sans-serif;
+  --mat-sys-title-large-font: 'Geist', system-ui, sans-serif;
+  --mat-sys-title-medium-font: 'Geist', system-ui, sans-serif;
+  --mat-sys-title-small-font: 'Geist', system-ui, sans-serif;
+  --mat-sys-headline-large-font: 'Nunito', system-ui, sans-serif;
+  --mat-sys-headline-medium-font: 'Nunito', system-ui, sans-serif;
+  --mat-sys-headline-small-font: 'Nunito', system-ui, sans-serif;
+  --mat-sys-display-large-font: 'Nunito', system-ui, sans-serif;
+  --mat-sys-display-medium-font: 'Nunito', system-ui, sans-serif;
+  --mat-sys-display-small-font: 'Nunito', system-ui, sans-serif;
+}
+
 /* ─── Angular Material overrides ────────────────────────────────────────────── */
-/* Ensure Material form fields use our font */
+/* Form field: input, label floating, hint, textarea */
 .mat-mdc-form-field {
   font-family: var(--tq-font-body) !important;
+  --mdc-outlined-text-field-label-text-font: 'Geist', system-ui, sans-serif;
+  --mdc-outlined-text-field-input-text-font: 'Geist', system-ui, sans-serif;
+  --mdc-filled-text-field-label-text-font: 'Geist', system-ui, sans-serif;
+  --mdc-filled-text-field-input-text-font: 'Geist', system-ui, sans-serif;
 }
-.mdc-text-field {
+.mdc-text-field,
+.mdc-floating-label,
+.mdc-text-field__input {
+  font-family: var(--tq-font-body) !important;
+}
+.mat-mdc-input-element,
+.mat-mdc-select,
+.mat-mdc-option,
+.mat-mdc-form-field-hint,
+.mat-mdc-form-field-error {
+  font-family: var(--tq-font-body) !important;
+}
+/* Button */
+.mat-mdc-button,
+.mat-mdc-raised-button,
+.mat-mdc-stroked-button,
+.mat-mdc-flat-button,
+.mat-mdc-icon-button,
+.mdc-button__label {
+  font-family: var(--tq-font-body) !important;
+  --mdc-text-button-label-text-font: 'Geist', system-ui, sans-serif;
+  --mdc-filled-button-label-text-font: 'Geist', system-ui, sans-serif;
+  --mdc-outlined-button-label-text-font: 'Geist', system-ui, sans-serif;
+  --mdc-protected-button-label-text-font: 'Geist', system-ui, sans-serif;
+}
+/* Select, menu, chips */
+.mat-mdc-select-value,
+.mat-mdc-select-placeholder,
+.mat-mdc-chip,
+.mdc-list-item__primary-text,
+.mdc-list-item__secondary-text,
+.mat-mdc-menu-item {
+  font-family: var(--tq-font-body) !important;
+}
+/* Snackbar / toast */
+.mdc-snackbar__label {
   font-family: var(--tq-font-body) !important;
 }
 

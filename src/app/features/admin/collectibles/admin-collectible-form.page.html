@@ -57,6 +57,48 @@
               }
             </div>
           </div>
+
+          <div class="lore-block">
+            <span class="block-label">Lore <span class="optional">(facoltativo)</span></span>
+            <textarea
+              class="lore-textarea"
+              formControlName="lore"
+              rows="4"
+              maxlength="1000"
+              placeholder="Testo narrativo che compare sul retro della card nel taccuino del giocatore…"
+            ></textarea>
+          </div>
+
+          <div class="coords-block">
+            <span class="block-label"
+              >Posizione geografica
+              <span class="optional">(facoltativo — clicca sulla mappa)</span></span
+            >
+            <div class="map-picker-wrap">
+              <app-quest-map-picker [formControl]="form.controls.locationValue" [radius]="10" />
+            </div>
+            @if (form.controls.locationValue.value) {
+              <div class="coords-display">
+                <span class="coord-label">Lat</span>
+                <span class="coord-val">{{
+                  form.controls.locationValue.value.lat.toFixed(6)
+                }}</span>
+                <span class="coord-sep">·</span>
+                <span class="coord-label">Lng</span>
+                <span class="coord-val">{{
+                  form.controls.locationValue.value.lng.toFixed(6)
+                }}</span>
+                <button
+                  type="button"
+                  class="coord-clear"
+                  (click)="form.controls.locationValue.setValue(null)"
+                  aria-label="Rimuovi posizione"
+                >
+                  ×
+                </button>
+              </div>
+            }
+          </div>
         </div>
       </form>
     }

@@ -162,12 +162,12 @@ export class QrCodeDisplayComponent implements AfterViewInit {
       `<!DOCTYPE html><html lang="it"><head><meta charset="utf-8">` +
         `<title>QR – ${name}</title>` +
         `<style>*{margin:0;padding:0;box-sizing:border-box}` +
-        `body{font-family:'DM Sans',system-ui,sans-serif;display:flex;flex-direction:column;` +
+        `body{font-family:'Geist',system-ui,sans-serif;display:flex;flex-direction:column;` +
         `align-items:center;justify-content:center;min-height:100vh;padding:40px;` +
-        `background:#fff;color:#1a1a14}` +
+        `background:#fff;color:#1a1a18}` +
         `.brand{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;` +
-        `color:#1a5c38;margin-bottom:24px;display:flex;align-items:center;gap:6px}` +
-        `.frame{padding:24px;border:2px solid #e8e4dd;border-radius:12px;` +
+        `color:#2d6a4f;margin-bottom:24px;display:flex;align-items:center;gap:6px}` +
+        `.frame{padding:24px;border:2px solid #e5e5e0;border-radius:16px;` +
         `display:flex;flex-direction:column;align-items:center;gap:14px}` +
         `img{width:260px;height:260px;image-rendering:pixelated}` +
         `.qname{font-size:15px;font-weight:600;text-align:center;color:#1a1a14}` +

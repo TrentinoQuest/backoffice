@@ -82,6 +82,12 @@ export class AdminShellComponent implements OnInit {
       svgExtra: 'M9 22V12h6v10',
     },
     {
+      label: 'Analytics',
+      route: '/admin/analytics',
+      exactMatch: false,
+      svgPath: 'M18 20V10M12 20V4M6 20v-6',
+    },
+    {
       label: 'Impostazioni',
       route: '/admin/settings',
       exactMatch: false,
