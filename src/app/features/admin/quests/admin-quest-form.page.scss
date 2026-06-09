@@ -657,3 +657,49 @@
     color: var(--tq-text-muted);
   }
 }
+
+// ─── Mobile: form a colonna unica, scroll naturale di pagina ────────────────────
+// Su telefono il layout a due pannelli (form 420px + mappa) non ci sta: impiliamo
+// il form sopra e la mappa sotto con un'altezza fissa, e lasciamo scorrere la
+// pagina invece dei singoli pannelli.
+@media (max-width: 760px) {
+  :host,
+  .form-shell {
+    height: auto;
+    overflow: visible;
+  }
+
+  .form-body {
+    flex-direction: column;
+    overflow: visible;
+  }
+
+  .form-left {
+    width: 100%;
+    flex-shrink: 1;
+    border-right: none;
+    border-bottom: 1px solid var(--tq-border);
+    overflow-y: visible;
+  }
+
+  // Le coppie di campi affiancati passano a una colonna.
+  .flds-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .form-right {
+    overflow: visible;
+  }
+
+  // La mappa ha bisogno di un'altezza esplicita quando non è più flex:1.
+  .map-picker {
+    height: 320px;
+    flex: 0 0 auto;
+  }
+
+  // Footer della mappa (slider raggio + toggle) impilato per non sforare.
+  .map-footer {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+}

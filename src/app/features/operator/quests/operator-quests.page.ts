@@ -204,6 +204,24 @@ export class OperatorQuestsPage implements OnInit {
     return `${quest.searchArea.lat.toFixed(4)}, ${quest.searchArea.lng.toFixed(4)}`;
   }
 
+  /**
+   * Apre un navigatore esterno (Google Maps) con la rotta verso la quest.
+   * Se il QR è già piazzato punta alla posizione esatta, altrimenti all'area
+   * di ricerca dove va piazzato. Il link universale di Google Maps apre l'app
+   * di navigazione su mobile e la versione web su desktop.
+   */
+  navigateToQuest(quest: OperatorQuestView): void {
+    const target = quest.exactPosition ?? quest.searchArea;
+    if (!target) {
+      this.snackBar.open('Nessuna posizione disponibile per questa quest.', 'Chiudi', {
+        duration: 4000,
+      });
+      return;
+    }
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${target.lat},${target.lng}`;
+    window.open(url, '_blank', 'noopener');
+  }
+
   private showPlacementError(err: unknown): void {
     if (err instanceof HttpErrorResponse) {
       const code = (err.error as { code?: string })?.code;

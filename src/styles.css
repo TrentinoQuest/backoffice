@@ -9,6 +9,13 @@ body {
   height: 100%;
   margin: 0;
 }
+/* Nessuno scroll orizzontale di pagina: su mobile è la causa principale di
+   layout "rotti". I contenuti che eccedono devono adattarsi, non sforare. */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
 body {
   font-family:
     'Geist',
@@ -134,6 +141,21 @@ body {
 .tq-page-inner {
   padding: 28px;
   max-width: 1400px;
+}
+
+/* Padding ridotto su tablet/telefono per recuperare spazio orizzontale */
+@media (max-width: 860px) {
+  .tq-page-inner {
+    padding: 20px 16px;
+  }
+}
+@media (max-width: 480px) {
+  .tq-page-inner {
+    padding: 16px 12px;
+  }
+  .tq-page-title {
+    font-size: 20px;
+  }
 }
 
 /* ─── Typography helpers ────────────────────────────────────────────────────── */
@@ -668,4 +690,97 @@ html {
 :root.dark .leaflet-popup-pane,
 :root.dark .leaflet-control-container {
   filter: none;
+}
+
+/* ─── Mobile: tabelle dati → schede impilate ───────────────────────────────────
+   Sotto il breakpoint telefono le tabelle "larghe" delle pagine lista
+   (.tq-table-wrap senza .table-scroll) verrebbero scrollate orizzontalmente:
+   poco usabile. Le trasformiamo in una lista di schede, una per riga, con
+   l'intestazione di colonna ripetuta come etichetta (attr data-label su ogni td).
+   Le tabelle compatte di Analytics (.table-scroll) restano normali: rientrano
+   già nella larghezza e hanno il loro scroll verticale dedicato. */
+@media (max-width: 640px) {
+  .tq-table-wrap:not(.table-scroll) {
+    overflow-x: hidden;
+    border: none;
+    box-shadow: none;
+    background: transparent;
+  }
+  .tq-table-wrap:not(.table-scroll) .tq-table {
+    display: block;
+    width: 100%;
+    table-layout: auto;
+    /* Annulla eventuali min-width "da scroll orizzontale" delle pagine lista:
+       in modalità schede la tabella deve stare nella larghezza del telefono. */
+    min-width: 0;
+  }
+  .tq-table-wrap:not(.table-scroll) .tq-table thead {
+    display: none;
+  }
+  .tq-table-wrap:not(.table-scroll) .tq-table tbody {
+    display: block;
+  }
+  .tq-table-wrap:not(.table-scroll) .tq-table tbody tr {
+    display: block;
+    background: var(--tq-surface);
+    border: 1px solid var(--tq-border);
+    border-radius: var(--tq-r);
+    box-shadow: var(--tq-shadow-sm);
+    padding: 4px 14px;
+    margin-bottom: 12px;
+  }
+  .tq-table-wrap:not(.table-scroll) .tq-table tbody tr:hover td {
+    background: transparent;
+  }
+  .tq-table-wrap:not(.table-scroll) .tq-table td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--tq-border);
+    text-align: right;
+    min-height: 0;
+  }
+  .tq-table-wrap:not(.table-scroll) .tq-table tbody tr td:last-child {
+    border-bottom: none;
+  }
+  /* Etichetta di colonna a sinistra della cella */
+  .tq-table-wrap:not(.table-scroll) .tq-table td[data-label]::before {
+    content: attr(data-label);
+    margin-right: auto;
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--tq-text-subtle);
+    text-align: left;
+    white-space: nowrap;
+  }
+  /* Prima cella (nome/identità): a tutta larghezza, in evidenza, niente etichetta */
+  .tq-table-wrap:not(.table-scroll) .tq-table td.tq-td-first {
+    display: block;
+    text-align: left;
+    padding: 12px 0 10px;
+  }
+  .tq-table-wrap:not(.table-scroll) .tq-table td.tq-td-first::before {
+    display: none;
+  }
+  /* Celle azioni: pulsanti allineati a destra, senza etichetta.
+     width:auto annulla il width:1% usato dalle liste in modalità tabella. */
+  .tq-table-wrap:not(.table-scroll) .tq-table td.actions-cell,
+  .tq-table-wrap:not(.table-scroll) .tq-table td.actions {
+    justify-content: flex-end;
+    width: auto;
+  }
+
+  /* Il nome (prima cella) va letto per intero: niente troncamento/ellissi. */
+  .tq-table-wrap:not(.table-scroll) .quest-name,
+  .tq-table-wrap:not(.table-scroll) .name,
+  .tq-table-wrap:not(.table-scroll) .coll-name {
+    max-width: none;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
 }

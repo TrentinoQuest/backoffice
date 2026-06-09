@@ -1,4 +1,12 @@
-import { Component, OnInit, computed, inject, signal, ViewChild } from '@angular/core';
+import {
+  Component,
+  HostListener,
+  OnInit,
+  computed,
+  inject,
+  signal,
+  ViewChild,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -51,6 +59,9 @@ export class AdminShellComponent implements OnInit {
 
   readonly sidebarCollapsed = signal(localStorage.getItem('tq-sidebar-collapsed') === 'true');
 
+  /** Stato del drawer di navigazione su mobile (off-canvas). */
+  readonly mobileOpen = signal(false);
+
   readonly showToolbar = computed(() => !this.breadcrumb.config().hideShellToolbar);
 
   readonly navItems: NavItem[] = [
@@ -102,6 +113,20 @@ export class AdminShellComponent implements OnInit {
   toggleSidebar(): void {
     this.sidebarCollapsed.update((v) => !v);
     localStorage.setItem('tq-sidebar-collapsed', String(this.sidebarCollapsed()));
+  }
+
+  toggleMobile(): void {
+    this.mobileOpen.update((v) => !v);
+  }
+
+  closeMobile(): void {
+    this.mobileOpen.set(false);
+  }
+
+  /** Chiude il drawer mobile con Escape. */
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.mobileOpen()) this.closeMobile();
   }
 
   async logout(): Promise<void> {
