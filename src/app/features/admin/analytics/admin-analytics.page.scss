@@ -19,12 +19,76 @@
 
 // ─── Period selector ──────────────────────────────────────────────────────────
 
+.head-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
 .period-group {
   display: flex;
   gap: 4px;
   flex-shrink: 0;
   align-self: flex-start;
-  margin-top: 6px;
+}
+
+// ─── Export buttons ───────────────────────────────────────────────────────────
+
+.export-all-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: var(--tq-r);
+  border: 1px solid var(--tq-primary);
+  background: var(--tq-primary);
+  color: #fff;
+  cursor: pointer;
+  font-family: var(--tq-font-body);
+  transition: all 120ms;
+
+  &:hover {
+    background: var(--tq-primary-dark, #1b4332);
+    border-color: var(--tq-primary-dark, #1b4332);
+  }
+}
+
+.export-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  border-radius: var(--tq-r);
+  border: 1px solid var(--tq-border);
+  background: var(--tq-surface-alt);
+  color: var(--tq-text-muted);
+  cursor: pointer;
+  font-family: var(--tq-font-body);
+  transition: all 120ms;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    border-color: var(--tq-primary);
+    color: var(--tq-primary);
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  &--full {
+    width: 100%;
+    justify-content: center;
+    margin-top: 12px;
+    padding: 8px 12px;
+  }
 }
 
 .period-btn {
@@ -64,6 +128,13 @@
   flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 14px;
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
 }
 
 .section-title {
@@ -358,6 +429,13 @@
   margin-bottom: 4px;
 }
 
+.card-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 .table-badge {
   font-size: 11px;
   font-weight: 600;
@@ -418,10 +496,10 @@
 
 .name-cell {
   font-size: 13.5px;
-  max-width: 160px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  // Nomi leggibili per intero: vanno a capo invece di essere troncati.
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .count {
@@ -469,6 +547,122 @@
   margin: 0;
 }
 
+// ─── Flussi turistici ─────────────────────────────────────────────────────────
+
+.flow-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.flow-kpi {
+  background: var(--tq-surface);
+  border: 1px solid var(--tq-border);
+  border-radius: var(--tq-r-lg);
+  box-shadow: var(--tq-shadow-sm);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  &__value {
+    font-family: var(--tq-font-display);
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--tq-text);
+  }
+
+  &__sub {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--tq-text-muted);
+  }
+
+  &__label {
+    font-size: 12px;
+    color: var(--tq-text-muted);
+    line-height: 1.3;
+  }
+}
+
+.flow-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.flow-map-col {
+  min-width: 0;
+}
+
+.flow-zones-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.coord-cell {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  font-size: 12.5px;
+}
+
+.zone-bar-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 110px;
+}
+
+.zone-bar {
+  position: relative;
+  flex: 1;
+  height: 7px;
+  border-radius: 4px;
+  background: var(--tq-surface-alt);
+  overflow: hidden;
+  min-width: 48px;
+
+  &__fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    border-radius: 4px;
+    background: linear-gradient(to right, #f4701b, #e53e3e);
+  }
+
+  &__pct {
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    color: var(--tq-text-muted);
+    min-width: 38px;
+    text-align: right;
+  }
+}
+
+.dist-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.dist-card {
+  display: flex;
+  flex-direction: column;
+
+  .card__title {
+    margin-bottom: 2px;
+  }
+}
+
+.dist-chart-wrap {
+  height: 220px;
+  position: relative;
+  margin-top: 6px;
+}
+
 // ─── Responsive ───────────────────────────────────────────────────────────────
 
 @media (max-width: 1200px) {
@@ -484,6 +678,12 @@
   .tables-grid {
     grid-template-columns: 1fr 1fr;
   }
+  .flow-grid {
+    grid-template-columns: 1fr;
+  }
+  .flow-kpis {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 900px) {
@@ -492,6 +692,9 @@
   }
   .summary-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+  .dist-grid {
+    grid-template-columns: 1fr;
   }
 }
 

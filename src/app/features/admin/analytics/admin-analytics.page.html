@@ -7,31 +7,56 @@
           Dati dettagliati su completamenti, giocatori e distribuzione geografica.
         </p>
       </div>
-      <!-- Selettore periodo globale -->
-      <div class="period-group" role="group" aria-label="Periodo di riferimento">
+      <div class="head-controls">
+        <!-- Selettore periodo globale -->
+        <div class="period-group" role="group" aria-label="Periodo di riferimento">
+          <button
+            type="button"
+            class="period-btn"
+            [class.period-btn--active]="dateRangeDays() === 30"
+            (click)="onDateRangeChange(30)"
+          >
+            30 giorni
+          </button>
+          <button
+            type="button"
+            class="period-btn"
+            [class.period-btn--active]="dateRangeDays() === 90"
+            (click)="onDateRangeChange(90)"
+          >
+            90 giorni
+          </button>
+          <button
+            type="button"
+            class="period-btn"
+            [class.period-btn--active]="dateRangeDays() === 365"
+            (click)="onDateRangeChange(365)"
+          >
+            12 mesi
+          </button>
+        </div>
         <button
           type="button"
-          class="period-btn"
-          [class.period-btn--active]="dateRangeDays() === 30"
-          (click)="onDateRangeChange(30)"
+          class="export-all-btn"
+          (click)="exportAllJson()"
+          title="Esporta tutti i dati analytics in un file JSON"
         >
-          30 giorni
-        </button>
-        <button
-          type="button"
-          class="period-btn"
-          [class.period-btn--active]="dateRangeDays() === 90"
-          (click)="onDateRangeChange(90)"
-        >
-          90 giorni
-        </button>
-        <button
-          type="button"
-          class="period-btn"
-          [class.period-btn--active]="dateRangeDays() === 365"
-          (click)="onDateRangeChange(365)"
-        >
-          12 mesi
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          Esporta tutto (JSON)
         </button>
       </div>
     </header>
@@ -224,30 +249,56 @@
             nel periodo selezionato.
           </p>
         </div>
-        <div class="granularity-group" role="group" aria-label="Granularità">
+        <div class="section-head__actions">
+          <div class="granularity-group" role="group" aria-label="Granularità">
+            <button
+              type="button"
+              class="gran-btn"
+              [class.gran-btn--active]="granularity() === AnalyticsGranularity.DAY"
+              (click)="onGranularityChange(AnalyticsGranularity.DAY)"
+            >
+              Giorno
+            </button>
+            <button
+              type="button"
+              class="gran-btn"
+              [class.gran-btn--active]="granularity() === AnalyticsGranularity.WEEK"
+              (click)="onGranularityChange(AnalyticsGranularity.WEEK)"
+            >
+              Settimana
+            </button>
+            <button
+              type="button"
+              class="gran-btn"
+              [class.gran-btn--active]="granularity() === AnalyticsGranularity.MONTH"
+              (click)="onGranularityChange(AnalyticsGranularity.MONTH)"
+            >
+              Mese
+            </button>
+          </div>
           <button
             type="button"
-            class="gran-btn"
-            [class.gran-btn--active]="granularity() === AnalyticsGranularity.DAY"
-            (click)="onGranularityChange(AnalyticsGranularity.DAY)"
+            class="export-btn"
+            (click)="exportCompletionsCsv()"
+            [disabled]="completionsOverTime().length === 0"
+            title="Esporta la serie in CSV"
           >
-            Giorno
-          </button>
-          <button
-            type="button"
-            class="gran-btn"
-            [class.gran-btn--active]="granularity() === AnalyticsGranularity.WEEK"
-            (click)="onGranularityChange(AnalyticsGranularity.WEEK)"
-          >
-            Settimana
-          </button>
-          <button
-            type="button"
-            class="gran-btn"
-            [class.gran-btn--active]="granularity() === AnalyticsGranularity.MONTH"
-            (click)="onGranularityChange(AnalyticsGranularity.MONTH)"
-          >
-            Mese
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            CSV
           </button>
         </div>
       </div>
@@ -310,45 +361,270 @@
       </div>
     </section>
 
-    <!-- ═══ 3. Heatmap flussi turistici ══════════════════════════════════════ -->
+    <!-- ═══ 3. Flussi turistici ══════════════════════════════════════════════ -->
     <section class="analytics-section">
       <h2 class="section-title">Flussi turistici</h2>
       <p class="section-desc">
-        Concentrazione geografica dei completamenti: le zone più calde indicano le aree più
-        frequentate dai giocatori nel periodo selezionato.
+        Concentrazione geografica e temporale dei completamenti. La mappa mostra le zone più calde,
+        le metriche e le tabelle quantificano gli stessi flussi in numeri esportabili.
       </p>
-      <div class="card heatmap-card">
-        @if (loadingHeatmap()) {
-          <div class="heatmap-loading"><mat-spinner diameter="32" /></div>
-        }
-        <div #heatmapDiv class="heatmap-canvas"></div>
-        @if (!loadingHeatmap() && completionsOverTime().length === 0) {
-          <div class="heatmap-empty">
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="empty-state__icon"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <path d="M12 8v4" />
-              <path d="M12 16h.01" />
-            </svg>
-            <p>Nessun dato di posizione disponibile per il periodo.</p>
-          </div>
-        }
+
+      <!-- KPI flussi -->
+      <div class="flow-kpis">
+        <div class="flow-kpi">
+          <span class="flow-kpi__value">{{ geoTotal() }}</span>
+          <span class="flow-kpi__label">Completamenti geolocalizzati</span>
+        </div>
+        <div class="flow-kpi">
+          <span class="flow-kpi__value">{{ zoneCount() }}</span>
+          <span class="flow-kpi__label">Zone distinte</span>
+        </div>
+        <div class="flow-kpi">
+          <span class="flow-kpi__value">
+            @if (busiestZone(); as z) {
+              {{ z.count }}
+              <span class="flow-kpi__sub">({{ z.share | number: '1.0-0' }}%)</span>
+            } @else {
+              —
+            }
+          </span>
+          <span class="flow-kpi__label">Picco zona più calda</span>
+        </div>
+        <div class="flow-kpi">
+          <span class="flow-kpi__value">{{ peakHour() ?? '—' }}</span>
+          <span class="flow-kpi__label">Fascia oraria di punta</span>
+        </div>
       </div>
-      <!-- Legenda heatmap -->
-      <div class="heatmap-legend">
-        <span class="heatmap-legend__label">Bassa densità</span>
-        <div class="heatmap-legend__gradient"></div>
-        <span class="heatmap-legend__label">Alta densità</span>
-        <span class="heatmap-legend__note">— completamenti per area geografica</span>
+
+      <div class="flow-grid">
+        <!-- Mappa heatmap -->
+        <div class="flow-map-col">
+          <div class="card heatmap-card">
+            @if (loadingHeatmap()) {
+              <div class="heatmap-loading"><mat-spinner diameter="32" /></div>
+            }
+            <div #heatmapDiv class="heatmap-canvas"></div>
+            @if (!loadingHeatmap() && geoTotal() === 0) {
+              <div class="heatmap-empty">
+                <svg
+                  width="32"
+                  height="32"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="empty-state__icon"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 8v4" />
+                  <path d="M12 16h.01" />
+                </svg>
+                <p>Nessun dato di posizione disponibile per il periodo.</p>
+              </div>
+            }
+          </div>
+          <!-- Legenda heatmap -->
+          <div class="heatmap-legend">
+            <span class="heatmap-legend__label">Bassa densità</span>
+            <div class="heatmap-legend__gradient"></div>
+            <span class="heatmap-legend__label">Alta densità</span>
+            <span class="heatmap-legend__note">— completamenti per area geografica</span>
+          </div>
+        </div>
+
+        <!-- Aree più frequentate (numeri) -->
+        <section class="card table-card flow-zones-card">
+          <div class="table-card__head">
+            <h3 class="card__title">Aree più frequentate</h3>
+            <div class="card-head-actions">
+              <span class="table-badge">{{ zoneCount() }} zone</span>
+              <button
+                type="button"
+                class="export-btn"
+                (click)="exportFlowZonesCsv()"
+                [disabled]="zoneCount() === 0"
+                title="Esporta le zone in CSV"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                CSV
+              </button>
+            </div>
+          </div>
+          <p class="table-desc">
+            Completamenti aggregati per area (~1,5 km), ordinati per densità.
+          </p>
+          @if (loadingHeatmap()) {
+            <div class="section-loading"><mat-spinner diameter="28" /></div>
+          } @else if (zoneCount() === 0) {
+            <div class="empty-state">
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="empty-state__icon"
+              >
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+              <p>Nessuna zona da mostrare per il periodo.</p>
+            </div>
+          } @else {
+            <div class="tq-table-wrap table-scroll">
+              <table class="tq-table" aria-label="Aree più frequentate">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Coordinate</th>
+                    <th>Densità</th>
+                    <th class="text-right">Compl.</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (z of flowZones(); track z.id; let i = $index) {
+                    <tr>
+                      <td
+                        class="rank"
+                        [class.rank--gold]="i === 0"
+                        [class.rank--silver]="i === 1"
+                        [class.rank--bronze]="i === 2"
+                      >
+                        {{ i + 1 }}
+                      </td>
+                      <td class="muted coord-cell">
+                        {{ z.lat | number: '1.3-3' }}, {{ z.lng | number: '1.3-3' }}
+                      </td>
+                      <td class="zone-bar-cell">
+                        <span class="zone-bar">
+                          <span
+                            class="zone-bar__fill"
+                            [style.width.%]="(z.count / maxZoneCount()) * 100"
+                          ></span>
+                        </span>
+                        <span class="zone-bar__pct">{{ z.share | number: '1.0-1' }}%</span>
+                      </td>
+                      <td class="text-right count">{{ z.count }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <button
+              type="button"
+              class="export-btn export-btn--full"
+              (click)="exportHeatmapPointsCsv()"
+              [disabled]="geoTotal() === 0"
+              title="Esporta i singoli punti GPS in CSV"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              Esporta punti grezzi ({{ geoTotal() }})
+            </button>
+          }
+        </section>
+      </div>
+
+      <!-- Distribuzione temporale dei flussi -->
+      <div class="dist-grid">
+        <div class="card chart-card dist-card">
+          <h3 class="card__title">Completamenti per fascia oraria</h3>
+          <p class="table-desc">Quando i giocatori completano le quest (ora locale, 0–23).</p>
+          @if (geoTotal() === 0) {
+            <div class="empty-state">
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="empty-state__icon"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              <p>Nessun dato per il periodo.</p>
+            </div>
+          } @else {
+            <div class="dist-chart-wrap">
+              <canvas
+                baseChart
+                [data]="hourChartData()"
+                [options]="distributionChartOptions"
+                type="bar"
+              ></canvas>
+            </div>
+          }
+        </div>
+        <div class="card chart-card dist-card">
+          <h3 class="card__title">Completamenti per giorno della settimana</h3>
+          <p class="table-desc">Distribuzione dei flussi tra i giorni della settimana.</p>
+          @if (geoTotal() === 0) {
+            <div class="empty-state">
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="empty-state__icon"
+              >
+                <rect x="3" y="4" width="18" height="18" rx="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
+              <p>Nessun dato per il periodo.</p>
+            </div>
+          } @else {
+            <div class="dist-chart-wrap">
+              <canvas
+                baseChart
+                [data]="weekdayChartData()"
+                [options]="distributionChartOptions"
+                type="bar"
+              ></canvas>
+            </div>
+          }
+        </div>
       </div>
     </section>
 
@@ -358,7 +634,33 @@
       <section class="card table-card">
         <div class="table-card__head">
           <h2 class="card__title">Top quest completate</h2>
-          <span class="table-badge">{{ topQuests().length }} quest</span>
+          <div class="card-head-actions">
+            <span class="table-badge">{{ topQuests().length }} quest</span>
+            <button
+              type="button"
+              class="export-btn"
+              (click)="exportTopQuestsCsv()"
+              [disabled]="topQuests().length === 0"
+              title="Esporta in CSV"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              CSV
+            </button>
+          </div>
         </div>
         <p class="table-desc">Ordinate per numero di completamenti totali.</p>
         @if (loadingTables()) {
@@ -421,7 +723,33 @@
       <section class="card table-card">
         <div class="table-card__head">
           <h2 class="card__title">Zone ignorate</h2>
-          <span class="table-badge table-badge--warn">{{ neverCompleted().length }} quest</span>
+          <div class="card-head-actions">
+            <span class="table-badge table-badge--warn">{{ neverCompleted().length }} quest</span>
+            <button
+              type="button"
+              class="export-btn"
+              (click)="exportNeverCompletedCsv()"
+              [disabled]="neverCompleted().length === 0"
+              title="Esporta in CSV"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              CSV
+            </button>
+          </div>
         </div>
         <p class="table-desc">
           Quest mai completate da nessun giocatore — potenziali punti critici.
@@ -478,7 +806,33 @@
       <section class="card table-card">
         <div class="table-card__head">
           <h2 class="card__title">Classifica giocatori</h2>
-          <span class="table-badge">{{ leaderboard().length }} giocatori</span>
+          <div class="card-head-actions">
+            <span class="table-badge">{{ leaderboard().length }} giocatori</span>
+            <button
+              type="button"
+              class="export-btn"
+              (click)="exportLeaderboardCsv()"
+              [disabled]="leaderboard().length === 0"
+              title="Esporta in CSV"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              CSV
+            </button>
+          </div>
         </div>
         <p class="table-desc">Ordinata per monete totali accumulate.</p>
         @if (loadingTables()) {

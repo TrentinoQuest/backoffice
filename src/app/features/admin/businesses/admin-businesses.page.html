@@ -45,12 +45,12 @@
                     <span class="sub">{{ typeLabel(b.businessType) }} · {{ b.address }}</span>
                   </div>
                 </td>
-                <td>
+                <td data-label="Stato">
                   <span [class]="statusBadgeClass(b.approvalStatus)">{{
                     statusLabel(b.approvalStatus)
                   }}</span>
                 </td>
-                <td class="muted">{{ b.createdAt | date: 'd MMM y' }}</td>
+                <td class="muted" data-label="Richiesta">{{ b.createdAt | date: 'd MMM y' }}</td>
                 <td class="actions">
                   @if (b.approvalStatus === BusinessApprovalStatus.PENDING) {
                     <button

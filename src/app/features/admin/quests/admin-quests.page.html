@@ -56,10 +56,10 @@
                 <div class="quest-name">{{ quest.name }}</div>
                 <div class="quest-loc">{{ questPlace(quest) }}</div>
               </td>
-              <td>
+              <td data-label="Tipo">
                 <span [class]="typeBadgeClass(quest.type)">{{ typeLabel(quest.type) }}</span>
               </td>
-              <td class="col-collectible">
+              <td class="col-collectible" data-label="Collezionabile">
                 @if (questCollectible(quest); as coll) {
                   <div class="coll-cell">
                     <img class="coll-thumb" [src]="coll.imageUrl" [alt]="coll.name" />
@@ -71,12 +71,12 @@
                   <span class="coll-none">—</span>
                 }
               </td>
-              <td>
+              <td data-label="Stato">
                 <span [class]="statusBadgeClass(quest.status)">{{
                   statusLabel(quest.status)
                 }}</span>
               </td>
-              <td class="col-points">
+              <td class="col-points" data-label="Monete">
                 <div class="pts-cell">
                   <svg
                     width="11"

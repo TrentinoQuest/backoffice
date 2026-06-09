@@ -202,6 +202,21 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  // Cap di altezza con scroll: una lunga coda di affiliazioni non deve
+  // spingere il resto della dashboard fuori dalla viewport.
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+// Su mobile la todo si impila e ogni voce va a capo senza schiacciare il bottone.
+@media (max-width: 480px) {
+  .todo {
+    flex-wrap: wrap;
+  }
+  .todo__text {
+    flex-basis: 100%;
+    order: 3;
+  }
 }
 
 .todo {

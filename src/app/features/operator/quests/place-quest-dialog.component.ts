@@ -693,14 +693,19 @@ export class PlaceQuestDialogComponent implements AfterViewInit, OnDestroy {
   readonly manualToken = signal('');
   private scanner?: Html5Qrcode;
 
+  /** Id del watch GPS attivo: la posizione si aggiorna mentre l'operatore si
+   * muove, così il QR viene piazzato sul punto reale e non sulla prima lettura. */
+  private gpsWatchId: number | null = null;
+
   ngAfterViewInit(): void {
     if (this.data.mode === 'place') {
-      void this.acquireGps();
+      this.acquireGps();
       void this.startScanner();
     }
   }
 
   async ngOnDestroy(): Promise<void> {
+    this.stopGpsWatch();
     await this.stopScanner();
   }
 
@@ -786,40 +791,66 @@ export class PlaceQuestDialogComponent implements AfterViewInit, OnDestroy {
     this.inputMode.set(mode);
   }
 
-  async acquireGps(): Promise<void> {
+  /**
+   * Avvia (o riavvia) un watch GPS continuo: la posizione viene aggiornata a
+   * ogni rilevazione del dispositivo, così se l'operatore si sposta il fix
+   * segue il movimento reale invece di restare bloccato sulla prima lettura.
+   * Il watch resta attivo finché il dialog è aperto (chiuso in ngOnDestroy).
+   */
+  acquireGps(): void {
     if (!navigator.geolocation) {
       this.gpsError.set('Il GPS non è supportato da questo browser.');
       return;
     }
 
+    // Riparte pulito: evita watch duplicati su "Riprova GPS".
+    this.stopGpsWatch();
     this.gpsLoading.set(true);
     this.gpsError.set(null);
 
-    try {
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 15000,
+    this.gpsWatchId = navigator.geolocation.watchPosition(
+      (position) => {
+        // I callback di geolocation girano fuori dalla zona Angular.
+        this.ngZone.run(() => {
+          this.gpsLoading.set(false);
+          this.gpsError.set(null);
+          this.gpsFix.set({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+            accuracy: position.coords.accuracy,
+            clientTimestamp: Date.now(),
+          });
         });
-      });
+      },
+      (geolocationError) => {
+        this.ngZone.run(() => {
+          this.gpsLoading.set(false);
+          if (geolocationError.code === 1) {
+            // Permesso negato: inutile continuare a osservare.
+            this.stopGpsWatch();
+            this.gpsError.set(
+              'Permesso GPS negato. Abilita il GPS nelle impostazioni del browser.',
+            );
+          } else if (geolocationError.code === 2) {
+            this.gpsError.set('Posizione non disponibile. Assicurati di avere segnale GPS.');
+          } else {
+            this.gpsError.set("Timeout GPS. Prova ad uscire all'aperto e riprova.");
+          }
+        });
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 0,
+      },
+    );
+  }
 
-      this.gpsFix.set({
-        lat: position.coords.latitude,
-        lng: position.coords.longitude,
-        accuracy: position.coords.accuracy,
-        clientTimestamp: Date.now(),
-      });
-    } catch (err) {
-      const geolocationError = err as GeolocationPositionError;
-      if (geolocationError.code === 1) {
-        this.gpsError.set('Permesso GPS negato. Abilita il GPS nelle impostazioni del browser.');
-      } else if (geolocationError.code === 2) {
-        this.gpsError.set('Posizione non disponibile. Assicurati di avere segnale GPS.');
-      } else {
-        this.gpsError.set("Timeout GPS. Prova ad uscire all'aperto e riprova.");
-      }
-    } finally {
-      this.gpsLoading.set(false);
+  /** Ferma il watch GPS in corso, se presente. */
+  private stopGpsWatch(): void {
+    if (this.gpsWatchId !== null) {
+      navigator.geolocation.clearWatch(this.gpsWatchId);
+      this.gpsWatchId = null;
     }
   }
 
