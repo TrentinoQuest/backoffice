@@ -16,6 +16,14 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { BaseChartDirective } from 'ng2-charts';
 import type { ChartData, ChartOptions } from 'chart.js';
 import * as L from 'leaflet';
+// L'import di leaflet-config DEVE precedere 'leaflet.heat': espone Leaflet su
+// globalThis, requisito perche' il plugin registri L.heatLayer nelle build prod.
+import {
+  applyLeafletIconFix,
+  createOsmTileLayer,
+  TRENTINO_CENTER,
+  TRENTINO_ZOOM,
+} from '../../../shared/leaflet/leaflet-config';
 import 'leaflet.heat';
 import {
   AnalyticsGranularity,
@@ -29,12 +37,6 @@ import {
 } from '@trentino-quest/shared-types';
 import { AnalyticsService } from '../../../core/services/analytics.service';
 import { BreadcrumbService } from '../../../core/services/breadcrumb.service';
-import {
-  applyLeafletIconFix,
-  createOsmTileLayer,
-  TRENTINO_CENTER,
-  TRENTINO_ZOOM,
-} from '../../../shared/leaflet/leaflet-config';
 import { downloadCsv, downloadJson, exportDateStamp } from '../../../shared/utils/data-export';
 
 /** Cluster geografico di completamenti, aggregato su griglia lato client. */
@@ -549,6 +551,8 @@ export class AdminAnalyticsPage implements OnInit, AfterViewInit, OnDestroy {
     let detail = 'Errore sconosciuto';
     if (err instanceof HttpErrorResponse) {
       detail = err.error?.message ?? `HTTP ${err.status}`;
+    } else if (err instanceof Error) {
+      detail = err.message;
     }
     this.snackBar.open(`${prefix}: ${detail}`, 'Chiudi', { duration: 5000 });
   }

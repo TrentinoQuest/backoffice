@@ -1,6 +1,19 @@
 import * as L from 'leaflet';
 
 /**
+ * leaflet.heat (e altri plugin legacy) non importano il modulo Leaflet: si
+ * agganciano a una variabile globale `L` (eredita' dell'era <script>/UMD).
+ * Nelle build di produzione, con scope hoisting e minificazione, quel globale
+ * non esiste quando il plugin viene valutato, quindi `L.heatLayer` non viene
+ * registrato e la heatmap fallisce a runtime (in dev funziona perche' il
+ * bundle non ottimizzato lascia il globale disponibile).
+ *
+ * Esponiamo qui Leaflet su globalThis. Affinche' funzioni, questo modulo va
+ * importato PRIMA di `import 'leaflet.heat'` nel componente che usa la heatmap.
+ */
+(globalThis as unknown as { L: typeof L }).L = L;
+
+/**
  * Coordinate del centro geografico del Trentino, usate come default
  * quando una mappa viene inizializzata senza un valore preesistente.
  */
