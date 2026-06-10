@@ -91,7 +91,14 @@
 
           <!-- Attiva subito (solo in creazione di quest secondaria) -->
           @if (!isEdit() && questType() === QuestType.SECONDARY) {
-            <div class="activate-toggle" (click)="activateOnCreate.set(!activateOnCreate())">
+            <div
+              class="activate-toggle"
+              role="button"
+              tabindex="0"
+              (click)="activateOnCreate.set(!activateOnCreate())"
+              (keydown.enter)="activateOnCreate.set(!activateOnCreate())"
+              (keydown.space)="$event.preventDefault(); activateOnCreate.set(!activateOnCreate())"
+            >
               <div class="activate-toggle__text">
                 <span class="activate-toggle__label">Attiva subito</span>
                 <span class="activate-toggle__hint"

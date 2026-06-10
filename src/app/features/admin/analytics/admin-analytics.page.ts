@@ -21,6 +21,7 @@ import * as L from 'leaflet';
 import {
   applyLeafletIconFix,
   createOsmTileLayer,
+  LeafletGlobal,
   TRENTINO_CENTER,
   TRENTINO_ZOOM,
 } from '../../../shared/leaflet/leaflet-config';
@@ -518,7 +519,9 @@ export class AdminAnalyticsPage implements OnInit, AfterViewInit, OnDestroy {
     }
     if (points.length === 0) return;
     const latlngs = points.map((p) => [p.lat, p.lng] as [number, number]);
-    this.heatLyr = (L as LeafletWithHeat)
+    // Usiamo LeafletGlobal (non l'import locale L): e' l'oggetto su cui il
+    // plugin leaflet.heat ha effettivamente registrato heatLayer.
+    this.heatLyr = (LeafletGlobal as LeafletWithHeat)
       .heatLayer(latlngs, {
         radius: 28,
         blur: 18,

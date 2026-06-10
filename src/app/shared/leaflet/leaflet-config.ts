@@ -14,6 +14,17 @@ import * as L from 'leaflet';
 (globalThis as unknown as { L: typeof L }).L = L;
 
 /**
+ * Riferimento a Leaflet condiviso e aumentato dai plugin (es. `leaflet.heat`).
+ *
+ * Con l'interop CommonJS->ESM del bundler, ogni `import * as L from 'leaflet'`
+ * puo' produrre un oggetto namespace distinto: il plugin aggiunge `heatLayer`
+ * all'oggetto esposto qui su globalThis, che potrebbe NON essere lo stesso
+ * namespace importato in un altro file. Per accedere a `heatLayer` in modo
+ * affidabile bisogna usare QUESTO riferimento, non il proprio import locale.
+ */
+export const LeafletGlobal = L;
+
+/**
  * Coordinate del centro geografico del Trentino, usate come default
  * quando una mappa viene inizializzata senza un valore preesistente.
  */
