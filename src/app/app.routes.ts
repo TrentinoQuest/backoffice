@@ -124,6 +124,11 @@ export const routes: Routes = [
     ],
   },
   {
+    path: 'mobile',
+    loadComponent: () =>
+      import('./features/common/mobile/mobile.page').then((m) => m.MobilePage),
+  },
+  {
     path: '',
     pathMatch: 'full',
     redirectTo: 'login',

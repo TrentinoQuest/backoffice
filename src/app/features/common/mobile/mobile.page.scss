@@ -1,0 +1,16 @@
+.mobile-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  min-height: 100vh;
+  padding: 24px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.redirect-text {
+  margin: 0;
+  color: rgba(0, 0, 0, 0.6);
+}
