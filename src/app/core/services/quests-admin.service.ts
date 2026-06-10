@@ -86,4 +86,11 @@ export class QuestsAdminService {
   async deactivate(id: string): Promise<AnyQuest> {
     return firstValueFrom(this.http.post<AnyQuest>(`${this.baseUrl}/${id}/deactivate`, {}));
   }
+
+  /**
+   * Genera il QR token per una quest primaria. 409 se già generato.
+   */
+  async generateQr(id: string): Promise<AnyQuest> {
+    return firstValueFrom(this.http.post<AnyQuest>(`${this.baseUrl}/${id}/generate-qr`, {}));
+  }
 }

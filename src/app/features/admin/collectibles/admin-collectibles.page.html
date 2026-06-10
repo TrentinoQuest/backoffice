@@ -51,10 +51,10 @@
                     </div>
                   </div>
                 </td>
-                <td>
+                <td data-label="Rarità">
                   <span [class]="rarityBadgeClass(c.rarity)">{{ rarityLabel(c.rarity) }}</span>
                 </td>
-                <td>
+                <td data-label="Stato">
                   @if (c.status === 'active') {
                     <span class="tq-badge tq-badge--green">Attivo</span>
                   } @else {

@@ -69,6 +69,8 @@ export const guestGuard: CanActivateFn = () => {
 
   if (auth.currentRole() === UserRole.ADMIN) {
     router.navigateByUrl('/admin');
+  } else if (auth.currentRole() === UserRole.MAINTENANCE) {
+    router.navigateByUrl('/operator');
   } else {
     auth.clearSession();
   }

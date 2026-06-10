@@ -25,23 +25,23 @@ html {
     color: (
       primary: mat.$green-palette,
     ),
-    typography: 'DM Sans',
+    typography: 'Geist',
     density: 0,
   ));
 }
 
-// Forza i colori primary di Material a usare il nostro verde
+// Forza i colori primary di Material a usare il nostro Forest Green
 html {
-  --mat-sys-primary: #1a5c38;
+  --mat-sys-primary: #2d6a4f;
   --mat-sys-on-primary: #ffffff;
-  --mat-sys-primary-container: #edf5f0;
-  --mat-sys-on-primary-container: #1a5c38;
+  --mat-sys-primary-container: #d8f3dc;
+  --mat-sys-on-primary-container: #2d6a4f;
 }
 
 body {
   color-scheme: light;
-  background-color: var(--tq-page-bg, #faf8f4);
-  color: var(--tq-text, #1a1a14);
-  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  background-color: var(--tq-page-bg, #ffffff);
+  color: var(--tq-text, #1a1a18);
+  font-family: 'Geist', system-ui, -apple-system, sans-serif;
   margin: 0;
 }

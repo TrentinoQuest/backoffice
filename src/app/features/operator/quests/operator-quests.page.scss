@@ -1,0 +1,186 @@
+.op-quests {
+  padding: 0 16px 32px;
+  max-width: 680px;
+  margin: 0 auto;
+
+  @media (min-width: 600px) {
+    padding: 0 24px 32px;
+  }
+}
+
+// ── Header ────────────────────────────────────────────────────────────────────
+.op-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.map-btn {
+  flex-shrink: 0;
+  text-decoration: none;
+
+  @media (max-width: 600px) {
+    min-height: 44px;
+  }
+}
+
+// ── Filters ───────────────────────────────────────────────────────────────────
+.filter-row {
+  margin-bottom: 16px;
+}
+
+// ── States ────────────────────────────────────────────────────────────────────
+.op-state {
+  padding: 52px 16px;
+  text-align: center;
+  color: var(--tq-text-muted);
+  font-size: 14px;
+}
+
+// ── Card list ─────────────────────────────────────────────────────────────────
+.quest-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.quest-card {
+  background: var(--tq-surface);
+  border: 1px solid var(--tq-border);
+  border-radius: var(--tq-r-lg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: var(--tq-shadow-sm);
+  transition:
+    border-color 150ms,
+    background 220ms;
+
+  &:hover {
+    border-color: var(--tq-border-strong);
+  }
+}
+
+.quest-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.quest-card-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--tq-text);
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+
+.quest-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--tq-text-muted);
+  font-family: var(--tq-font-mono);
+
+  svg {
+    flex-shrink: 0;
+    color: var(--tq-text-subtle);
+  }
+
+  &--placed {
+    color: var(--tq-primary);
+    font-size: 11.5px;
+
+    svg {
+      color: var(--tq-primary);
+    }
+  }
+}
+
+// ── Card actions ──────────────────────────────────────────────────────────────
+.quest-card-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+// Sizing layer applied on top of global tq-btn-primary / tq-btn-ghost
+.quest-btn {
+  flex: 1;
+  min-height: 44px;
+  font-size: 13.5px !important;
+  justify-content: center;
+
+  @media (max-width: 400px) {
+    flex: 1 1 100%;
+    min-height: 48px;
+  }
+
+  &--danger {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    min-height: 44px;
+    justify-content: center;
+    border: 1px solid rgba(155, 28, 28, 0.28);
+    background: var(--tq-surface);
+    color: var(--tq-danger);
+    border-radius: var(--tq-r-sm);
+    padding: 8px 14px;
+    font-size: 13.5px;
+    font-weight: 500;
+    font-family: var(--tq-font-body);
+    cursor: pointer;
+    transition:
+      background 140ms,
+      border-color 140ms;
+
+    &:hover {
+      background: var(--tq-danger-light);
+      border-color: var(--tq-danger);
+    }
+
+    @media (max-width: 400px) {
+      flex: 1 1 100%;
+      min-height: 48px;
+    }
+  }
+}
+
+// ── Pagination ────────────────────────────────────────────────────────────────
+.op-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.pag-btn {
+  min-width: 40px;
+  min-height: 40px;
+  justify-content: center;
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+}
+
+.pag-info {
+  font-size: 13px;
+  color: var(--tq-text-muted);
+  min-width: 60px;
+  text-align: center;
+}

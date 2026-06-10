@@ -403,6 +403,87 @@
   }
 }
 
+.icf-lore {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.icf-optional {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--tq-text-muted);
+}
+
+.icf-lore-ta {
+  font-family: var(--tq-font-lore);
+  font-style: italic;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--tq-text);
+  background: var(--tq-surface);
+  border: 1px solid var(--tq-border);
+  border-radius: var(--tq-r-sm);
+  padding: 8px 10px;
+  resize: vertical;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 140ms;
+
+  &::placeholder {
+    color: var(--tq-text-subtle);
+    font-style: italic;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--tq-primary);
+  }
+}
+
+.icf-pos-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--tq-border);
+  border-radius: var(--tq-r-sm);
+  background: var(--tq-surface);
+  cursor: pointer;
+  user-select: none;
+  width: 100%;
+  text-align: left;
+  font-family: var(--tq-font-body);
+  transition:
+    border-color 140ms,
+    background 140ms;
+
+  &:hover {
+    border-color: var(--tq-primary);
+    background: color-mix(in srgb, var(--tq-primary-light) 60%, transparent);
+  }
+}
+
+.icf-pos-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.icf-pos-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--tq-text);
+}
+
+.icf-pos-hint {
+  font-size: 11px;
+  color: var(--tq-text-muted);
+  font-family: var(--tq-font-mono);
+}
+
 .icf-actions {
   display: flex;
   justify-content: flex-end;
@@ -534,5 +615,91 @@
   strong {
     color: var(--tq-primary);
     font-weight: 600;
+  }
+}
+
+.activate-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--tq-border);
+  border-radius: var(--tq-r-sm);
+  background: var(--tq-surface-alt);
+  cursor: pointer;
+  user-select: none;
+  transition:
+    border-color 140ms,
+    background 140ms;
+
+  &:hover {
+    border-color: var(--tq-primary);
+    background: var(--tq-primary-light);
+  }
+
+  &__text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  &__label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--tq-text);
+    letter-spacing: -0.01em;
+  }
+
+  &__hint {
+    font-size: 11.5px;
+    color: var(--tq-text-muted);
+  }
+}
+
+// ─── Mobile: form a colonna unica, scroll naturale di pagina ────────────────────
+// Su telefono il layout a due pannelli (form 420px + mappa) non ci sta: impiliamo
+// il form sopra e la mappa sotto con un'altezza fissa, e lasciamo scorrere la
+// pagina invece dei singoli pannelli.
+@media (max-width: 760px) {
+  :host,
+  .form-shell {
+    height: auto;
+    overflow: visible;
+  }
+
+  .form-body {
+    flex-direction: column;
+    overflow: visible;
+  }
+
+  .form-left {
+    width: 100%;
+    flex-shrink: 1;
+    border-right: none;
+    border-bottom: 1px solid var(--tq-border);
+    overflow-y: visible;
+  }
+
+  // Le coppie di campi affiancati passano a una colonna.
+  .flds-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .form-right {
+    overflow: visible;
+  }
+
+  // La mappa ha bisogno di un'altezza esplicita quando non è più flex:1.
+  .map-picker {
+    height: 320px;
+    flex: 0 0 auto;
+  }
+
+  // Footer della mappa (slider raggio + toggle) impilato per non sforare.
+  .map-footer {
+    flex-wrap: wrap;
+    gap: 12px;
   }
 }

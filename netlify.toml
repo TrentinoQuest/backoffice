@@ -1,0 +1,12 @@
+# 1. Proxy per le API (Netlify girerà le chiamate al tuo backend)
+[[redirects]]
+  from = "/api/v1/*"
+  to = "https://backend-utj0.onrender.com/api/v1/:splat"
+  status = 200
+  force = true
+
+# 2. Gestione del refresh delle pagine di Angular (evita l'errore 404)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

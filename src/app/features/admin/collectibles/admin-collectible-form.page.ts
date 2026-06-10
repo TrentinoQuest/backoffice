@@ -10,6 +10,10 @@ import { CollectibleRarity } from '@trentino-quest/shared-types';
 import { CollectiblesAdminService } from '../../../core/services/collectibles-admin.service';
 import { BreadcrumbService } from '../../../core/services/breadcrumb.service';
 import { toSignal } from '@angular/core/rxjs-interop';
+import {
+  MapPickerValue,
+  QuestMapPickerComponent,
+} from '../../../shared/components/quest-map-picker/quest-map-picker.component';
 
 @Component({
   selector: 'app-admin-collectible-form',
@@ -20,6 +24,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
     MatFormFieldModule,
     MatInputModule,
     MatSnackBarModule,
+    QuestMapPickerComponent,
   ],
   templateUrl: './admin-collectible-form.page.html',
   styleUrl: './admin-collectible-form.page.scss',
@@ -49,6 +54,8 @@ export class AdminCollectibleFormPage implements OnInit, OnDestroy {
     description: ['', [Validators.required, Validators.maxLength(500)]],
     imageUrl: ['', [Validators.required]],
     rarity: [CollectibleRarity.COMMON, [Validators.required]],
+    lore: [''],
+    locationValue: [null as MapPickerValue | null],
   });
 
   /** Anteprima live dell'URL immagine */
@@ -90,6 +97,10 @@ export class AdminCollectibleFormPage implements OnInit, OnDestroy {
         description: c.description,
         imageUrl: c.imageUrl,
         rarity: c.rarity,
+        lore: c.lore ?? '',
+        locationValue: c.coordinates
+          ? { lat: c.coordinates.lat, lng: c.coordinates.lng, radius: 10 }
+          : null,
       });
     } catch (err) {
       this.showError('Errore nel caricamento del collezionabile', err);
@@ -109,14 +120,20 @@ export class AdminCollectibleFormPage implements OnInit, OnDestroy {
       return;
     }
     this.isSaving.set(true);
-    const value = this.form.getRawValue();
+    const { locationValue, lore, ...base } = this.form.getRawValue();
+    const coordinates = locationValue ? { lat: locationValue.lat, lng: locationValue.lng } : null;
+    const payload = {
+      ...base,
+      lore: lore.trim() || null,
+      coordinates,
+    };
     try {
       const id = this.collectibleId();
       if (id) {
-        await this.service.update(id, value);
+        await this.service.update(id, payload);
         this.snackBar.open('Collezionabile aggiornato', 'OK', { duration: 3000 });
       } else {
-        await this.service.create(value);
+        await this.service.create(payload);
         this.snackBar.open('Collezionabile creato', 'OK', { duration: 3000 });
       }
       void this.router.navigateByUrl('/admin/collectibles');

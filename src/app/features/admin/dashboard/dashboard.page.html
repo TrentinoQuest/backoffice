@@ -5,7 +5,7 @@
       <p class="tq-page-subtitle">Una vista d'insieme di ciò che richiede attenzione.</p>
     </header>
 
-    <!-- Metric strip -->
+    <!-- ─── Metric strip operativa ───────────────────────────────────────── -->
     <div class="metrics">
       <button type="button" class="metric metric--green" (click)="goTo('/admin/quests')">
         <span class="metric__icon" aria-hidden="true">
@@ -92,7 +92,7 @@
       </button>
     </div>
 
-    <!-- Ripartizione quest: barra attive vs inattive -->
+    <!-- Ripartizione quest -->
     @if (totalQuests() > 0) {
       <section class="health">
         <div class="health__head">
@@ -112,7 +112,7 @@
       </section>
     }
 
-    <!-- Mid layout -->
+    <!-- Mid layout: azioni + mappa -->
     <div class="mid">
       <div class="col-left">
         <section class="card">
@@ -144,6 +144,13 @@
             </button>
             <button type="button" class="quick__btn" (click)="goTo('/admin/collectibles/new')">
               + Nuovo collezionabile
+            </button>
+            <button
+              type="button"
+              class="quick__btn analytics-btn"
+              (click)="goTo('/admin/analytics')"
+            >
+              ↗ Analytics
             </button>
           </div>
         </section>

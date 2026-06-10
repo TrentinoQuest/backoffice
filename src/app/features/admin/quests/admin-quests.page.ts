@@ -1,10 +1,12 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AnyQuest, PrimaryQuest, QuestStatus, QuestType } from '@trentino-quest/shared-types';
+import { QrCodeDisplayComponent } from '../../../shared/components/qr-code-display/qr-code-display.component';
 import { QuestsAdminService } from '../../../core/services/quests-admin.service';
 import { CollectiblesAdminService } from '../../../core/services/collectibles-admin.service';
 import { BreadcrumbService } from '../../../core/services/breadcrumb.service';
@@ -58,6 +60,8 @@ export class AdminQuestsPage implements OnInit {
   readonly QuestStatus = QuestStatus;
 
   readonly isLoading = signal(false);
+  readonly togglingStatusId = signal<string | null>(null);
+  readonly generatingQrId = signal<string | null>(null);
   readonly quests = signal<AnyQuest[]>([]);
   readonly typeFilter = signal<QuestType | null>(null);
   readonly statusFilter = signal<QuestStatus | null>(null);
@@ -143,6 +147,26 @@ export class AdminQuestsPage implements OnInit {
     return this.collectiblesById()[cid] ?? null;
   }
 
+  async onToggleStatus(quest: AnyQuest, event: MouseEvent): Promise<void> {
+    event.stopPropagation();
+    if (this.togglingStatusId() === quest.id) return;
+    this.togglingStatusId.set(quest.id);
+    try {
+      if (quest.status === QuestStatus.ACTIVE) {
+        await this.questsService.deactivate(quest.id);
+        this.snackBar.open(`"${quest.name}" disattivata`, 'OK', { duration: 3000 });
+      } else {
+        await this.questsService.activate(quest.id);
+        this.snackBar.open(`"${quest.name}" attivata`, 'OK', { duration: 3000 });
+      }
+      await this.loadQuests();
+    } catch {
+      this.snackBar.open("Errore nell'aggiornamento dello stato", 'OK', { duration: 3000 });
+    } finally {
+      this.togglingStatusId.set(null);
+    }
+  }
+
   /** Archivia una quest, previa conferma (se l'utente la richiede). */
   async onArchive(quest: AnyQuest, event: MouseEvent): Promise<void> {
     event.stopPropagation();
@@ -189,6 +213,43 @@ export class AdminQuestsPage implements OnInit {
     this.statusFilter.set(value);
     void this.loadQuests();
   }
+  /** Ritorna il qrToken della quest se è primaria, altrimenti null. */
+  questQrToken(quest: AnyQuest): string | null {
+    if (quest.type !== QuestType.PRIMARY) return null;
+    return (quest as PrimaryQuest).qrToken ?? null;
+  }
+
+  async onGenerateQr(quest: AnyQuest, event: MouseEvent): Promise<void> {
+    event.stopPropagation();
+    if (this.generatingQrId() === quest.id) return;
+    this.generatingQrId.set(quest.id);
+    try {
+      await this.questsService.generateQr(quest.id);
+      this.snackBar.open(`QR generato per "${quest.name}"`, 'OK', { duration: 3000 });
+      await this.loadQuests();
+    } catch (err) {
+      if (err instanceof HttpErrorResponse && err.status === 409) {
+        this.snackBar.open('Il QR è già stato generato per questa quest.', 'OK', {
+          duration: 3000,
+        });
+        await this.loadQuests();
+      } else {
+        this.snackBar.open('Errore nella generazione del QR', 'Chiudi', { duration: 4000 });
+      }
+    } finally {
+      this.generatingQrId.set(null);
+    }
+  }
+
+  onShowQr(quest: AnyQuest, event: MouseEvent): void {
+    event.stopPropagation();
+    this.dialog.open(QrCodeDisplayComponent, {
+      data: quest as PrimaryQuest,
+      width: '480px',
+      maxWidth: '95vw',
+    });
+  }
+
   onEditClick(quest: AnyQuest): void {
     void this.router.navigate(['/admin/quests', quest.id, 'edit']);
   }

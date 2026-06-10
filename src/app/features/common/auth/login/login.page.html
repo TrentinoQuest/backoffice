@@ -7,24 +7,35 @@
       aria-hidden="true"
     >
       <defs>
-        <radialGradient id="moon" cx="68%" cy="20%" r="40%">
-          <stop offset="0%" stop-color="rgba(201,162,39,.35)" />
-          <stop offset="100%" stop-color="rgba(201,162,39,0)" />
+        <radialGradient id="glow" cx="68%" cy="18%" r="38%">
+          <stop offset="0%" stop-color="rgba(82,214,138,.22)" />
+          <stop offset="100%" stop-color="rgba(82,214,138,0)" />
+        </radialGradient>
+        <radialGradient id="glow2" cx="20%" cy="60%" r="30%">
+          <stop offset="0%" stop-color="rgba(255,150,0,.12)" />
+          <stop offset="100%" stop-color="rgba(255,150,0,0)" />
         </radialGradient>
       </defs>
-      <rect width="400" height="600" fill="url(#moon)" />
+      <rect width="400" height="600" fill="url(#glow)" />
+      <rect width="400" height="600" fill="url(#glow2)" />
+      <!-- Dolomiti — profilo lontano -->
       <path
         d="M0 600 L0 430 L70 330 L120 380 L190 250 L250 320 L320 210 L400 300 L400 600 Z"
-        fill="rgba(201,162,39,.06)"
-        stroke="rgba(201,162,39,.55)"
+        fill="rgba(82,214,138,.05)"
+        stroke="rgba(82,214,138,.45)"
         stroke-width="1.5"
       />
+      <!-- Dolomiti — primo piano -->
       <path
         d="M0 600 L0 500 L90 440 L170 480 L260 410 L340 460 L400 420 L400 600 Z"
-        fill="rgba(201,162,39,.04)"
-        stroke="rgba(201,162,39,.3)"
+        fill="rgba(82,214,138,.03)"
+        stroke="rgba(82,214,138,.22)"
         stroke-width="1"
       />
+      <!-- Stella / punto luce -->
+      <circle cx="268" cy="72" r="1.5" fill="rgba(82,214,138,.7)" />
+      <circle cx="320" cy="110" r="1" fill="rgba(255,150,0,.6)" />
+      <circle cx="80" cy="90" r="1" fill="rgba(82,214,138,.5)" />
     </svg>
 
     <div class="brand__content">
@@ -39,7 +50,7 @@
   <main class="panel">
     <form class="form" [formGroup]="form" (ngSubmit)="onSubmit()">
       <h1 class="form__title">Bentornato</h1>
-      <p class="form__subtitle">Accedi al pannello di amministrazione.</p>
+      <p class="form__subtitle">Accedi al pannello di gestione.</p>
 
       @if (errorMessage()) {
         <div class="alert" role="alert">{{ errorMessage() }}</div>

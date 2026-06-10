@@ -187,3 +187,26 @@
   text-align: center;
   flex-shrink: 0;
 }
+
+// ─── Mobile: mappa sopra, lista sotto (niente affiancamento a 280px) ────────────
+@media (max-width: 760px) {
+  .map-shell {
+    flex-direction: column;
+  }
+
+  // La mappa prende ~metà schermo con un'altezza utilizzabile.
+  .map-area {
+    flex: 0 0 auto;
+    height: 42vh;
+    min-height: 240px;
+    border-bottom: 1px solid var(--tq-border);
+  }
+
+  // Il pannello lista passa sotto, a tutta larghezza, e scorre per conto suo.
+  .map-panel {
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+    border-left: none;
+  }
+}

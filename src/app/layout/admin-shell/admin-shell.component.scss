@@ -104,7 +104,9 @@
   flex-direction: column;
   overflow: hidden;
   max-width: 160px;
-  transition: max-width 240ms cubic-bezier(0.22, 1, 0.36, 1), opacity 200ms;
+  transition:
+    max-width 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 200ms;
 }
 
 .brand-name {
@@ -150,13 +152,17 @@
   white-space: nowrap;
   overflow: hidden;
   position: relative;
-  transition: background 160ms, color 160ms;
+  transition:
+    background 160ms,
+    color 160ms;
   user-select: none;
 
   &:hover {
     background: var(--tq-sidebar-hover);
     color: rgba(255, 255, 255, 0.7);
-    .nav-icon { color: rgba(255, 255, 255, 0.55); }
+    .nav-icon {
+      color: rgba(255, 255, 255, 0.55);
+    }
   }
 
   &--active {
@@ -176,7 +182,9 @@
       border-radius: 0 3px 3px 0;
     }
 
-    .nav-icon { color: var(--tq-sidebar-accent); }
+    .nav-icon {
+      color: var(--tq-sidebar-accent);
+    }
   }
 }
 
@@ -190,7 +198,9 @@
   flex-shrink: 0;
   max-width: 160px;
   overflow: hidden;
-  transition: max-width 240ms cubic-bezier(0.22, 1, 0.36, 1), opacity 200ms;
+  transition:
+    max-width 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 200ms;
 }
 
 // ─── User footer ──────────────────────────────────────────────────────────────
@@ -224,7 +234,9 @@
   min-width: 0;
   max-width: 140px;
   overflow: hidden;
-  transition: max-width 240ms cubic-bezier(0.22, 1, 0.36, 1), opacity 200ms;
+  transition:
+    max-width 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 200ms;
 }
 
 .user-email {
@@ -280,10 +292,14 @@
   color: var(--tq-sidebar-accent);
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
-  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1), background 160ms;
+  transition:
+    transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    background 160ms;
   z-index: 20;
 
-  &:hover { background: #0e2318; }
+  &:hover {
+    background: #0e2318;
+  }
 }
 
 // ─── Main area ────────────────────────────────────────────────────────────────
@@ -306,7 +322,9 @@
   align-items: center;
   padding: 0 24px;
   gap: 12px;
-  transition: background 220ms, border-color 220ms;
+  transition:
+    background 220ms,
+    border-color 220ms;
 }
 
 .breadcrumb {
@@ -316,11 +334,21 @@
   font-size: 12.5px;
 }
 
-.bc-root { color: var(--tq-text-muted); }
-.bc-sep  { color: var(--tq-border-strong); font-size: 14px; }
-.bc-current { color: var(--tq-text); font-weight: 500; }
+.bc-root {
+  color: var(--tq-text-muted);
+}
+.bc-sep {
+  color: var(--tq-border-strong);
+  font-size: 14px;
+}
+.bc-current {
+  color: var(--tq-text);
+  font-weight: 500;
+}
 
-.toolbar-spacer { flex: 1; }
+.toolbar-spacer {
+  flex: 1;
+}
 
 .global-search {
   display: flex;
@@ -332,9 +360,14 @@
   padding: 6px 12px;
   cursor: pointer;
   min-width: 210px;
-  transition: border-color 150ms, background 220ms;
+  transition:
+    border-color 150ms,
+    background 220ms;
 
-  svg { color: var(--tq-text-subtle); flex-shrink: 0; }
+  svg {
+    color: var(--tq-text-subtle);
+    flex-shrink: 0;
+  }
 
   &:hover {
     border-color: var(--tq-border-strong);
@@ -354,4 +387,153 @@
   overflow: auto;
   background: var(--tq-page-bg);
   transition: background 220ms;
+}
+
+// ─── Mobile drawer infrastruttura ───────────────────────────────────────────────
+// Backdrop e topbar restano inattivi su desktop (display:none) e si attivano
+// solo sotto il breakpoint mobile.
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 240ms;
+  z-index: 999;
+
+  &--visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+.mobile-topbar {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  height: 54px;
+  flex-shrink: 0;
+  padding: 0 8px;
+  background: var(--tq-surface);
+  border-bottom: 1px solid var(--tq-border);
+}
+
+.hamburger {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--tq-text);
+  cursor: pointer;
+  border-radius: var(--tq-r-sm);
+  flex-shrink: 0;
+  transition: background 130ms;
+
+  &:hover {
+    background: var(--tq-surface-alt);
+  }
+}
+
+.mobile-brand {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+
+  &__name {
+    font-family: var(--tq-font-display);
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--tq-text);
+  }
+
+  &__page {
+    font-size: 11px;
+    color: var(--tq-text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+// ─── Breakpoint mobile: sidebar → drawer off-canvas ─────────────────────────────
+@media (max-width: 860px) {
+  .mobile-topbar {
+    display: flex;
+  }
+
+  // La toolbar desktop (breadcrumb + ricerca) è ridondante con la topbar mobile.
+  .toolbar {
+    display: none;
+  }
+
+  // Il bottone di collapse desktop non ha senso nel drawer.
+  .collapse-btn {
+    display: none;
+  }
+
+  .sidebar-backdrop {
+    display: block;
+  }
+
+  .sidebar-wrap {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: var(--tq-sidebar-w);
+    transform: translateX(-100%);
+    transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+    box-shadow: var(--tq-shadow-lg);
+
+    &--mobile-open {
+      transform: translateX(0);
+    }
+
+    // Nel drawer mostriamo sempre la sidebar estesa, anche se l'utente
+    // l'aveva collassata sul desktop: ripristiniamo i valori espansi.
+    &--collapsed {
+      width: var(--tq-sidebar-w);
+
+      .brand-text,
+      .nav-label {
+        max-width: 160px;
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .user-info {
+        max-width: 140px;
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .sidebar-header {
+        justify-content: flex-start;
+        gap: 10px;
+        padding: 17px 12px 15px;
+      }
+
+      .nav-item {
+        justify-content: flex-start;
+        gap: 10px;
+        padding: 8px 10px;
+      }
+
+      .sidebar-footer {
+        justify-content: flex-start;
+        gap: 8px;
+        padding: 10px 12px;
+      }
+
+      .logout-btn {
+        display: flex;
+      }
+    }
+  }
 }

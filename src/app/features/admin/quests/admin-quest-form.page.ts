@@ -17,7 +17,7 @@ import {
   SecondaryQuest,
   UpdateQuestRequest,
 } from '@trentino-quest/shared-types';
-import { CollectibleRarity, QuestStatus, QuestType } from '@trentino-quest/shared-types';
+import { CollectibleRarity, QuestType } from '@trentino-quest/shared-types';
 import { QuestsAdminService } from '../../../core/services/quests-admin.service';
 import { CollectiblesAdminService } from '../../../core/services/collectibles-admin.service';
 import { BreadcrumbService } from '../../../core/services/breadcrumb.service';
@@ -27,6 +27,7 @@ import {
   QuestMapPickerComponent,
 } from '../../../shared/components/quest-map-picker/quest-map-picker.component';
 import { TqSliderComponent } from '../../../shared/components/tq-slider/tq-slider.component';
+import { ToggleSwitchComponent } from '../../../shared/components/toggle-switch/toggle-switch.component';
 
 /** Limiti raggio per tipo quest, coerenti con gli slider e le guard backend. */
 const RADIUS_LIMITS: Record<QuestType, { min: number; max: number; def: number }> = {
@@ -47,6 +48,7 @@ const RADIUS_LIMITS: Record<QuestType, { min: number; max: number; def: number }
     MatSnackBarModule,
     QuestMapPickerComponent,
     TqSliderComponent,
+    ToggleSwitchComponent,
   ],
   templateUrl: './admin-quest-form.page.html',
   styleUrl: './admin-quest-form.page.scss',
@@ -64,7 +66,6 @@ export class AdminQuestFormPage implements OnInit {
   @ViewChild(QuestMapPickerComponent) private mapPicker?: QuestMapPickerComponent;
 
   readonly QuestType = QuestType;
-  readonly QuestStatus = QuestStatus;
   readonly CollectibleRarity = CollectibleRarity;
 
   readonly questId = signal<string | null>(null);
@@ -75,13 +76,13 @@ export class AdminQuestFormPage implements OnInit {
 
   readonly showInlineCollectibleForm = signal(false);
   readonly isCreatingCollectible = signal(false);
+  readonly activateOnCreate = signal(false);
 
   readonly form = this.fb.nonNullable.group({
     type: [QuestType.PRIMARY, Validators.required],
     name: ['', [Validators.required, Validators.minLength(3)]],
     description: ['', Validators.required],
     points: [100, [Validators.required, Validators.min(10), Validators.max(500)]],
-    status: [QuestStatus.ACTIVE, Validators.required],
     collectibleId: [null as string | null],
     locationValue: [null as MapPickerValue | null, Validators.required],
     radiusMeters: [25, Validators.required],
@@ -92,7 +93,11 @@ export class AdminQuestFormPage implements OnInit {
     description: ['', Validators.required],
     imageUrl: ['', Validators.required],
     rarity: [CollectibleRarity.COMMON, Validators.required],
+    lore: ['' as string],
+    locationValue: [null as MapPickerValue | null],
   });
+
+  readonly samePositionAsQuest = signal(false);
 
   readonly rarityOptions = [
     { value: CollectibleRarity.COMMON, label: 'Comune' },
@@ -269,12 +274,12 @@ export class AdminQuestFormPage implements OnInit {
 
   private patchForm(quest: AnyQuest): void {
     this.questType.set(quest.type);
+    this.applyCollectibleRequirement(quest.type);
     this.form.patchValue({
       type: quest.type,
       name: quest.name ?? '',
       description: quest.description ?? '',
       points: quest.basePoints ?? 100,
-      status: quest.status,
     });
 
     if (quest.type === QuestType.PRIMARY) {
@@ -304,8 +309,6 @@ export class AdminQuestFormPage implements OnInit {
   onToggleInlineCollectible(): void {
     this.showInlineCollectibleForm.update((v) => !v);
     if (this.showInlineCollectibleForm()) {
-      // Aprendo la creazione, deseleziona l'eventuale collezionabile
-      // esistente: stai creando il nuovo, non vuoi che ne resti uno scelto.
       this.form.controls.collectibleId.setValue(null);
     } else {
       this.inlineCollectibleForm.reset({
@@ -313,8 +316,18 @@ export class AdminQuestFormPage implements OnInit {
         description: '',
         imageUrl: '',
         rarity: CollectibleRarity.COMMON,
+        lore: '',
+        locationValue: null,
       });
+      this.samePositionAsQuest.set(false);
     }
+  }
+
+  onSamePositionChange(checked: boolean): void {
+    this.samePositionAsQuest.set(checked);
+    this.inlineCollectibleForm.controls.locationValue.setValue(
+      checked ? this.form.controls.locationValue.value : null,
+    );
   }
 
   async onSaveInlineCollectible(): Promise<void> {
@@ -324,17 +337,23 @@ export class AdminQuestFormPage implements OnInit {
     }
     this.isCreatingCollectible.set(true);
     try {
-      const created = await this.collectiblesService.create(
-        this.inlineCollectibleForm.getRawValue(),
-      );
+      const { locationValue, lore, ...base } = this.inlineCollectibleForm.getRawValue();
+      const created = await this.collectiblesService.create({
+        ...base,
+        lore: lore || null,
+        coordinates: locationValue ? { lat: locationValue.lat, lng: locationValue.lng } : undefined,
+      });
       this.collectibles.update((list) => [...list, created]);
       this.form.controls.collectibleId.setValue(created.id);
       this.showInlineCollectibleForm.set(false);
+      this.samePositionAsQuest.set(false);
       this.inlineCollectibleForm.reset({
         name: '',
         description: '',
         imageUrl: '',
         rarity: CollectibleRarity.COMMON,
+        lore: '',
+        locationValue: null,
       });
       this.snackBar.open(`"${created.name}" creato e selezionato`, 'OK', { duration: 3000 });
     } catch {
@@ -390,7 +409,10 @@ export class AdminQuestFormPage implements OnInit {
         position: { lat: loc.lat, lng: loc.lng },
         checkInRadiusMeters: v.radiusMeters,
       };
-      await this.questsService.create(payload);
+      const created = await this.questsService.create(payload);
+      if (this.activateOnCreate()) {
+        await this.questsService.activate(created.id);
+      }
     }
   }
 

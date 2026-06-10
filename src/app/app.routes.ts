@@ -86,11 +86,47 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'analytics',
+        loadComponent: () =>
+          import('./features/admin/analytics/admin-analytics.page').then(
+            (m) => m.AdminAnalyticsPage,
+          ),
+      },
+      {
         path: 'settings',
         loadComponent: () =>
           import('./features/admin/settings/settings.page').then((m) => m.SettingsPage),
       },
     ],
+  },
+  {
+    path: 'operator',
+    canActivate: [authGuard, roleGuard([UserRole.MAINTENANCE])],
+    loadComponent: () =>
+      import('./layout/operator-shell/operator-shell.component').then(
+        (m) => m.OperatorShellComponent,
+      ),
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./features/operator/quests/operator-quests-map.page').then(
+            (m) => m.OperatorQuestsMapPage,
+          ),
+      },
+      {
+        path: 'list',
+        loadComponent: () =>
+          import('./features/operator/quests/operator-quests.page').then(
+            (m) => m.OperatorQuestsPage,
+          ),
+      },
+    ],
+  },
+  {
+    path: 'mobile',
+    loadComponent: () =>
+      import('./features/common/mobile/mobile.page').then((m) => m.MobilePage),
   },
   {
     path: '',

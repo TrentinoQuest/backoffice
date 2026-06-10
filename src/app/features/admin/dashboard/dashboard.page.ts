@@ -1,6 +1,8 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import {
   AnyQuest,
   Business,
@@ -16,7 +18,7 @@ import { QuestMapViewerComponent } from '../../../shared/components/quest-map-vi
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, QuestMapViewerComponent],
+  imports: [CommonModule, MatSnackBarModule, MatProgressSpinnerModule, QuestMapViewerComponent],
   templateUrl: './dashboard.page.html',
   styleUrl: './dashboard.page.scss',
 })
@@ -24,11 +26,11 @@ export class AdminDashboardPage implements OnInit {
   private readonly questsService = inject(QuestsAdminService);
   private readonly collectiblesService = inject(CollectiblesAdminService);
   private readonly businessService = inject(BusinessAdminService);
+  private readonly snackBar = inject(MatSnackBar);
   private readonly breadcrumb = inject(BreadcrumbService);
   private readonly router = inject(Router);
 
   readonly isLoading = signal(false);
-
   readonly activeQuestsCount = signal(0);
   readonly inactiveQuestsCount = signal(0);
   readonly collectiblesCount = signal(0);
@@ -44,10 +46,10 @@ export class AdminDashboardPage implements OnInit {
 
   ngOnInit(): void {
     this.breadcrumb.set('Dashboard');
-    void this.load();
+    void this.loadOperational();
   }
 
-  async load(): Promise<void> {
+  async loadOperational(): Promise<void> {
     this.isLoading.set(true);
     try {
       const [active, inactive, collectibles, pending] = await Promise.all([
@@ -65,6 +67,8 @@ export class AdminDashboardPage implements OnInit {
       this.inactiveQuestsCount.set(inactive.total);
       this.collectiblesCount.set(collectibles.length);
       this.pendingBusinesses.set(pending.data);
+    } catch {
+      this.snackBar.open('Errore nel caricamento della dashboard', 'OK', { duration: 3000 });
     } finally {
       this.isLoading.set(false);
     }

@@ -84,15 +84,17 @@ export class LoginPage {
       const { email, password } = this.form.getRawValue();
       await this.auth.login(email, password);
 
-      if (this.auth.currentRole() !== UserRole.ADMIN) {
+      const role = this.auth.currentRole();
+      if (role === UserRole.ADMIN) {
+        await this.router.navigateByUrl('/admin');
+      } else if (role === UserRole.MAINTENANCE) {
+        await this.router.navigateByUrl('/operator');
+      } else {
         await this.auth.logout();
         this.errorMessage.set(
-          'Accesso riservato agli amministratori. Le credenziali fornite non hanno i permessi necessari.',
+          'Accesso riservato ad amministratori e operatori. Le credenziali fornite non hanno i permessi necessari.',
         );
-        return;
       }
-
-      await this.router.navigateByUrl('/admin');
     } catch (err) {
       this.errorMessage.set(this.toUserMessage(err));
     } finally {
