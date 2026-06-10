@@ -345,6 +345,9 @@ export class AdminAnalyticsPage implements OnInit, AfterViewInit, OnDestroy {
       });
       this.heatmapPoints.set(res.points);
       this.updateHeatLayer(res.points);
+      // La mappa si estende in altezza per allinearsi alla tabella di destra:
+      // dopo l'aggiornamento del layout serve ricalcolare le dimensioni del canvas.
+      requestAnimationFrame(() => this.heatMap?.invalidateSize());
     } catch (err) {
       this.showError('Heatmap', err);
     } finally {
@@ -445,6 +448,8 @@ export class AdminAnalyticsPage implements OnInit, AfterViewInit, OnDestroy {
         { header: 'Posizione', value: (e) => this.leaderboard().indexOf(e) + 1 },
         { header: 'Player ID', value: (e) => e.playerId },
         { header: 'Username', value: (e) => e.username },
+        { header: 'Livello', value: (e) => e.level },
+        { header: 'XP', value: (e) => e.xp },
         { header: 'Monete', value: (e) => e.totalPoints },
       ],
       this.leaderboard(),

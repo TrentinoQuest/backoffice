@@ -862,6 +862,8 @@
                 <tr>
                   <th>#</th>
                   <th>Giocatore</th>
+                  <th class="text-right">Livello</th>
+                  <th class="text-right">XP</th>
                   <th class="text-right">Monete</th>
                 </tr>
               </thead>
@@ -877,7 +879,9 @@
                       {{ i + 1 }}
                     </td>
                     <td class="tq-td-first name-cell">{{ e.username }}</td>
-                    <td class="text-right count">{{ e.totalPoints }}</td>
+                    <td class="text-right">{{ e.level }}</td>
+                    <td class="text-right count">{{ e.xp }}</td>
+                    <td class="text-right">{{ e.totalPoints }}</td>
                   </tr>
                 }
               </tbody>
